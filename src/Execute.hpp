@@ -1,3 +1,6 @@
+#ifndef EXECUTE_HPP
+#define EXECUTE_HPP
+
 #include<cmath>
 #include<string>
 #include<vector>
@@ -190,3 +193,5 @@ namespace xmath {
 		return tokens[0];
 	}
 }
+
+#endif

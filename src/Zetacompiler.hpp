@@ -1,3 +1,6 @@
+#ifndef ZETACOMPILER_HPP
+#define ZETACOMPILER_HPP
+
 #include<string>
 #include<vector>
 #include<algorithm>
@@ -386,3 +389,5 @@ namespace comp {
 		return outputQueue;
 	}
 }
+
+#endif
