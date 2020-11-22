@@ -5,8 +5,10 @@
 #include<cstdlib>
 
 #include "Zetacompiler.hpp"
+#include "Variable.hpp"
 
 namespace comp {
+
 	std::vector<std::string> functions{
 		"sin(",
 		"cos(",
@@ -26,6 +28,19 @@ namespace comp {
 		"AND",
 		"SHL",
 		"SHR"
+	};
+
+	std::vector<std::string> assign{
+		"ASN",
+		"ADDASN",
+		"SUBASN",
+		"MULASN",
+		"DIVASN",
+		"MODASN",
+		"XORASN",
+		"POWASN",
+		"SHLASN",
+		"SHRASN"
 	};
 
 	bool string_isnum(std::string str){
@@ -125,7 +140,6 @@ namespace comp {
 		std::vector<std::string> returnedTokens;
 		std::string dualchar;
 		unsigned long int loopcount = 0;
-		//lexInput.erase(std::remove_if(lexInput.begin(), lexInput.end(), ::isspace), lexInput.end()); // remove all whitespace (Is now implemented in .cpp)
 		unsigned long int index = 0;
 		while(index <= lexInput.size()){
 			if(ispunct(lexInput[index]) && lexInput[index] != '.'){
@@ -149,6 +163,18 @@ namespace comp {
 					}else if(dualchar == ">>"){
 						index += 2;
 						returnedTokens.push_back(">>");
+					}else if(dualchar == "=="){
+						index += 2;
+						returnedTokens.push_back("==");
+					}else if(dualchar == "!="){
+						index += 2;
+						returnedTokens.push_back("!=");
+					}else if(dualchar == ">="){
+						index += 2;
+						returnedTokens.push_back(">=");
+					}else if(dualchar == "<="){
+						index += 2;
+						returnedTokens.push_back("<=");
 					}else{
 						// error
 					}
@@ -180,7 +206,10 @@ namespace comp {
 				}else if(lexInput[index] == ')'){
 					index++;
 					returnedTokens.push_back(")");
-				}else {
+				}else if(lexInput[index] == '='){
+					index++;
+					returnedTokens.push_back("=");
+				}else{
 					//error
 				}
 				
@@ -223,6 +252,63 @@ namespace comp {
 				break;
 			}
 		}
+		for(unsigned long index = 1; index < returnedTokens.size(); index++){
+			if(returnedTokens[index-1] == "**" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"**=");
+			}else if(returnedTokens[index-1] == "<<" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"<<=");
+			}else if(returnedTokens[index-1] == ">>" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,">>=");
+			}else if(returnedTokens[index-1] == "+" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"+=");
+			}else if(returnedTokens[index-1] == "-" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"-=");
+			}else if(returnedTokens[index-1] == "*" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"*=");
+			}else if(returnedTokens[index-1] == "/" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"/=");
+			}else if(returnedTokens[index-1] == "%" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"%=");
+			}else if(returnedTokens[index-1] == "^" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"^=");
+			}else if(returnedTokens[index-1] == "=" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"==");
+			}else if(returnedTokens[index-1] == "!" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"!=");
+			}else if(returnedTokens[index-1] == ">" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,">=");
+			}else if(returnedTokens[index-1] == "<" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.insert(returnedTokens.begin()+index-1,1,"<=");
+			}else{
+				// Error
+			}
+		}
 		return returnedTokens;
 	}
 
@@ -248,6 +334,8 @@ namespace comp {
 					output.push_back("L_BRAC");
 				}else if(tokensInput[index] == ")"){
 					output.push_back("R_BRAC");
+				}else if(tokensInput[index] == "="){
+					output.push_back("ASN"); // Assign
 				}else if(tokensInput[index] == "**"){
 					output.push_back("POW");
 				}else if(tokensInput[index] == "//"){
@@ -260,8 +348,34 @@ namespace comp {
 					output.push_back("SHL");
 				}else if(tokensInput[index] == ">>"){
 					output.push_back("SHR");
+				}else if(tokensInput[index] == "=="){
+					output.push_back("EQL"); // Equal
+				}else if(tokensInput[index] == "!="){
+					output.push_back("NQL");
+				}else if(tokensInput[index] == ">="){
+					output.push_back("GQL");
+				}else if(tokensInput[index] == "<="){
+					output.push_back("LQL");
+				}else if(tokensInput[index] == "+="){
+					output.push_back("ADDASN");
+				}else if(tokensInput[index] == "-="){
+					output.push_back("SUBASN");
+				}else if(tokensInput[index] == "*="){
+					output.push_back("MULASN");
+				}else if(tokensInput[index] == "/="){
+					output.push_back("DIVASN");
+				}else if(tokensInput[index] == "^="){
+					output.push_back("XORASN");
+				}else if(tokensInput[index] == "<<="){
+					output.push_back("SHLASN");
+				}else if(tokensInput[index] == ">>="){
+					output.push_back("SHRASN");
+				}else if(tokensInput[index] == "**="){
+					output.push_back("POWASN");
+				}else if(tokensInput[index] == "//="){
+					output.push_back("FLOORDIVASN");
 				}else if(tokensInput[index][0] == '.'){
-					output.push_back(tokensInput[index]);
+				output.push_back(tokensInput[index]);
 				}else if(isalpha(tokensInput[index][0])){
 					output.push_back(tokensInput[index]);
 				}else{
@@ -318,6 +432,7 @@ namespace comp {
 	std::vector<std::string> shuntingYard(std::vector<std::string> tokens){
 		std::vector<std::string> operatorStack;
 		std::vector<std::string> outputQueue;
+		std::string vars;
 		while(!tokens.empty()){
 			/*
 			0 - NUM
@@ -326,7 +441,7 @@ namespace comp {
 			3 - RIGHT BRACKET
 			4 - FUNCTION
 			5 - VARIABLE
-			6 - VARIABLE CONST
+			6 - R FUNC
 			*/
 			switch(ttype(tokens.front())){
 				case 0: // NUM
@@ -365,11 +480,12 @@ namespace comp {
 					operatorStack.push_back(tokens.front());
 					tokens.erase(tokens.begin());
 					break;
-				case 5:
-					// Variable found
-					// Lookup cache and replace with NUM
-
-					tokens.erase(tokens.begin()); // Currently ignore vars
+				case 5: // Variable
+					vars = var::search(tokens.front());
+					if(vars != "NULL"){
+						outputQueue.push_back(vars);
+					}
+					tokens.erase(tokens.begin());
 
 					break;
 				case 6: // Left Function
@@ -387,4 +503,17 @@ namespace comp {
 		}
 		return outputQueue;
 	}
+	// Wrapper functions
+	extern void updatevar(std::string iden, std::string val){
+		var::update(iden, val);
+	}
+
+	extern std::string searchvar(std::string iden){
+		return var::search(iden);
+	}
+
+	extern int delvar(std::string variden){
+		return var::delvar(variden);
+	}
+
 }

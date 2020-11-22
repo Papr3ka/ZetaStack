@@ -15,7 +15,10 @@ namespace xmath {
 				return false;
 			}
 		}else{ // eg -. would be considerd as -0
-			if(isdigit(str[0]) || isdigit(str[1]) || str[0] == '.' || str[1] == '.'){
+			if(isdigit(str[0]) || 
+			   isdigit(str[1]) || 
+			     str[0] == '.' || 
+			     str[1] == '.'){
 				return true;
 			}else{
 				return false;
@@ -23,6 +26,7 @@ namespace xmath {
 		}
 	}
 
+	// Placeholder functions for Arbitrary math
 	double add(double x, double y){
 		return x+y;
 	}
