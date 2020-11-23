@@ -118,8 +118,8 @@ namespace xmath {
 						tokens.insert(tokens.begin()+(index-2),1,std::to_string(divide(x, y)));
 						index = 0;
 				}else if(tokens[index] == "MOD"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+						double x = std::stoll(tokens[index-2]);
+						double y = std::stoll(tokens[index-1]);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);

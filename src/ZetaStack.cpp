@@ -130,6 +130,17 @@ void command(std::string com){
 						cmdargv[0] <<" clear\n   " <<
 						cmdargv[0] <<" toggle\n";
 		}
+	}else if(cmdargv[0] == "del"){
+		int delsuccess = 0;
+		std::vector<std::string> vgls = var::globals();
+		for(auto x: vgls){
+			if(x == cmdargv[1]){
+				delsuccess += var::delvar(cmdargv[1]);
+			}
+		}
+		if(delsuccess >= 1){
+			std::cout << "Undefined variable: \"" << cmdargv[1] << "\"\n";
+		}
 	}else if(cmdargv[0] == "time"){
 		if(measure_time){
 			measure_time = false;
@@ -197,6 +208,13 @@ std::string calcExecuter(std::string input){
 			printvec(output);
 			std::cout << "\n\n";
 		}
+		auto it = std::find(output.begin(), output.end(), "NULL");
+		if(it != output.end()){
+			return "Undefined Variable";
+		}
+		if(do_exec){
+			cache.update(input, finalOutput);
+		}
 		
 		if(do_exec){
 			exec_tstart = std::chrono::steady_clock::now();
@@ -251,7 +269,116 @@ std::string calcExecuter(std::string input){
 	return finalOutput;
 }
 
+std::string assingExecuter(std::string input, int etype){
+	int tscale;
+	double totaltime;
+	int bracMis = 0;
 
+	std::chrono::_V2::steady_clock::time_point lex_tstart;
+	std::chrono::_V2::steady_clock::time_point lex_tend;
+	std::chrono::_V2::steady_clock::time_point tcomp_tstart;
+	std::chrono::_V2::steady_clock::time_point tcomp_tend;
+	std::chrono::_V2::steady_clock::time_point shyd_tstart;
+	std::chrono::_V2::steady_clock::time_point shyd_tend;
+	std::chrono::_V2::steady_clock::time_point exec_tstart;
+	std::chrono::_V2::steady_clock::time_point exec_tend;
+
+	std::vector<std::string> partasn;
+	std::vector<std::string> output;
+	std::string finalOutput;
+
+	partasn = comp::spliteq(input);
+	input = partasn.back();
+
+	lex_tstart = std::chrono::steady_clock::now();	
+	output = comp::lex(input);	
+	lex_tend = std::chrono::steady_clock::now();
+	if(debug_mode){
+		std::cout << "Lexer:        ";
+		printvec(output);
+		std::cout << "\n";
+	}	
+	tcomp_tstart = std::chrono::steady_clock::now();	
+	output = comp::tokenComp(output);	
+	tcomp_tend = std::chrono::steady_clock::now();	
+	if(debug_mode){
+		std::cout << "TokenComp:    ";
+		printvec(output);
+		std::cout << "\n";
+	}
+
+	bracMis = comp::checkBrac(output);
+	if(bracMis == 0){	
+		shyd_tstart = std::chrono::steady_clock::now();
+		output = comp::shuntingYard(output);
+		shyd_tend = std::chrono::steady_clock::now();
+		if(etype != 0){	
+			output.push_back(comp::getop(etype - 1));
+			output.insert(output.begin(), var::search(partasn.front()));
+		}
+		if(debug_mode){
+			std::cout << "ShuntingYard: ";
+			printvec(output);
+			std::cout << "\n\n";
+		}
+		auto it = std::find(output.begin(), output.end(), "NULL");
+		if(it != output.end()){
+			return "Undefined Variable";
+		}
+		
+		if(do_exec){
+			exec_tstart = std::chrono::steady_clock::now();
+			finalOutput = xmath::calculate(output);
+			exec_tend = std::chrono::steady_clock::now();
+		}else{
+			exec_tstart = std::chrono::steady_clock::now();
+			exec_tend = exec_tstart;
+		}
+		double lextime = std::chrono::duration<double, std::nano>(lex_tend - lex_tstart).count();
+		double tcomptime = std::chrono::duration<double, std::nano>(tcomp_tend - tcomp_tstart).count();
+		double shydtime = std::chrono::duration<double, std::nano>(shyd_tend - shyd_tstart).count();
+		double exectime = std::chrono::duration<double, std::nano>(exec_tend - exec_tstart).count();
+		totaltime = lextime+tcomptime+shydtime+exectime;
+		if(totaltime < 1000){
+			tscale = 0;
+		}else if(totaltime >= 1000 && totaltime < 1000000){
+			tscale = 1;
+			lextime /= 1000;
+			tcomptime /= 1000;
+			shydtime /= 1000;
+			exectime /= 1000;
+			totaltime /= 1000;
+		}else if(totaltime >= 1000000 && totaltime < 1000000000){
+			tscale = 2;
+			lextime /= 1000000;
+			tcomptime /= 1000000;
+			shydtime /= 1000000;
+			exectime /= 1000000;
+			totaltime /= 1000000;
+		}else{
+			tscale = 3;
+			lextime /= 1000000000;
+			tcomptime /= 1000000000;
+			shydtime /= 1000000000;
+			exectime /= 1000000000;
+			totaltime /= 1000000000;
+		}
+		if(measure_time){
+		std::cout << "Time variable:\n   Lexer:        " << lextime << 
+					 tunit[tscale] << " \n   TokenComp:    " << tcomptime  <<
+					 tunit[tscale] << " \n   ShuntingYard: " << shydtime << 
+					 tunit[tscale] << " \n   Execution:    " << exectime << 
+					 tunit[tscale] << " \n   Total:        " << totaltime <<
+					 tunit[tscale] << " \n\n";
+		}
+	}else{
+		std::cout << "Bracket Mismatch\n";
+		
+		finalOutput = "ERR";
+	}
+	var::update(partasn.front(),finalOutput);
+	return finalOutput;
+}
 
 int main(int argc, char* argv[]){
 
@@ -259,10 +386,11 @@ int main(int argc, char* argv[]){
 
 	std::cout << "ZetaStack\n";
 	std::string input;
+	std::string output;
 	std::string finalOutput;
 	std::string newline = ">>> ";
 
-	std::vector<std::string> partasn;
+	
 
 	while(true){
 		std::cout << newline;
@@ -292,18 +420,27 @@ int main(int argc, char* argv[]){
 
 				switch(runtype){
 					case 0:
-						finalOutput = calcExecuter(input);
+						finalOutput = calcExecuter(input);						
 						break;
 					case 1:
-						partasn = comp::spliteq(input);
-						finalOutput = calcExecuter(partasn.back());
-						var::update(partasn.front(),finalOutput);
+						/*
+							-1 Error
+							0 ASN     =
+							1 ADDASN  +=
+							2 SUBASN  -=
+							3 MULASN  *=
+							4 DIVASN  /=
+							5 MODASN  %=
+							6 XORASN  ^=
+							7 POWASN  **=
+							8 SHLASN  <<=
+							9 SHRASN  >>=
+						*/
+						finalOutput = assingExecuter(input, comp::assigntype(input));
 						break;
 				}
 				
-				if(do_exec && runtype == 0){
-					cache.update(input, finalOutput);
-				}
+
 			}else{
 				finalOutput = cache.search(input);
 				if(debug_mode){

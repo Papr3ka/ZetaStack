@@ -24,6 +24,7 @@ namespace comp {
 	std::vector<std::string> ops {
 		"<<=",
 		">>=",
+		"**=",
 		"+=",
 		"-=",
 		"*=",
@@ -38,6 +39,58 @@ namespace comp {
 		"<",
 		"="
 	};
+
+
+	/*
+		-1 Error
+		0 ASN     =
+		1 ADDASN  +=
+		2 SUBASN  -=
+		3 MULASN  *=
+		4 DIVASN  /=
+		5 MODASN  %=
+		6 XORASN  ^=
+		7 POWASN  **=
+		8 SHLASN  <<=
+		9 SHRASN  >>=
+	*/
+	int assigntype(std::string str){
+		size_t eqpos = str.find('=');
+		if(eqpos == std::string::npos){
+			return -1;
+		}else{
+			int ieqpos = static_cast<int>(eqpos);
+			if(ieqpos - 2 >= 0){
+				if(str[ieqpos - 2] == '<' && str[ieqpos - 1] == '<'){
+					return 8;
+				}else if(str[ieqpos - 2] == '>' && str[ieqpos - 1] == '>'){
+					return 9;
+				}else if(str[ieqpos - 2] == '*' && str[ieqpos - 1] == '*'){
+					return 7;
+				}else{
+
+				}
+			}
+			if(ieqpos - 1 >= 0){
+				if(str[ieqpos - 1] == '+'){
+					return 1;
+				}else if(str[ieqpos - 1] == '-'){
+					return 2;
+				}else if(str[ieqpos - 1] == '*'){
+					return 3;
+				}else if(str[ieqpos - 1] == '/'){
+					return 4;
+				}else if(str[ieqpos - 1] == '%'){
+					return 5;
+				}else if(str[ieqpos - 1] == '^'){
+					return 6;
+				}else{
+
+				}
+			}
+		}
+		return 0;
+	}
 
 
 	std::string removeWhiteSpace(std::string str){

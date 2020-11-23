@@ -9,6 +9,9 @@
 std::vector<std::string> split (std::string str, std::string split);
 
 namespace comp {
+
+	int assigntype(std::string str);
+	
 	std::string removeWhiteSpace(std::string str);
 
 	std::string stripcomment(std::string str);

@@ -4,6 +4,8 @@
 #include<cctype>
 #include<cstdlib>
 
+#include<iostream>
+
 #include "Zetacompiler.hpp"
 #include "Variable.hpp"
 
@@ -23,11 +25,12 @@ namespace comp {
 		"MOD",
 		"XOR",
 		"POW",
+		"SHL",
+		"SHR",
 		"FLOORDIV",
 		"OR",
-		"AND",
-		"SHL",
-		"SHR"
+		"AND"
+
 	};
 
 	std::vector<std::string> assign{
@@ -42,6 +45,10 @@ namespace comp {
 		"SHLASN",
 		"SHRASN"
 	};
+
+	std::string getop(unsigned long idx){
+		return operators.at(idx);
+	}
 
 	bool string_isnum(std::string str){
 			if(str.size() <= 1){
@@ -253,7 +260,7 @@ namespace comp {
 			}
 		}
 		for(unsigned long index = 1; index < returnedTokens.size(); index++){
-			if(returnedTokens[index-1] == "**" && returnedTokens[index] == "="){
+			if(returnedTokens[index-1] == "*" && returnedTokens[index] == "*="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
 				returnedTokens.erase(returnedTokens.begin()+index-1);
 				returnedTokens.insert(returnedTokens.begin()+index-1,1,"**=");
@@ -484,6 +491,8 @@ namespace comp {
 					vars = var::search(tokens.front());
 					if(vars != "NULL"){
 						outputQueue.push_back(vars);
+					}else{
+						outputQueue.push_back("NULL");
 					}
 					tokens.erase(tokens.begin());
 

@@ -10,6 +10,9 @@
 #include "Variable.hpp"
 
 namespace comp {
+
+	std::string getop(unsigned long idx);
+
 	bool string_isnum(std::string str);
 
 	int ttype(std::string var);
@@ -24,7 +27,7 @@ namespace comp {
 
 	int checkBrac(std::vector<std::string> tokens);
 	
-	std::vector<std::string> shuntingYard(std::vector<std::string> tokens);	
+	std::vector<std::string> shuntingYard(std::vector<std::string> tokens);
 }
 
 #endif
