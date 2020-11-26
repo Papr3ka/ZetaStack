@@ -18,7 +18,6 @@ std::vector<std::string> split(std::string str, std::string split){
     return output;
 }
 
-
 namespace comp {
 
 	std::vector<std::string> ops {

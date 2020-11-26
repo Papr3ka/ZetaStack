@@ -7,7 +7,7 @@
 #include<cstdlib>
 #include<gmpxx.h>
 
-// Function Templates
+// Function Prototypes
 
 namespace xmath {
 

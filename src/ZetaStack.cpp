@@ -17,6 +17,7 @@
 #include "Execute.hpp"
 #include "Preprocessor.hpp"
 #include "Zetacompiler.hpp"
+#include "Cache.hpp"
 
 // Global Settings
 bool debug_mode = false; // Debugging
@@ -30,55 +31,6 @@ std::vector<std::string> tunit{
 	" s"
 }; // len 4
 
-class vectorDictionary{
-	private:
-		bool enable = true;
-		std::vector <std::string> identifier;
-		std::vector <std::string> value;
-	public:
-		void update(std::string iden, std::string val){
-			if(enable){
-				identifier.push_back(iden);
-				value.push_back(val);
-			}
-		}
-		std::string search(std::string iden){
-			if(enable){
-				auto it = std::find(identifier.begin(), identifier.end(), iden);
-				if(it == identifier.end()){
-					return "NULL";
-				}else{
-					int index = std::distance(identifier.begin(), it);
-					return value[index];
-				}
-			}else{
-				return "NULL";
-			}
-		}
-		void show(void){
-			std::cout << "Size: " << identifier.size() << "\n----------\n";
-			for(unsigned long int idx=0; idx < identifier.size(); idx++){
-				std::cout << "\"" << identifier[idx] << "\":  \"" << value[idx] << "\"\n";
-			}
-		}
-
-		void reset(void){
-			identifier.clear();
-			value.clear();
-		}
-
-		void toggle(void){
-			if(enable){
-				enable = false;
-				std::cout << "Cache disabled\n";
-			}else{
-				enable = true;
-				std::cout << "Cache enabled\n";
-			}
-		}
-
-};
-vectorDictionary cache;
 
 void printvec(std::vector<std::string> print){
 	std::cout << '[';
@@ -117,12 +69,23 @@ void command(std::string com){
 	}else if(cmdargv[0] == "Cache" || 
 			 cmdargv[0] == "cache"){
 		if(cmdargv[1] == "show"){
-			cache.show();
+			std::vector<std::string> iden = cch::getiden();
+			std::vector<std::string> val = cch::getval();
+			std::cout << "Size: " << val.size() << "\n--------\n";
+			for(unsigned long int idx=0; idx < iden.size(); idx++){
+				std::cout << "\"" << iden[idx] << "\": \"" << val[idx] << "\"\n";
+			}
 		}else if(cmdargv[1] == "clear"){
-			cache.reset();
+			cch::reset();
 			std::cout << "Cache cleared\n";
 		}else if(cmdargv[1] == "toggle"){
-			cache.toggle();
+			if(cch::getstate()){
+				cch::setstate(false);
+				std::cout << "Cache disabled\n";
+			}else{
+				cch::setstate(true);
+				std::cout << "Cache enabled\n";
+			}
 		}else{
 			std::cout << "Options for command \"" << 
 						cmdargv[0] << "\"\n   " << 
@@ -167,6 +130,7 @@ void command(std::string com){
 }
 
 std::string calcExecuter(std::string input){
+	bool writecache = true;
 	int tscale;
 	double totaltime;
 	int bracMis = 0;
@@ -185,6 +149,7 @@ std::string calcExecuter(std::string input){
 	lex_tstart = std::chrono::steady_clock::now();	
 	output = comp::lex(input);	
 	lex_tend = std::chrono::steady_clock::now();
+
 	if(debug_mode){
 		std::cout << "Lexer:        ";
 		printvec(output);
@@ -198,6 +163,11 @@ std::string calcExecuter(std::string input){
 		printvec(output);
 		std::cout << "\n";
 	}
+
+	if(comp::hasvar(output)){
+		writecache = false;
+	}
+
 	bracMis = comp::checkBrac(output);
 	if(bracMis == 0){	
 		shyd_tstart = std::chrono::steady_clock::now();
@@ -212,14 +182,14 @@ std::string calcExecuter(std::string input){
 		if(it != output.end()){
 			return "Undefined Variable";
 		}
-		if(do_exec){
-			cache.update(input, finalOutput);
-		}
 		
 		if(do_exec){
 			exec_tstart = std::chrono::steady_clock::now();
 			finalOutput = xmath::calculate(output);
 			exec_tend = std::chrono::steady_clock::now();
+			if(writecache){
+				cch::update(input, finalOutput);
+			}
 		}else{
 			exec_tstart = std::chrono::steady_clock::now();
 			exec_tend = exec_tstart;
@@ -261,6 +231,7 @@ std::string calcExecuter(std::string input){
 					 tunit[tscale] << " \n   Total:        " << totaltime <<
 					 tunit[tscale] << " \n\n";
 		}
+
 	}else{
 		std::cout << "Bracket Mismatch\n";
 		
@@ -293,6 +264,7 @@ std::string assingExecuter(std::string input, int etype){
 	lex_tstart = std::chrono::steady_clock::now();	
 	output = comp::lex(input);	
 	lex_tend = std::chrono::steady_clock::now();
+
 	if(debug_mode){
 		std::cout << "Lexer:        ";
 		printvec(output);
@@ -376,7 +348,9 @@ std::string assingExecuter(std::string input, int etype){
 		
 		finalOutput = "ERR";
 	}
-	var::update(partasn.front(),finalOutput);
+	if(do_exec){
+		var::update(partasn.front(),finalOutput);
+	}
 	return finalOutput;
 }
 
@@ -416,7 +390,7 @@ int main(int argc, char* argv[]){
 				3 Calculate-Assign
 			*/
 			runtype = comp::execType(input);
-			if(cache.search(input) == "NULL"){
+			if(cch::search(input) == "NULL"){
 
 				switch(runtype){
 					case 0:
@@ -442,7 +416,7 @@ int main(int argc, char* argv[]){
 				
 
 			}else{
-				finalOutput = cache.search(input);
+				finalOutput = cch::search(input);
 				if(debug_mode){
 					std::cout << "Cache Hit\n\n";
 				}

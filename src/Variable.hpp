@@ -7,6 +7,8 @@
 #include<cctype>
 #include<cstdlib>
 
+// Function Prototypes
+
 namespace var {
 	void update(std::string iden, std::string val);
 	

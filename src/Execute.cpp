@@ -76,6 +76,7 @@ namespace xmath {
 	}
 
 	std::string calculate(std::vector<std::string> tokens){
+		std::string searchresult;
 		unsigned long int index = 0;
 
 		// Cannot use recursion because in certain cases, it will lead to stack overflow

@@ -9,6 +9,8 @@
 
 #include "Variable.hpp"
 
+// Function Prototypes
+
 namespace comp {
 
 	std::string getop(unsigned long idx);
@@ -16,6 +18,8 @@ namespace comp {
 	bool string_isnum(std::string str);
 
 	int ttype(std::string var);
+
+	bool hasvar(std::vector<std::string> tokens);
 
 	unsigned int precedence(std::string op);
 

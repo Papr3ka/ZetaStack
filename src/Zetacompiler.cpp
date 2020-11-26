@@ -17,22 +17,6 @@ namespace comp {
 		"tan("
 	}; // len 3
 
-	std::vector<std::string> operators{
-		"ADD",
-		"SUB",
-		"MUL",
-		"DIV",
-		"MOD",
-		"XOR",
-		"POW",
-		"SHL",
-		"SHR",
-		"FLOORDIV",
-		"OR",
-		"AND"
-
-	};
-
 	std::vector<std::string> assign{
 		"ASN",
 		"ADDASN",
@@ -46,25 +30,36 @@ namespace comp {
 		"SHRASN"
 	};
 
-	std::string getop(unsigned long idx){
-		return operators.at(idx);
-	}
+	std::vector<std::string> operators{
+		"ADD",
+		"SUB",
+		"MUL",
+		"DIV",
+		"MOD",
+		"XOR",
+		"POW",
+		"SHL",
+		"SHR",
+		"FLOORDIV",
+		"OR",
+		"AND"
+	};
 
 	bool string_isnum(std::string str){
-			if(str.size() <= 1){
-				if(isdigit(str[0]) || str[0] == '.'){
-					return true;
-				}else{
-					return false;
-				}
-			}else{ // eg -. would be considerd as -0
-				if(isdigit(str[0]) || isdigit(str[1]) || str[0] == '.' || str[1] == '.'){
-					return true;
-				}else{
-					return false;
-				}
+		if(str.size() <= 1){
+			if(isdigit(str[0]) || str[0] == '.'){
+				return true;
+			}else{
+				return false;
+			}
+		}else{ // eg -. would be considerd as -0
+			if(isdigit(str[0]) || isdigit(str[1]) || str[0] == '.' || str[1] == '.'){
+				return true;
+			}else{
+				return false;
 			}
 		}
+	}
 
 	int ttype(std::string var){
 		if(var == "L_BRAC"){
@@ -91,15 +86,29 @@ namespace comp {
 		return 5;
 
 	}
-	/*
-		0 - NUM
-		1 - OPERATOR
-		2 - LEFT BRACKET
-		3 - RIGHT BRACKET
-		4 - FUNCTION
-		5 - VARIABLE
-		6 - R FUNC
-	*/
+		/*
+			0 - NUM
+			1 - OPERATOR
+			2 - LEFT BRACKET
+			3 - RIGHT BRACKET
+			4 - FUNCTION
+			5 - VARIABLE
+			6 - R FUNC
+		*/	
+
+
+	std::string getop(unsigned long idx){
+		return operators.at(idx);
+	}
+
+	bool hasvar(std::vector<std::string> tokens){
+		for(unsigned long int index = 0; index < tokens.size(); index++){
+			if(comp::ttype(tokens[index]) == 5){
+				return true;
+			}
+		}
+		return false;
+	}	
 
 	unsigned int precedence(std::string op){
 		if(op.back() == '('){

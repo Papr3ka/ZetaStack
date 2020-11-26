@@ -7,49 +7,51 @@
 #include "Variable.hpp"
 
 namespace var{
-	std::vector<std::string> identifier;
-	std::vector<std::string> value;
+	std::vector<std::string> varidentifier;
+	std::vector<std::string> varvalue;
+
 	void update(std::string iden, std::string val){
-		auto it = std::find(identifier.begin(), identifier.end(), iden);
-		if (it == identifier.end())	{
-		  	identifier.push_back(iden);
-			value.push_back(val);
+		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
+		if (it == varidentifier.end())	{
+		  	varidentifier.push_back(iden);
+			varvalue.push_back(val);
 		}else{
-		  int index = std::distance(identifier.begin(), it);
-		  value.erase(value.begin()+index);
-		  value.insert(value.begin()+index,1,val);
+		  int index = std::distance(varidentifier.begin(), it);
+		  varvalue.erase(varvalue.begin()+index);
+		  varvalue.insert(varvalue.begin()+index,1,val);
 		}
 
 	}
 	std::string search(std::string iden){
-		auto it = std::find(identifier.begin(), identifier.end(), iden);
-		if (it == identifier.end())	{
+		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
+		if (it == varidentifier.end())	{
 		  return "NULL";
 		}else{
-		  int index = std::distance(identifier.begin(), it);
-		  return value[index];
+		  int index = std::distance(varidentifier.begin(), it);
+		  return varvalue[index];
 		}
 	}
 
 	unsigned long int count(void){
-		return identifier.size();
+		return varidentifier.size();
 	}
 
 	int delvar(std::string variden){
-		auto it = std::find(identifier.begin(), identifier.end(), variden);
-		if (it == identifier.end()){
+		auto it = std::find(varidentifier.begin(), varidentifier.end(), variden);
+		if (it == varidentifier.end()){
 			return 1;
 		}else{
-			int index = std::distance(identifier.begin(), it);
-			identifier.erase(identifier.begin()+index);
-			value.erase(value.begin()+index);
+			int index = std::distance(varidentifier.begin(), it);
+			varidentifier.erase(varidentifier.begin()+index);
+			varvalue.erase(varvalue.begin()+index);
 			return 0;
 		}
 	}
 
 	std::vector<std::string> globals(void){
-		return identifier;
+		return varidentifier;
 	}
+
 
 }
 
