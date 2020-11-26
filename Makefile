@@ -1,8 +1,9 @@
+
 CXX = g++
 CXXFLAGS = -O3 -g -pipe -Wall -Wextra -Wpedantic
 LIBS = -lgmpxx
 
-ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/variable.o
+ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/variable.o src/Cache.o
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 src/ZetaStack.o: src/ZetaStack.cpp src/Zetacompiler.hpp src/Execute.hpp src/variable.hpp
@@ -19,3 +20,7 @@ src/Preprocessor.o: src/Preprocessor.cpp src/Preprocessor.hpp
 
 src/Execute.o: src/Execute.cpp src/Execute.hpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+src/Cache.o: src/Cache.cpp src/Cache.hpp
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
