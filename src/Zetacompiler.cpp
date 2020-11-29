@@ -9,13 +9,9 @@
 #include "Zetacompiler.hpp"
 #include "Variable.hpp"
 
+
 namespace comp {
 
-	std::vector<std::string> functions{
-		"sin(",
-		"cos(",
-		"tan("
-	}; // len 3
 
 	std::vector<std::string> assign{
 		"ASN",
@@ -62,7 +58,9 @@ namespace comp {
 	}
 
 	int ttype(std::string var){
-		if(var == "L_BRAC"){
+		if(var == "SEP"){
+			return 7;
+		}else if(var == "L_BRAC"){
 			return 2;
 		}else if(var == "R_BRAC"){
 			return 3;
@@ -94,6 +92,7 @@ namespace comp {
 			4 - FUNCTION
 			5 - VARIABLE
 			6 - R FUNC
+			7 - Separator
 		*/	
 
 
@@ -151,304 +150,29 @@ namespace comp {
 		}
 	}
 
-	// Lexical Analysis
-	std::vector<std::string> lex(std::string lexInput){
-		std::vector<std::string> returnedTokens;
-		std::string dualchar;
-		unsigned long int loopcount = 0;
-		unsigned long int index = 0;
-		while(index <= lexInput.size()){
-			if(ispunct(lexInput[index]) && lexInput[index] != '.'){
-				if(index+1 < lexInput.size()){
-					dualchar = lexInput.substr(index,2);
-					if(dualchar == "**"){
-						index += 2;
-						returnedTokens.push_back("**");
-					}else if(dualchar == "//"){
-						index += 2;
-						returnedTokens.push_back("//");
-					}else if(dualchar == "||"){
-						index += 2;
-						returnedTokens.push_back("||");
-					}else if(dualchar == "&&"){
-						index += 2;
-						returnedTokens.push_back("&&");
-					}else if(dualchar == "<<"){
-						index += 2;
-						returnedTokens.push_back("<<");
-					}else if(dualchar == ">>"){
-						index += 2;
-						returnedTokens.push_back(">>");
-					}else if(dualchar == "=="){
-						index += 2;
-						returnedTokens.push_back("==");
-					}else if(dualchar == "!="){
-						index += 2;
-						returnedTokens.push_back("!=");
-					}else if(dualchar == ">="){
-						index += 2;
-						returnedTokens.push_back(">=");
-					}else if(dualchar == "<="){
-						index += 2;
-						returnedTokens.push_back("<=");
-					}else{
-						// error
-					}
-				}
-				if(lexInput[index] == '+'){
-					index++;
-					returnedTokens.push_back("+");
-				}else if(lexInput[index] == '-'){
-					index++;
-					returnedTokens.push_back("-");
-				}else if(lexInput[index] == '*'){
-					index++;
-					returnedTokens.push_back("*");
-				}else if(lexInput[index] == '/'){
-					index++;
-					returnedTokens.push_back("/");
-				}else if(lexInput[index] == '%'){
-					index++;
-					returnedTokens.push_back("%");
-				}else if(lexInput[index] == '^'){
-					index++;
-					returnedTokens.push_back("^");
-				}else if(lexInput[index] == '!'){
-					index++;
-					returnedTokens.push_back("!");
-				}else if(lexInput[index] == '('){
-					index++;
-					returnedTokens.push_back("(");
-				}else if(lexInput[index] == ')'){
-					index++;
-					returnedTokens.push_back(")");
-				}else if(lexInput[index] == '='){
-					index++;
-					returnedTokens.push_back("=");
-				}else{
-					//error
-				}
-				
-
-			}else if(isalpha(lexInput[index])){
-				// check if variable first
-				unsigned long int countindex = index;
-				while(countindex < lexInput.size() && isalpha(lexInput[countindex])){
-					countindex++;
-				}
-				if(countindex >= lexInput.size()){
-					returnedTokens.push_back(lexInput.substr(index,countindex-index));
-					index += countindex-index;
-				}else if(lexInput[countindex] == '('){
-					// if functions call
-					returnedTokens.push_back(lexInput.substr(index,countindex-index + 1));
-					index += countindex-index + 1;
-					returnedTokens.push_back("(");
-				}else{
-					returnedTokens.push_back(lexInput.substr(index,countindex-index));
-					index += countindex-index;
-				}
-			}else if(isdigit(lexInput[index]) || lexInput[index] == '.'){
-				unsigned long int countindex = index;
-				decimal:
-					while(countindex < lexInput.size() && isdigit(lexInput[countindex])){
-						countindex++;
-					}
-					if(lexInput[countindex] == '.'){
-						countindex++;
-						goto decimal;
-					}
-				returnedTokens.push_back(lexInput.substr(index,countindex-index));
-				index += countindex-index;
-			}else{
-				index++;
-			}
-			loopcount++;
-			if(loopcount >= 2*lexInput.size()){
-				break;
-			}
-		}
-		for(unsigned long index = 1; index < returnedTokens.size(); index++){
-			if(returnedTokens[index-1] == "*" && returnedTokens[index] == "*="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"**=");
-			}else if(returnedTokens[index-1] == "<<" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"<<=");
-			}else if(returnedTokens[index-1] == ">>" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,">>=");
-			}else if(returnedTokens[index-1] == "+" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"+=");
-			}else if(returnedTokens[index-1] == "-" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"-=");
-			}else if(returnedTokens[index-1] == "*" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"*=");
-			}else if(returnedTokens[index-1] == "/" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"/=");
-			}else if(returnedTokens[index-1] == "%" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"%=");
-			}else if(returnedTokens[index-1] == "^" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"^=");
-			}else if(returnedTokens[index-1] == "=" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"==");
-			}else if(returnedTokens[index-1] == "!" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"!=");
-			}else if(returnedTokens[index-1] == ">" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,">=");
-			}else if(returnedTokens[index-1] == "<" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"<=");
-			}else{
-				// Error
-			}
-		}
-		return returnedTokens;
-	}
-
-	std::vector<std::string> tokenComp(std::vector<std::string> tokensInput){
-		std::vector<std::string> output;
-		for(unsigned long int index = 0;index<tokensInput.size();index++){
-			if(!isdigit(tokensInput[index][0])){
-				if(tokensInput[index] == "+"){
-					output.push_back("ADD");
-				}else if(tokensInput[index] == "-"){
-					output.push_back("SUB");
-				}else if(tokensInput[index] == "*"){
-					output.push_back("MUL");
-				}else if(tokensInput[index] == "/"){
-					output.push_back("DIV");
-				}else if(tokensInput[index] == "%"){
-					output.push_back("MOD");
-				}else if(tokensInput[index] == "^"){
-					output.push_back("XOR");
-				}else if(tokensInput[index] == "!"){
-					output.push_back("FACT");
-				}else if(tokensInput[index] == "("){
-					output.push_back("L_BRAC");
-				}else if(tokensInput[index] == ")"){
-					output.push_back("R_BRAC");
-				}else if(tokensInput[index] == "="){
-					output.push_back("ASN"); // Assign
-				}else if(tokensInput[index] == "**"){
-					output.push_back("POW");
-				}else if(tokensInput[index] == "//"){
-					output.push_back("FLOORDIV");
-				}else if(tokensInput[index] == "||"){
-					output.push_back("OR");
-				}else if(tokensInput[index] == "&&"){
-					output.push_back("AND");
-				}else if(tokensInput[index] == "<<"){
-					output.push_back("SHL");
-				}else if(tokensInput[index] == ">>"){
-					output.push_back("SHR");
-				}else if(tokensInput[index] == "=="){
-					output.push_back("EQL"); // Equal
-				}else if(tokensInput[index] == "!="){
-					output.push_back("NQL");
-				}else if(tokensInput[index] == ">="){
-					output.push_back("GQL");
-				}else if(tokensInput[index] == "<="){
-					output.push_back("LQL");
-				}else if(tokensInput[index] == "+="){
-					output.push_back("ADDASN");
-				}else if(tokensInput[index] == "-="){
-					output.push_back("SUBASN");
-				}else if(tokensInput[index] == "*="){
-					output.push_back("MULASN");
-				}else if(tokensInput[index] == "/="){
-					output.push_back("DIVASN");
-				}else if(tokensInput[index] == "^="){
-					output.push_back("XORASN");
-				}else if(tokensInput[index] == "<<="){
-					output.push_back("SHLASN");
-				}else if(tokensInput[index] == ">>="){
-					output.push_back("SHRASN");
-				}else if(tokensInput[index] == "**="){
-					output.push_back("POWASN");
-				}else if(tokensInput[index] == "//="){
-					output.push_back("FLOORDIVASN");
-				}else if(tokensInput[index][0] == '.'){
-				output.push_back(tokensInput[index]);
-				}else if(isalpha(tokensInput[index][0])){
-					output.push_back(tokensInput[index]);
-				}else{
-					output.push_back("NULL");
-				}
-			}else{
-				output.push_back(tokensInput[index]);
-			}
-		}
-		if(output.size() > 1){
-			if(output[0] == "SUB"){			
-				output.erase(output.begin());
-				output[0].insert(output[0].begin(),1,'-');
-				//std::cout << output[0] << "\n";
-			}
-		}
-		// Unary Sign
-		for(unsigned long int idx=1; idx < output.size() - 1; idx++){
-			if(ttype(output[idx - 1]) == 1 && output[idx] == "SUB" && ttype(output[idx + 1]) == 0){
-				output.erase(output.begin() + idx);
-				if(output[idx].front() == '+' || output[idx].front() == '-'){
-					output[idx][0] = '-';
-				}else{
-					output[idx].insert(output[idx].begin(),1,'-');
-				}
-			}else if(ttype(output[idx - 1]) == 1 && output[idx] == "ADD" && ttype(output[idx + 1]) == 0){
-				output.erase(output.begin() + idx);
-				if(output[idx].front() == '+' || output[idx].front() == '-'){
-					output[idx][0] = '+';
-				}else{
-					output[idx].insert(output[idx].begin(),1,'+');
-				}
-			}else{
-				// Error
-			}
-		}
-		return output;
-	}
-
 	// Error Checking
-	int checkBrac(std::vector<std::string> tokens){
-		std::vector<int> outErr;
-		int lbrac_count = std::count(tokens.begin(),tokens.end(), "(");
-		if(std::count(tokens.begin(),tokens.end(), "L_BRAC") > lbrac_count){
-			lbrac_count = std::count(tokens.begin(),tokens.end(), "L_BRAC");
+	int checkleftBrac(std::string str){
+		int count = 0;
+		for(unsigned long int idx = 0; idx < str.size(); idx++){
+			if(str[idx] == '(') count++;
 		}
-		int rbrac_count = std::count(tokens.begin(),tokens.end(), ")");
-		if(std::count(tokens.begin(),tokens.end(), "R_BRAC") > rbrac_count){
-			rbrac_count = std::count(tokens.begin(),tokens.end(), "R_BRAC");
+		return count;
+	}
+	int checkrightBrac(std::string str){
+		int count = 0;
+		for(unsigned long int idx = 0; idx < str.size(); idx++){
+			if(str[idx] == ')') count++;
 		}
-		return abs(lbrac_count - rbrac_count);
+		return count;
 	}
 
-	std::vector<std::string> shuntingYard(std::vector<std::string> tokens){
+	// fcomp = false, bool used for function jit comp
+	std::vector<std::string> shuntingYard(std::vector<std::string> tokens, const bool fcomp){
 		std::vector<std::string> operatorStack;
 		std::vector<std::string> outputQueue;
+		std::vector<std::string> functionQueue;
 		std::string vars;
+		long int bcount;
 		while(!tokens.empty()){
 			/*
 			0 - NUM
@@ -493,21 +217,41 @@ namespace comp {
 					tokens.erase(tokens.begin());
 					break;
 				case 4: // FUNC
-					operatorStack.push_back(tokens.front());
+					bcount = 1;
+					functionQueue.push_back(tokens.front());
+					functionQueue.push_back(tokens.front());
 					tokens.erase(tokens.begin());
+					tokens.erase(tokens.begin());
+					while(bcount != 0 && !tokens.empty()){
+						functionQueue.insert(functionQueue.begin(),tokens.front());
+						tokens.erase(tokens.begin());						
+						if(ttype(tokens.front()) == 2){
+							functionQueue.push_back("L_BRAC");
+							bcount++;
+						}else if(ttype(tokens.front()) == 3){
+							functionQueue.push_back("R_BRAC");
+							bcount--;
+						}
+						
+					}
+					outputQueue.insert(outputQueue.end() - 1,functionQueue.begin(),functionQueue.end());
+					functionQueue.clear();
 					break;
 				case 5: // Variable
-					vars = var::search(tokens.front());
-					if(vars != "NULL"){
-						outputQueue.push_back(vars);
-					}else{
-						outputQueue.push_back("NULL");
-					}
+					outputQueue.push_back(tokens.front());
 					tokens.erase(tokens.begin());
-
 					break;
 				case 6: // Left Function
 					outputQueue.push_back(tokens.front());
+					tokens.erase(tokens.begin());
+					break;
+				case 7: // SEP
+					if(fcomp){
+						outputQueue.push_back("SEP");
+					}
+					tokens.erase(tokens.begin());
+					break;
+				default:
 					tokens.erase(tokens.begin());
 					break;
 			}
@@ -521,17 +265,15 @@ namespace comp {
 		}
 		return outputQueue;
 	}
-	// Wrapper functions
-	extern void updatevar(std::string iden, std::string val){
-		var::update(iden, val);
-	}
 
-	extern std::string searchvar(std::string iden){
-		return var::search(iden);
-	}
-
-	extern int delvar(std::string variden){
-		return var::delvar(variden);
+	// tokens = compiled list of tokens, to be used at last step after recurselink
+	std::vector<std::string> fillallvars(std::vector<std::string> tokens){
+		for(unsigned long int index=0;index < tokens.size(); index++){
+			if(ttype(tokens.at(index)) == 5){
+				tokens.at(index) = var::search(tokens.at(index));
+			}
+		}
+		return tokens;
 	}
 
 }

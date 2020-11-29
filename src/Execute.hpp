@@ -36,6 +36,8 @@ namespace xmath {
 	long long factorial(long long x);
 
 	std::string calculate(std::vector<std::string> tokens);
+
+	//std::vector<std::string> callall(std::vector<std::string> tokens);
 }
 
 #endif

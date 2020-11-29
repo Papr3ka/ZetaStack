@@ -30,7 +30,6 @@ namespace cch {
 		return cache_enable;
 	}
 
-
 	void setmaxlen(unsigned long int ml){
 		maxlen = ml;
 	}

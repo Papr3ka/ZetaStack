@@ -29,9 +29,12 @@ namespace comp {
 
 	std::vector<std::string> tokenComp(std::vector<std::string> tokensInput);
 
-	int checkBrac(std::vector<std::string> tokens);
+	int checkleftBrac(std::string tokens);
+	int checkrightBrac(std::string tokens);
 	
-	std::vector<std::string> shuntingYard(std::vector<std::string> tokens);
+	std::vector<std::string> shuntingYard(std::vector<std::string> tokens, const bool fcomp=false);
+
+	std::vector<std::string> fillallvars(std::vector<std::string> tokens);
 }
 
 #endif

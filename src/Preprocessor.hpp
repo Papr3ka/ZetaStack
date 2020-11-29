@@ -3,14 +3,20 @@
 
 #include<string>
 #include<vector>
-#include<cctype>
 #include<algorithm>
+#include<cctype>
+#include<cstdlib>
+
 
 // Function Prototypes
 
-std::vector<std::string> split (std::string str, std::string split);
+std::vector<std::string> split(std::string str, std::string split);
 
 namespace comp {
+
+	std::vector<std::string> lex(std::string lexInput);
+
+	std::vector<std::string> tokenComp(std::vector<std::string> tokensInput);
 
 	int assigntype(std::string str);
 	
