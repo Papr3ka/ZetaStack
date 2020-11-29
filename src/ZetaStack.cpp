@@ -31,9 +31,9 @@ bool do_exec = true; // Execute
 
 // Defualt settings
 /*--Variable------------Value--
-*	debug_mode     	 |	false |
-*	measure_time  	 |	false |
-*	do_exec = true	 |	true  |
+*|  debug_mode        | false |
+*|  measure_time      | false |
+*|  do_exec = true    | true  |
 *///---------------------------
 
 std::vector<std::string> tunit{
@@ -140,14 +140,14 @@ void command(std::string com){
 
 }
 
-/*-Interpreting process order-----------------------------------------------Resposible Files---------------------
-*|	1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)] 				|	Preprocessor.hpp / Preprocessor.cpp |
-*|	2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC] <J						|	Preprocessor.hpp / Preprocessor.cpp |
-*|	3. ShuntingYard  [2, 14, 12, ADD, MUL] <J							|	Zetacompiler.hpp / Zetacompiler.cpp |
-*|	4. Recursive Function link, replaces functions with their bodies	|	Link.hpp / Link.cpp					|
-*|	5. Fill all leftover variables										|	Zetacompiler.hpp / Zetacompiler.cpp |
-*|	6. Execute 															|	Execute.hpp / Execute.cpp			|
-*///-------------------------------------------------------------------------------------------------------------
+/*-Interpreting process order-----------------------------------------------Resposible Files-------------------------
+*|  1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)] 		|	Preprocessor.hpp / Preprocessor.cpp |
+*|  2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC] <J			|	Preprocessor.hpp / Preprocessor.cpp |
+*|  3. ShuntingYard  [2, 14, 12, ADD, MUL] <J				|	Zetacompiler.hpp / Zetacompiler.cpp |
+*|  4. Recursive Function link, replaces functions with their bodies	|	Link.hpp / Link.cpp		    |
+*|  5. Fill all leftover variables					|	Zetacompiler.hpp / Zetacompiler.cpp |
+*|  6. Execute 								|	Execute.hpp / Execute.cpp	    |
+*///-----------------------------------------------------------------------------------------------------------------
 
 // Directly executing statements
 std::string calcExecuter(std::string input){
