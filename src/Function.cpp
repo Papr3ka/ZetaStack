@@ -8,6 +8,8 @@
 #include "Function.hpp"
 #include "Zetacompiler.hpp"
 
+#include "debug.h"
+
 class func{
 	private:
 		unsigned long int argcnt;
@@ -73,37 +75,20 @@ class func{
 		}
 
 		// returns vector with variables used in function filled
-		std::vector<std::string> fillvars(std::vector<std::string> varargs){
+		std::vector<std::string> fillvars(std::vector< std::vector<std::string> > varargs){
 			std::vector<std::string> tempfunc(functionbody.begin(),functionbody.end());
-			std::vector<std::string> argumentvector;
-			//dbg::printvec(tempfunc);
-			//std::cout << " tempfunc\n";
+			long argcounter = 0;
 			reference();
-			//dbg::printvecl(referenceTable);
-			//std::cout << " ref\n";
-			if(argcnt >= 1){
+			if(argcnt >= 1){ // check if function arg is not void
 				for(long r_index: referenceTable){
-					//dbg::printvec(argumentvector);
-					//std::cout << " argumentvector\n";
+					// Fill
 					if(r_index == -1){
-						while(varargs.front() != "SEP" && varargs.size() >= 1){
-							varargs.erase(varargs.begin());
-						}
-					}else if(r_index >= 0){
-						for(unsigned long int ch=0; ch < varargs.size(); ch++){
-							if(varargs[ch] != "SEP" && !(ch + 1 >= varargs.size())){
-								argumentvector.push_back(varargs[ch]);
-							}else{
-								argumentvector = comp::shuntingYard(argumentvector, true);
-								tempfunc.erase(tempfunc.begin()+ r_index);
-								tempfunc.insert(tempfunc.begin() + r_index, argumentvector.begin(), argumentvector.end());
-								argumentvector.clear();
-								break;
-							}
-						}
-						
-					}else{
+						argcounter++;
+					}else if(r_index == -2){
 						return tempfunc;
+					}else{
+						tempfunc.erase(tempfunc.begin() + r_index);// r_index
+						tempfunc.insert(tempfunc.begin() + r_index, varargs[argcounter].begin(), varargs[argcounter].end());
 					}
 				}
 				
@@ -149,19 +134,15 @@ void def(std::vector<std::string> assignTo, std::vector<std::string> body){ // I
 	assignTo.erase(assignTo.begin()); assignTo.erase(assignTo.begin());// Erase name and first bracket
 	assignTo.pop_back(); // Erase end bracket
 	func obj(assignTo,name,body); // Create function object
-	obj.compile();
+	//obj.compile();
 	nfunctions.push_back(obj);	
 
 }
 
 
-// call function returns compiled list of tokens that can be inserted
-// format = arg1, arg2 ... , funcname(
-std::vector<std::string> call(std::vector<std::string> fargs){
-	std::string name = fargs.back();
-	//fargs.erase(fargs.begin());
-	fargs.pop_back();
-	fargs.push_back("SEP");
+// call function returns body list of tokens with vars filled
+// format = funcname(, arg1, arg2, ...
+std::vector<std::string> call(std::vector< std::vector<std::string> > fargs, std::string name){
 	unsigned long int idx = 0;
 	for(func f_id: nfunctions){
 		if(f_id.fname() == name){
@@ -169,7 +150,7 @@ std::vector<std::string> call(std::vector<std::string> fargs){
 		}
 		idx++;
 	}
-	//dbg::printvec(nfunctions.at(idx).fillvars(fargs));
+
 	return nfunctions.at(idx).fillvars(fargs);
 }
 

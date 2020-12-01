@@ -7,7 +7,7 @@
 #include "Link.hpp"
 #include "Function.hpp"
 
-//#include "Debug.h"
+#include "Debug.h"
 
 long long int recursedepth = 16; // Default 4096
 
@@ -22,38 +22,60 @@ namespace ld {
 
 	// Do one round of function linking
 	std::vector<std::string> link(std::vector<std::string> tokens){
-		//dbg::printvec<std::string>(tokens);
-		//std::cout << " input\n";
+		std::string funcname;
 		std::vector<std::string> output;
 		std::vector<std::string> temp;
-		std::vector<std::string> args;
-		long int argcnt; 
-		for(long int index=0;index < (long int)tokens.size(); index++){
-			if(tokens[index].back() == '(' && tokens[index] != "("){
-				for(argcnt=index - (long int)argcount(tokens.at(index)); argcnt <= index; argcnt++){
-					if(tokens.at(argcnt) != "SEP"){
-						temp.push_back(tokens.at(argcnt));
+		std::vector<std::string> temppack;
+		std::vector< std::vector<std::string> > argpackage;
+		long int braccounter;
+		long int tpos = 0;
+		while(!tokens.empty()){
+			if(tokens.front().back() == '('){
+				braccounter = 1;
+				funcname = tokens.front();
+				tokens.erase(tokens.begin());
+				tokens.erase(tokens.begin());
+				output.push_back("L_BRAC");
+				while(braccounter != 0 && !tokens.empty()){
+					std::cout << tokens.front() << ", ";
+					if(tokens.front() == "L_BRAC"){
+						braccounter++;
+						temppack.push_back("L_BRAC");
+						tokens.erase(tokens.begin());
+						tpos--;
+					}else if(tokens.front() == "R_BRAC"){
+						braccounter--;
+						temppack.push_back("R_BRAC");
+						tokens.erase(tokens.begin());
+						tpos--;
+					}else{
+						output.push_back(tokens.front());
+						tokens.erase(tokens.begin());	
+						tpos--;					
 					}
+					if(tokens.empty()) break;
+					if(tokens.front() == "SEP" || tokens.empty()){
+						tokens.erase(tokens.begin());
+						argpackage.push_back(temppack);
+						temppack.clear();
+						tpos--;
+					}	
 				}
-				temp = call(temp);
-				//dbg::printvec<std::string>(temp);
-				//std::cout << " tempvec\n";
-				output.insert(output.end(),temp.begin(),temp.end());
+				temp = call(argpackage, funcname);
+				output.insert(output.begin() + tpos,temp.begin(),temp.end());
 				temp.clear();
-				clearfuncdata(tokens[index]);
+				clearfuncdata(funcname);
 			}else{
-				output.push_back(tokens[index]);
-				//dbg::printvec<std::string>(output);
+				output.push_back(tokens.front());
+				tokens.erase(tokens.begin());
 			}	
-			//std::cout << "vec\n";
 		}
 		return output;
 	}
 
 	std::vector<std::string> recurselink(std::vector<std::string> tokens, long long int recursecount){
-
 		std::vector<std::string> prev = link(tokens);
-		if(!(isEqual(prev, tokens) || recursecount >= recursedepth)){
+		if(!(isEqual(prev, tokens) ^ (recursecount >= recursedepth))){
 			return recurselink(prev, recursecount);
 			recursecount++;
 		}

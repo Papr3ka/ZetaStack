@@ -14,7 +14,7 @@ void def(std::vector<std::string> assignTo, std::vector<std::string> body);
 
 void udef(std::string name);
 
-std::vector<std::string> call(std::vector<std::string> fargs);
+std::vector<std::string> call(std::vector< std::vector<std::string> > fargs, std::string name);
 
 unsigned long int argcount(std::string name);
 

@@ -8,6 +8,7 @@
 
 #include "Execute.hpp"
 #include "Function.hpp"
+#include "Status.hpp"
 
 namespace xmath {
 
@@ -75,13 +76,14 @@ namespace xmath {
 		return ans;
 	}
 
-	std::string calculate(std::vector<std::string> tokens){
+	std::string calculate(std::vector<std::string> tokens, bool showprogress){
 		unsigned long int index = 0;
 		if(tokens.size() <= 1){
 			return tokens.front();
 		}
 		// Cannot use recursion because in certain cases, it will lead to stack overflow
 		while(tokens.size() > 1){
+			if(showprogress) bar::update((float)tokens.size());
 			// if(index > tokens.size()){
 			// 	index = 0;
 			// }
@@ -158,6 +160,11 @@ namespace xmath {
 						tokens.erase(tokens.begin()+index-2);
 						tokens.insert(tokens.begin()+(index-2),1,std::to_string(shr((long long)x, (long long)y)));
 						index = 0;	
+				}else if(tokens[index] == "FACT"){
+					double x = std::stod(tokens[index-1]);
+					tokens.erase(tokens.begin()+index-1);
+					tokens.erase(tokens.begin()+index-1);
+					tokens.insert(tokens.begin()+(index-1),1,std::to_string(factorial((long long)x)));					
 				}else{
 					break; // Error
 				}

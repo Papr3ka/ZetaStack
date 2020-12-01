@@ -10,6 +10,8 @@
 #include "Variable.hpp"
 
 
+
+
 namespace comp {
 
 
@@ -170,9 +172,6 @@ namespace comp {
 	std::vector<std::string> shuntingYard(std::vector<std::string> tokens, const bool fcomp){
 		std::vector<std::string> operatorStack;
 		std::vector<std::string> outputQueue;
-		std::vector<std::string> functionQueue;
-		std::string vars;
-		long int bcount;
 		while(!tokens.empty()){
 			/*
 			0 - NUM
@@ -192,7 +191,7 @@ namespace comp {
 					while(!operatorStack.empty()){
 						if(((precedence(operatorStack.back()) > precedence(tokens.front()) ||
 						((precedence(operatorStack.back()) == precedence(tokens.front())) && associativity(tokens.front())))) &&
-						operatorStack.back() != "L_BRAC"){								
+						operatorStack.back() != "L_BRAC"){							
 							outputQueue.push_back(operatorStack.back());
 							operatorStack.pop_back();
 						}else{
@@ -216,26 +215,9 @@ namespace comp {
 					}
 					tokens.erase(tokens.begin());
 					break;
-				case 4: // FUNC
-					bcount = 1;
-					functionQueue.push_back(tokens.front());
-					functionQueue.push_back(tokens.front());
+				case 4: // FUNC, if there is function at this stage, there is an error
+					outputQueue.push_back(tokens.front());
 					tokens.erase(tokens.begin());
-					tokens.erase(tokens.begin());
-					while(bcount != 0 && !tokens.empty()){
-						functionQueue.insert(functionQueue.begin(),tokens.front());
-						tokens.erase(tokens.begin());						
-						if(ttype(tokens.front()) == 2){
-							functionQueue.push_back("L_BRAC");
-							bcount++;
-						}else if(ttype(tokens.front()) == 3){
-							functionQueue.push_back("R_BRAC");
-							bcount--;
-						}
-						
-					}
-					outputQueue.insert(outputQueue.end() - 1,functionQueue.begin(),functionQueue.end());
-					functionQueue.clear();
 					break;
 				case 5: // Variable
 					outputQueue.push_back(tokens.front());

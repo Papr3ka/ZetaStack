@@ -23,17 +23,20 @@
 #include "Execute.hpp"
 
 #include "Cache.hpp"
+#include "Status.hpp"
 
 // Global Settings
 bool debug_mode = false; // Debugging 
 bool measure_time = false; // Measuring time
 bool do_exec = true; // Execute
+bool do_bar = true;
 
 // Defualt settings
 /*--Variable------------Value--
 *|  debug_mode        | false |
 *|  measure_time      | false |
-*|  do_exec = true    | true  |
+*|  do_exec           | true  |
+*|  do_bar            | true  |
 *///---------------------------
 
 std::vector<std::string> tunit{
@@ -57,6 +60,9 @@ void printvec(std::vector<std::string> print){
 // commands using the "/" symbol
 void command(std::string com){
 	if(com[0] == '/'){
+		return;
+	}else if(com[0] == ';'){
+		std::system((com.substr(1,com.size()-1)).c_str());
 		return;
 	}
 
@@ -132,6 +138,14 @@ void command(std::string com){
 			do_exec = true;
 			std::cout << "Execute on\n";
 		}
+	}else if(cmdargv[0] == "bar"){
+		if(do_bar){
+			do_bar = false;
+			std::cout << "Progress Bar off\n";
+		}else{
+			do_bar = true;
+			std::cout << "Progress Bar on\n";
+		}
 	}else{
 
 		// Command not found
@@ -140,14 +154,14 @@ void command(std::string com){
 
 }
 
-/*-Interpreting process order-----------------------------------------------Resposible Files-------------------------
-*|  1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)] 		|	Preprocessor.hpp / Preprocessor.cpp |
-*|  2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC] <J			|	Preprocessor.hpp / Preprocessor.cpp |
-*|  3. ShuntingYard  [2, 14, 12, ADD, MUL] <J				|	Zetacompiler.hpp / Zetacompiler.cpp |
-*|  4. Recursive Function link, replaces functions with their bodies	|	Link.hpp / Link.cpp		    |
-*|  5. Fill all leftover variables					|	Zetacompiler.hpp / Zetacompiler.cpp |
-*|  6. Execute 								|	Execute.hpp / Execute.cpp	    |
-*///-----------------------------------------------------------------------------------------------------------------
+/*-Interpreting process order-----------------------------------------------Resposible Files--------------------
+*|  1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)] 		        |  Preprocessor.hpp / Preprocessor.cpp |
+*|  2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC] <J			            |  Preprocessor.hpp / Preprocessor.cpp |
+*|  3. Recursive Function link, replaces functions with their bodies    |  Link.hpp / Link.cpp                 |
+*|  4. ShuntingYard  [2, 14, 12, ADD, MUL] <J	                        |  Zetacompiler.hpp / Zetacompiler.cpp |
+*|  5. Fill all leftover variables                                      |  Zetacompiler.hpp / Zetacompiler.cpp |
+*|  6. Execute                                                          |  Execute.hpp / Execute.cpp	       |
+*///------------------------------------------------------------------------------------------------------------
 
 // Directly executing statements
 std::string calcExecuter(std::string input){
@@ -183,6 +197,8 @@ std::string calcExecuter(std::string input){
 		printvec(output);
 		std::cout << "\n";
 	}
+	
+	output = ld::link(output); // Link.hpp
 
 	if(comp::hasvar(output)){
 		writecache = false;
@@ -196,19 +212,18 @@ std::string calcExecuter(std::string input){
 		std::cout << "\n\n";
 	}
 	
-	auto it = std::find(output.begin(), output.end(), "NULL");
-	if(it != output.end()){
-		return "Undefined Variable";
-	}
-
-	output = ld::recurselink(output); // Link.hpp
-
 	output = comp::fillallvars(output); // Zetacompiler.hpp
 
+	auto it = std::find(output.begin(), output.end(), "NULL");
+	if(it != output.end()){		return "Undefined Variable";
+	}
+
 	if(do_exec){
+		bar::init((long int)output.size()+1);
 		exec_tstart = std::chrono::steady_clock::now();
-		finalOutput = xmath::calculate(output);
+		finalOutput = xmath::calculate(output, do_bar);
 		exec_tend = std::chrono::steady_clock::now();
+		bar::finish();
 		if(writecache){
 			cch::update(input, finalOutput);
 		}
@@ -295,6 +310,8 @@ std::string asnExecuter(std::string input, int etype){
 		std::cout << "\n";
 	}
 
+	output = ld::link(output); // Link.hpp
+
 	shyd_tstart = std::chrono::steady_clock::now();
 	output = comp::shuntingYard(output); // Zetacompiler.hpp
 	shyd_tend = std::chrono::steady_clock::now();
@@ -308,20 +325,18 @@ std::string asnExecuter(std::string input, int etype){
 		std::cout << "\n\n";
 	}
 
-	
-	auto it = std::find(output.begin(), output.end(), "NULL");
-	if(it != output.end()){
-		return "Undefined Variable";
-	}
-
-	output = ld::recurselink(output); // Link.hpp
-
 	output = comp::fillallvars(output); // Zetacompiler.hpp
 
+	auto it = std::find(output.begin(), output.end(), "NULL");
+	if(it != output.end()){		return "Undefined Variable";
+	}
+
 	if(do_exec){
+		bar::init((long int)output.size()+1);
 		exec_tstart = std::chrono::steady_clock::now();
-		finalOutput = xmath::calculate(output);
+		finalOutput = xmath::calculate(output, do_bar);
 		exec_tend = std::chrono::steady_clock::now();
+		bar::finish();
 	}else{
 		exec_tstart = std::chrono::steady_clock::now();
 		exec_tend = exec_tstart;
@@ -430,6 +445,7 @@ int main(int argc, char* argv[]){
 	std::string multiline = "... ";	
 
 	while(true){
+
 		std::cout << newline;
 		std::getline(std::cin, input);
 
