@@ -7,8 +7,6 @@
 #include "Link.hpp"
 #include "Function.hpp"
 
-#include "Debug.h"
-
 long long int recursedepth = 16; // Default 4096
 
 namespace ld {
