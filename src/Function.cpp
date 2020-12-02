@@ -8,8 +8,6 @@
 #include "Function.hpp"
 #include "Zetacompiler.hpp"
 
-#include "debug.h"
-
 class func{
 	private:
 		unsigned long int argcnt;
