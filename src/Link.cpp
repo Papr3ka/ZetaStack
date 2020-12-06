@@ -6,44 +6,62 @@
 
 #include "Link.hpp"
 #include "Function.hpp"
+#include "Token.hpp"
 
 long long int recursedepth = 16; // Default 4096
 
 namespace ld {
 
-	static bool isEqual(std::vector<std::string> const &fcompvec, std::vector<std::string> const &bcompvec)
+	static bool isEqual(std::vector<token> fcompvec, std::vector<token> bcompvec)
 	{
-	    auto pair = std::mismatch(fcompvec.begin(), fcompvec.end(), bcompvec.begin());
-	    return pair.first == fcompvec.end() && pair.second == bcompvec.end();
+	    if(fcompvec.size() != bcompvec.size()){
+	    	return false;
+	    }else{
+	    	for(unsigned long int i = 0; i < fcompvec.size(); i++){
+	    		if(fcompvec[i] != bcompvec[i]){
+	    			return false;
+	    		}
+	    	}
+	    }
+	    return true;
 	}
  
 
 	// Do one round of function linking
-	std::vector<std::string> link(std::vector<std::string> tokens){
+	std::vector<token> link(std::vector<token> tokens){
 		std::string funcname;
-		std::vector<std::string> output;
-		std::vector<std::string> temp;
-		std::vector<std::string> temppack;
-		std::vector< std::vector<std::string> > argpackage;
+		std::vector<token> output;
+		std::vector<token> temp;
+		std::vector<token> temppack;
+		std::vector< std::vector<token> > argpackage;
 		long int braccounter;
 		long int tpos = 0;
 		while(!tokens.empty()){
-			if(tokens.front().back() == '('){
+			if(tokens.front().type == 4){
 				braccounter = 1;
-				funcname = tokens.front();
+				funcname = tokens.front().data;
 				tokens.erase(tokens.begin());
 				tokens.erase(tokens.begin());
-				output.push_back("L_BRAC");
+				token tk;
+				tk.data = "L_BRAC";
+				tk.type = 2;
+				output.push_back(tk);
 				while(braccounter != 0 && !tokens.empty()){
-					std::cout << tokens.front() << ", ";
-					if(tokens.front() == "L_BRAC"){
+					std::cout << tokens.front().data << ", ";
+					if(tokens.front().type == 2){
 						braccounter++;
-						temppack.push_back("L_BRAC");
+						token tk;
+						tk.data = "L_BRAC";
+						tk.type = 2;
+						temppack.push_back(tk);
 						tokens.erase(tokens.begin());
 						tpos--;
-					}else if(tokens.front() == "R_BRAC"){
+					}else if(tokens.front().type == 3){
 						braccounter--;
-						temppack.push_back("R_BRAC");
+						token tk;
+						tk.data = "R_BRAC";
+						tk.type = 3;
+						temppack.push_back(tk);
 						tokens.erase(tokens.begin());
 						tpos--;
 					}else{
@@ -52,7 +70,7 @@ namespace ld {
 						tpos--;					
 					}
 					if(tokens.empty()) break;
-					if(tokens.front() == "SEP" || tokens.empty()){
+					if(tokens.front().type == -1 || tokens.empty()){
 						tokens.erase(tokens.begin());
 						argpackage.push_back(temppack);
 						temppack.clear();
@@ -71,14 +89,15 @@ namespace ld {
 		return output;
 	}
 
-	std::vector<std::string> recurselink(std::vector<std::string> tokens, long long int recursecount){
-		std::vector<std::string> prev = link(tokens);
-		if(!(isEqual(prev, tokens) ^ (recursecount >= recursedepth))){
-			return recurselink(prev, recursecount);
-			recursecount++;
+	std::vector<token> recurselink(std::vector<token> tokens, long long int recursecount){
+		std::vector<token> prev = link(tokens);
+		while(!isEqual(prev,tokens) && recursecount > 0){
+			prev = tokens;
+			tokens = link(tokens);
+			recursecount--;
 		}
 		return tokens;
-		
-		
+
+
 	}
 }

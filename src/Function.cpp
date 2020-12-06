@@ -7,15 +7,17 @@
 
 #include "Function.hpp"
 #include "Zetacompiler.hpp"
+#include "Token.hpp"
+
 
 class func{
 	private:
 		unsigned long int argcnt;
 		std::string functionname;
-		std::vector<std::string> tempfunc;
-		std::vector<std::string> functionargs;
-		std::vector<std::string> functionargsNosep;
-		std::vector<std::string> functionbody;
+		std::vector<token> tempfunc;
+		std::vector<token> functionargs;
+		std::vector<token> functionargsNosep;
+		std::vector<token> functionbody;
 		/*	Reference table guide
 		|	>= 0 index of argument in compiled function
 		|	-1 skip/continue to next argument
@@ -25,10 +27,10 @@ class func{
 
 	public:
 		// Constructor
-		func(std::vector<std::string> argvect, std::string name, std::vector<std::string> functokens){
+		func(std::vector<token> argvect, std::string name, std::vector<token> functokens){
 			functionargs = argvect;
-			for(std::string x: argvect){
-				if(x != "SEP"){
+			for(token x: argvect){
+				if(x.type != -1){
 					functionargsNosep.push_back(x);
 				}
 			}
@@ -46,15 +48,13 @@ class func{
 		// Deconstructor
 		~func(void){}
 
-
-
 		void reference(void){
 			referenceTable.clear();
 			// Map argument to token in compiled function
 			unsigned long int idx;
-			for(std::string argiden: functionargsNosep){
+			for(token argiden: functionargsNosep){
 				for(idx = 0 ;idx < functionbody.size(); idx++){
-					if(functionbody[idx] == argiden){
+					if(functionbody[idx].data == argiden.data){
 						referenceTable.push_back(idx);
 					}
 				}
@@ -73,8 +73,8 @@ class func{
 		}
 
 		// returns vector with variables used in function filled
-		std::vector<std::string> fillvars(std::vector< std::vector<std::string> > varargs){
-			std::vector<std::string> tempfunc(functionbody.begin(),functionbody.end());
+		std::vector<token> fillvars(std::vector< std::vector<token> > varargs){
+			std::vector<token> tempfunc(functionbody.begin(),functionbody.end());
 			long argcounter = 0;
 			reference();
 			if(argcnt >= 1){ // check if function arg is not void
@@ -97,7 +97,7 @@ class func{
 		std::string fname(void){
 			return functionname;
 		}
-		std::vector<std::string> ret(void){
+		std::vector<token> ret(void){
 			return functionbody;
 		}
 
@@ -126,8 +126,8 @@ void udef(std::string name){
 	}
 }
 
-void def(std::vector<std::string> assignTo, std::vector<std::string> body){ // Input must go through lexical analyzer and tokenComp
-	std::string name = assignTo.front();
+void def(std::vector<token> assignTo, std::vector<token> body){ // Input must go through lexical analyzer and tokenComp
+	std::string name = assignTo.front().data;
 	udef(name);
 	assignTo.erase(assignTo.begin()); assignTo.erase(assignTo.begin());// Erase name and first bracket
 	assignTo.pop_back(); // Erase end bracket
@@ -140,7 +140,7 @@ void def(std::vector<std::string> assignTo, std::vector<std::string> body){ // I
 
 // call function returns body list of tokens with vars filled
 // format = funcname(, arg1, arg2, ...
-std::vector<std::string> call(std::vector< std::vector<std::string> > fargs, std::string name){
+std::vector<token> call(std::vector< std::vector<token> > fargs, std::string name){
 	unsigned long int idx = 0;
 	for(func f_id: nfunctions){
 		if(f_id.fname() == name){

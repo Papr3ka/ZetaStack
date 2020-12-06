@@ -9,12 +9,13 @@
 
 #include "Function.hpp"
 #include "Zetacompiler.hpp"
+#include "Token.hpp"
 
-void def(std::vector<std::string> assignTo, std::vector<std::string> body);
+void def(std::vector<token> assignTo, std::vector<token> body);
 
 void udef(std::string name);
 
-std::vector<std::string> call(std::vector< std::vector<std::string> > fargs, std::string name);
+std::vector<token> call(std::vector< std::vector<token> > fargs, std::string name);
 
 unsigned long int argcount(std::string name);
 

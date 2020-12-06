@@ -8,12 +8,9 @@
 
 #include "Zetacompiler.hpp"
 #include "Variable.hpp"
-
-
-
+#include "Token.hpp"
 
 namespace comp {
-
 
 	std::vector<std::string> assign{
 		"ASN",
@@ -98,13 +95,14 @@ namespace comp {
 		*/	
 
 
-	std::string getop(unsigned long idx){
-		return operators.at(idx);
+	token getop(unsigned long idx){
+		token tk(operators.at(idx), 1);
+		return tk;
 	}
 
-	bool hasvar(std::vector<std::string> tokens){
+	bool hasvar(std::vector<token> tokens){
 		for(unsigned long int index = 0; index < tokens.size(); index++){
-			if(comp::ttype(tokens[index]) == 5){
+			if(tokens[index].type == 5){
 				return true;
 			}
 		}
@@ -169,9 +167,9 @@ namespace comp {
 	}
 
 	// fcomp = false, bool used for function jit comp
-	std::vector<std::string> shuntingYard(std::vector<std::string> tokens, const bool fcomp){
-		std::vector<std::string> operatorStack;
-		std::vector<std::string> outputQueue;
+	std::vector<token> shuntingYard(std::vector<token> tokens, const bool fcomp){
+		std::vector<token> operatorStack;
+		std::vector<token> outputQueue;
 		while(!tokens.empty()){
 			/*
 			0 - NUM
@@ -182,16 +180,16 @@ namespace comp {
 			5 - VARIABLE
 			6 - R FUNC
 			*/
-			switch(ttype(tokens.front())){
+			switch(tokens.front().type){
 				case 0: // NUM
 					outputQueue.push_back(tokens.front());
 					tokens.erase(tokens.begin());
 					break;
 				case 1: // OPERATOR
 					while(!operatorStack.empty()){
-						if(((precedence(operatorStack.back()) > precedence(tokens.front()) ||
-						((precedence(operatorStack.back()) == precedence(tokens.front())) && associativity(tokens.front())))) &&
-						operatorStack.back() != "L_BRAC"){							
+						if(((precedence(operatorStack.back().data) > precedence(tokens.front().data) ||
+						((precedence(operatorStack.back().data) == precedence(tokens.front().data)) && associativity(tokens.front().data)))) &&
+						operatorStack.back().data != "L_BRAC"){							
 							outputQueue.push_back(operatorStack.back());
 							operatorStack.pop_back();
 						}else{
@@ -206,11 +204,11 @@ namespace comp {
 					tokens.erase(tokens.begin());
 					break;
 				case 3:
-					while(!operatorStack.empty() && (operatorStack.back() != "L_BRAC")){
+					while(!operatorStack.empty() && (operatorStack.back().data != "L_BRAC")){
 						outputQueue.push_back(operatorStack.back());
 						operatorStack.pop_back();
 					}
-					if(!operatorStack.empty() && operatorStack.back() == "L_BRAC"){
+					if(!operatorStack.empty() && operatorStack.back().data == "L_BRAC"){
 						operatorStack.pop_back();
 					}
 					tokens.erase(tokens.begin());
@@ -229,7 +227,10 @@ namespace comp {
 					break;
 				case 7: // SEP
 					if(fcomp){
-						outputQueue.push_back("SEP");
+						token tk;
+						tk.data = "SEP";
+						tk.type = -1;
+						outputQueue.push_back(tk);
 					}
 					tokens.erase(tokens.begin());
 					break;
@@ -239,7 +240,7 @@ namespace comp {
 			}
 		}
 		while(!operatorStack.empty()){
-			if(operatorStack.back() == "L_BRAC" || operatorStack.back() == "R_BRAC"){
+			if(operatorStack.back().data == "L_BRAC" || operatorStack.back().data == "R_BRAC"){
 				operatorStack.pop_back();
 			}
 			outputQueue.push_back(operatorStack.back());
@@ -249,10 +250,12 @@ namespace comp {
 	}
 
 	// tokens = compiled list of tokens, to be used at last step after recurselink
-	std::vector<std::string> fillallvars(std::vector<std::string> tokens){
+	std::vector<token> fillallvars(std::vector<token> tokens){
 		for(unsigned long int index=0;index < tokens.size(); index++){
-			if(ttype(tokens.at(index)) == 5){
-				tokens.at(index) = var::search(tokens.at(index));
+			if(tokens.at(index).type == 5){
+				token tk;
+				tokens.at(index).data = var::search(tokens.at(index).data);
+				tokens.at(index).type = 0;
 			}
 		}
 		return tokens;

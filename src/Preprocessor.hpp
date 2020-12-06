@@ -7,6 +7,7 @@
 #include<cctype>
 #include<cstdlib>
 
+#include "Token.hpp"
 
 // Function Prototypes
 
@@ -16,7 +17,7 @@ namespace comp {
 
 	std::vector<std::string> lex(std::string lexInput);
 
-	std::vector<std::string> tokenComp(std::vector<std::string> tokensInput);
+	std::vector<token> tokenComp(std::vector<std::string> tokensInput);
 
 	int assigntype(std::string str);
 	

@@ -7,6 +7,7 @@
 
 #include "Preprocessor.hpp"
 #include "Zetacompiler.hpp"
+#include "Token.hpp"
 
 std::vector<std::string> split(std::string str, std::string split){
     size_t start = 0, end, splitLen = split.size();
@@ -234,103 +235,180 @@ namespace comp {
 		return returnedTokens;
 	}
 
-	std::vector<std::string> tokenComp(std::vector<std::string> tokensInput){
-		std::vector<std::string> output;
+	std::vector<token> tokenComp(std::vector<std::string> tokensInput){
+		std::vector<token> output;
 		for(unsigned long int index = 0;index<tokensInput.size();index++){
+			token tk;
 			if(!isdigit(tokensInput[index][0])){
 				if(tokensInput[index] == ","){
-					output.push_back("SEP");
+					tk.data = "SEP";
+					tk.type = 7;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "+"){
-					output.push_back("ADD");
+					tk.data = "ADD";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "-"){
-					output.push_back("SUB");
+					tk.data = "SUB";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "*"){
-					output.push_back("MUL");
+					tk.data = "MUL";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "/"){
-					output.push_back("DIV");
+					tk.data = "DIV";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "%"){
-					output.push_back("MOD");
+					tk.data = "MOD";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "^"){
-					output.push_back("XOR");
+					tk.data = "XOR";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "!"){
-					output.push_back("FACT");
+					tk.data = "FACT";
+					tk.type = 6;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "("){
-					output.push_back("L_BRAC");
+					tk.data = "L_BRAC";
+					tk.type = 2;
+					output.push_back(tk);
 				}else if(tokensInput[index] == ")"){
-					output.push_back("R_BRAC");
+					tk.data = "R_BRAC";
+					tk.type = 3;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "="){
-					output.push_back("ASN"); // Assign
+					tk.data = "ASN";
+					tk.type = 10;
+					output.push_back(tk); // Assign
 				}else if(tokensInput[index] == "**"){
-					output.push_back("POW");
+					tk.data = "POW";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "//"){
-					output.push_back("FLOORDIV");
+					tk.data = "FLOORDIV";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "||"){
-					output.push_back("OR");
+					tk.data = "OR";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "&&"){
-					output.push_back("AND");
+					tk.data = "AND";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "<<"){
-					output.push_back("SHL");
+					tk.data = "SHL";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == ">>"){
-					output.push_back("SHR");
+					tk.data = "SHR";
+					tk.type = 1;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "=="){
-					output.push_back("EQL"); // Equal
+					tk.data = "ADD";
+					tk.type = 11;
+					output.push_back(tk); // Equal
 				}else if(tokensInput[index] == "!="){
-					output.push_back("NQL");
+					tk.data = "NQL";
+					tk.type = 11;
+					output.push_back(tk);
 				}else if(tokensInput[index] == ">="){
-					output.push_back("GQL");
+					tk.data = "GQL";
+					tk.type = 11;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "<="){
-					output.push_back("LQL");
+					tk.data = "LQL";
+					tk.type = 11;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "+="){
-					output.push_back("ADDASN");
+					tk.data = "ADDASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "-="){
-					output.push_back("SUBASN");
+					tk.data = "SUBASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "*="){
-					output.push_back("MULASN");
+					tk.data = "MULASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "/="){
-					output.push_back("DIVASN");
+					tk.data = "DIVASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "^="){
-					output.push_back("XORASN");
+					tk.data = "XORASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "<<="){
-					output.push_back("SHLASN");
+					tk.data = "SHLASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == ">>="){
-					output.push_back("SHRASN");
+					tk.data = "SHRASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "**="){
-					output.push_back("POWASN");
+					tk.data = "POWASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index] == "//="){
-					output.push_back("FLOORDIVASN");
+					tk.data = "FLOORDIVASN";
+					tk.type = 10;
+					output.push_back(tk);
 				}else if(tokensInput[index][0] == '.'){
-				output.push_back(tokensInput[index]);
+					tk.data = tokensInput[index];
+					tk.type = 0;
+					output.push_back(tk);
 				}else if(isalpha(tokensInput[index][0])){
-					output.push_back(tokensInput[index]);
+					tk.data = tokensInput[index];
+					tk.type = 5;
+					output.push_back(tk);
 				}else{
-					output.push_back("NULL");
+					tk.data = "NULL";
+					tk.type = -1;
+					output.push_back(tk);
 				}
-			}else if(tokensInput[index] != ""){
-				output.push_back(tokensInput[index]);
+			}else if(tokensInput[index].back() == '('){
+				tk.data = tokensInput[index];
+				tk.type = 4;
+				output.push_back(tk);
+			}else if(ttype(tokensInput[index]) == 0){
+				tk.data = tokensInput[index];
+				tk.type = 0;
+				output.push_back(tk);			
+			}else{
+				tk.data = tokensInput[index];
+				tk.type = 5;
+				output.push_back(tk);
 			}
 		}
 		if(output.size() > 1){
-			if(output[0] == "SUB"){			
+			if(output[0].data == "SUB" && output[0].type == 1){			
 				output.erase(output.begin());
-				output[0].insert(output[0].begin(),1,'-');
+				output[0].data.insert(output[0].data.begin(),1,'-');
 				//std::cout << output[0] << "\n";
 			}
 		}
 		// Unary Sign
 		for(unsigned long int idx=1; idx < output.size() - 1; idx++){
-			if(ttype(output[idx - 1]) == 1 && output[idx] == "SUB" && ttype(output[idx + 1]) == 0){
+			if(output[idx - 1].type == 1 && output[idx].data == "SUB" && output[idx + 1].type == 0){
 				output.erase(output.begin() + idx);
-				if(output[idx].front() == '+' || output[idx].front() == '-'){
-					output[idx][0] = '-';
+				if(output[idx].data.front() == '+' || output[idx].data.front()== '-'){
+					output[idx].data[0] = '-';
 				}else{
-					output[idx].insert(output[idx].begin(),1,'-');
+					output[idx].data.insert(output[idx].data.begin(),1,'-');
 				}
-			}else if(ttype(output[idx - 1]) == 1 && output[idx] == "ADD" && ttype(output[idx + 1]) == 0){
+			}else if(output[idx - 1].type == 1 && output[idx].data == "ADD" && output[idx + 1].type == 0){
 				output.erase(output.begin() + idx);
-				if(output[idx].front() == '+' || output[idx].front() == '-'){
-					output[idx][0] = '+';
+				if(output[idx].data.front() == '+' || output[idx].data.front() == '-'){
+					output[idx].data[0] = '+';
 				}else{
-					output[idx].insert(output[idx].begin(),1,'+');
+					output[idx].data.insert(output[idx].data.begin(),1,'+');
 				}
 			}else{
 				// Error

@@ -7,6 +7,8 @@
 #include<cstdlib>
 #include<gmpxx.h>
 
+#include "Token.hpp"
+
 // Function Prototypes
 
 namespace xmath {
@@ -35,7 +37,7 @@ namespace xmath {
 
 	long long factorial(long long x);
 
-	std::string calculate(std::vector<std::string> tokens, bool showprogress);
+	std::string calculate(std::vector<token> tokens, bool showprogress);
 
 	//std::vector<std::string> callall(std::vector<std::string> tokens);
 }

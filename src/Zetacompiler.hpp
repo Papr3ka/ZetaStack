@@ -8,18 +8,19 @@
 #include<cstdlib>
 
 #include "Variable.hpp"
+#include "Token.hpp"
 
 // Function Prototypes
 
 namespace comp {
 
-	std::string getop(unsigned long idx);
+	token getop(unsigned long idx);
 
 	bool string_isnum(std::string str);
 
 	int ttype(std::string var);
 
-	bool hasvar(std::vector<std::string> tokens);
+	bool hasvar(std::vector<token> tokens);
 
 	unsigned int precedence(std::string op);
 
@@ -27,14 +28,15 @@ namespace comp {
 
 	std::vector<std::string> lex(std::string lexInput);
 
-	std::vector<std::string> tokenComp(std::vector<std::string> tokensInput);
+	std::vector<token> tokenComp(std::vector<std::string> tokensInput);
 
 	int checkleftBrac(std::string tokens);
+	
 	int checkrightBrac(std::string tokens);
 	
-	std::vector<std::string> shuntingYard(std::vector<std::string> tokens, const bool fcomp=false);
+	std::vector<token> shuntingYard(std::vector<token> tokens, const bool fcomp=false);
 
-	std::vector<std::string> fillallvars(std::vector<std::string> tokens);
+	std::vector<token> fillallvars(std::vector<token> tokens);
 }
 
 #endif

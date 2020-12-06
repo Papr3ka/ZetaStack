@@ -7,11 +7,13 @@
 #include<cstdlib>
 #include<iostream>
 
+#include "Token.hpp"
+
 namespace ld {
 
-	std::vector<std::string> link(std::vector<std::string> tokens);
+	std::vector<token> link(std::vector<token> tokens);
 
-	std::vector<std::string> recurselink(std::vector<std::string> tokens, long long int recursecount = 0);
+	std::vector<token> recurselink(std::vector<token> tokens, long long int recursecount = 0);
 
 }
 

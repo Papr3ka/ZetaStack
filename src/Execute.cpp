@@ -9,6 +9,7 @@
 #include "Execute.hpp"
 #include "Function.hpp"
 #include "Status.hpp"
+#include "Token.hpp"
 
 namespace xmath {
 
@@ -76,103 +77,130 @@ namespace xmath {
 		return ans;
 	}
 
-	std::string calculate(std::vector<std::string> tokens, bool showprogress){
+	std::string calculate(std::vector<token> tokens, bool showprogress){
 		unsigned long int index = 0;
 		if(tokens.size() <= 1){
-			return tokens.front();
+			return tokens.front().data;
 		}
 		// Cannot use recursion because in certain cases, it will lead to stack overflow
 		while(tokens.size() > 1){
-			if(showprogress) bar::update((float)tokens.size());
+			if(showprogress) bar::setcount((float)tokens.size());
 			// if(index > tokens.size()){
 			// 	index = 0;
 			// }
-			if(!string_isnum(tokens[index])){
-				if(tokens[index] == "ADD"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+			if(tokens[index].type == 1){
+				if(tokens[index].data == "ADD"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(add(x, y)));
+						token tk(std::to_string(add(x, y)), 0);
+						tokens.insert(tokens.begin()+(index-2),1, tk);
 						index = 0;	
-				}else if(tokens[index] == "SUB"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "SUB"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(sub(x, y)));
+						token tk(std::to_string(sub(x, y)), 0);
+						tokens.insert(tokens.begin()+(index-2),1, tk);
 						index = 0;	
-				}else if(tokens[index] == "MUL"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "MUL"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(mul(x, y)));
+						token tk(std::to_string(mul(x, y)), 0);
+						tokens.insert(tokens.begin()+(index-2),1, tk);
 						index = 0;
-				}else if(tokens[index] == "DIV"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "DIV"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(divide(x, y)));
+						token tk;
+						tk.data = std::to_string(divide(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
 						index = 0;
-				}else if(tokens[index] == "MOD"){
-						double x = std::stoll(tokens[index-2]);
-						double y = std::stoll(tokens[index-1]);
+				}else if(tokens[index].data == "MOD"){
+						double x = std::stoll(tokens[index-2].data);
+						double y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(mod(x, y)));
+						token tk;
+						tk.data = std::to_string(mod(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
 						index = 0;	
-				}else if(tokens[index] == "POW"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "POW"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(power(x, y)));
+						token tk;
+						tk.data = std::to_string(power(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
 						index = 0;	
-				}else if(tokens[index] == "XOR"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "XOR"){
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(exclusiveOr((long long)x, (long long)y)));
+						token tk;
+						tk.data = std::to_string(exclusiveOr(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
 						index = 0;	
-				}else if(tokens[index] == "SHL"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "SHL"){
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(shl((long long)x, (long long)y)));
+						token tk;
+						tk.data = std::to_string(shl(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
 						index = 0;	
-				}else if(tokens[index] == "SHR"){
-						double x = std::stod(tokens[index-2]);
-						double y = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "SHR"){
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.insert(tokens.begin()+(index-2),1,std::to_string(shr((long long)x, (long long)y)));
+						token tk;
+						tk.data = std::to_string(shr(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
 						index = 0;	
-				}else if(tokens[index] == "FACT"){
-					double x = std::stod(tokens[index-1]);
+				}else if(tokens[index].data == "FACT"){
+					double x = std::stod(tokens[index-1].data);
 					tokens.erase(tokens.begin()+index-1);
 					tokens.erase(tokens.begin()+index-1);
-					tokens.insert(tokens.begin()+(index-1),1,std::to_string(factorial((long long)x)));					
+					token tk;
+					tk.data = std::to_string(factorial((long long)x));
+					tk.type = 0;
+					tokens.insert(tokens.begin()+(index-1),1,tk);		
 				}else{
 					break; // Error
 				}
 			}else{
 				index++;
+				if(index > tokens.size()){
+					break;
+				}
 			}
 		}
-		return tokens.front();
+		return tokens.front().data;
 	}
 
 	
