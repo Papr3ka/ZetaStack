@@ -1,4 +1,5 @@
 #include<chrono>
+#include<cstdlib>
 #include<iostream>
 
 #include "Entropy.hpp"
@@ -6,6 +7,7 @@
 The CIA encourages code obfuscation. They make it more complicated than necessary.
 —Terry A. Davis
 */
+
 long
 urandom
 (long
@@ -166,4 +168,12 @@ seed)
 0x0000000000000BFD 
 -
 0x00000000000015F7);
+}
+
+long getrand(long seed){
+	register long int t = urandom(seed);
+	t ^= t << 23;
+	t ^= t >> 17;
+	t ^= seed ^ (seed >> 26);
+	return abs(urandom(t^seed)-t*seed);
 }

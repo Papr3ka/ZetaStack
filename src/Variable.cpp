@@ -44,7 +44,7 @@ namespace var{
 			auto it2 = std::find(specialIden.begin(), specialIden.end(), iden);
 			if(it2 == specialIden.end()){
 				if(iden == "rand"){
-					prevr = urandom(prevr) + 47; // Good luck trying to reverse engineer it
+					prevr = getrand(prevr) ^ 127; // Good luck trying to reverse engineer it
 					return std::to_string(prevr%1000);
 				}else{
 		  			return "NULL";
