@@ -106,7 +106,7 @@ class func{
 		}
 
 		void cleartemp(void){
-			tempfunc.clear();
+			std::vector<token>().swap(tempfunc);
 			return;
 		}
 };

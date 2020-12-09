@@ -10,6 +10,12 @@
 // Function Prototypes
 
 namespace var {
+	void setbuffermax(unsigned long int setval);
+
+	void joinbuffer(void);
+
+	void clearbuffer(void);
+
 	void update(std::string iden, std::string val);
 	
 	std::string search(std::string iden);
@@ -19,6 +25,8 @@ namespace var {
 	int delvar(std::string variden);
 
 	std::vector<std::string> globals(void);
+
+	void buffer(bool run);
 
 }
 

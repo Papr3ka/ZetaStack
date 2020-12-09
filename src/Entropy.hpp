@@ -6,6 +6,6 @@
 
 long urandom(long seed);
 
-long getrand(long seed);
+long getrandnum(long seed);
 
 #endif

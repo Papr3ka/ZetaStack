@@ -8,7 +8,7 @@
 #include "Function.hpp"
 #include "Token.hpp"
 
-long long int recursedepth = 16; // Default 4096
+long long int recursedepth = 4096; // Default 4096
 
 namespace ld {
 

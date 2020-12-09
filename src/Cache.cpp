@@ -7,7 +7,7 @@
 
 namespace cch {
 
-	unsigned long int maxlen = 64; // How big the cache can be before discarding
+	unsigned long int maxlen = 4096; // How big the cache can be before discarding
 
 	bool cache_enable = true;
 
@@ -24,6 +24,7 @@ namespace cch {
 
 	void setstate(bool state){
 		cache_enable = state;
+		return;
 	}
 
 	bool getstate(void){
@@ -32,6 +33,7 @@ namespace cch {
 
 	void setmaxlen(unsigned long int ml){
 		maxlen = ml;
+		return;
 	}
 
 	unsigned long int getmaxlen(void){
@@ -39,8 +41,9 @@ namespace cch {
 	}
 
 	void reset(void){
-		identifier.clear();
-		value.clear();
+		std::vector<std::string>().swap(identifier);
+		std::vector<std::string>().swap(value);
+		return;
 	}
 
 	void update(std::string iden, std::string val){

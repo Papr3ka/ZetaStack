@@ -3,6 +3,7 @@
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<thread>
 
 #include "Variable.hpp"
 #include "Entropy.hpp"
@@ -21,7 +22,39 @@ namespace var{
 	std::vector<std::string> varidentifier;
 	std::vector<std::string> varvalue;
 
+	unsigned long int buffermax = 4096;
+	bool runbuffer = true;
+
 	long prevr = rand() % 769 + 47; // for random nums
+
+	static std::vector<long int> randbuffer;
+
+	static long getrand(void){
+		register long int retval;
+		if(!randbuffer.empty()){
+			retval = randbuffer.front();
+			randbuffer.erase(randbuffer.begin());
+			return retval%1000;
+		}else{
+			prevr = getrandnum(prevr) ^ 127; // Good luck trying to reverse engineer it
+			return prevr%1000;
+		}
+	}
+
+	void setbuffermax(unsigned long int setval){
+		buffermax = setval;
+		return;
+	}
+
+	void clearbuffer(void){
+		std::vector<long int>().swap(randbuffer);
+		return;
+	}
+
+	void joinbuffer(void){
+		runbuffer = false;
+		return;
+	}
 
 	// Add variable to vector
 	void update(std::string iden, std::string val){
@@ -44,8 +77,7 @@ namespace var{
 			auto it2 = std::find(specialIden.begin(), specialIden.end(), iden);
 			if(it2 == specialIden.end()){
 				if(iden == "rand"){
-					prevr = getrand(prevr) ^ 127; // Good luck trying to reverse engineer it
-					return std::to_string(prevr%1000);
+					return std::to_string(getrand());
 				}else{
 		  			return "NULL";
 		  		}
@@ -80,6 +112,24 @@ namespace var{
 	// Wrapper for all names
 	std::vector<std::string> globals(void){
 		return varidentifier;
+	}
+
+
+	void buffer(bool run){
+		if(!run){
+			return;
+		}
+		while(runbuffer && run){
+			if(randbuffer.size() <= buffermax){
+				while(randbuffer.size() <= buffermax){
+					prevr = getrandnum(prevr) ^ 127;
+					randbuffer.push_back(prevr);
+				}
+			}else{
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			}
+		}
+		return;
 	}
 
 

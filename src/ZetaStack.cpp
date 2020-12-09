@@ -29,14 +29,17 @@
 #include "Status.hpp"
 
 // Global Settings
-bool debug_mode = false; // Debugging 
-bool measure_time = false; // Measuring time
-bool do_exec = true; // Execute
-bool do_bar = true; // Loading bar
-bool do_sighandle = true; // Handle signals
+static bool run = true;
+static bool debug_mode = false; // Debugging 
+static bool measure_time = false; // Measuring time
+static bool do_exec = true; // Execute
+static bool do_bar = true; // Loading bar
+static bool do_sighandle = true; // Handle signals
+static bool do_buffer = true;
 
 // Defualt settings
 /*--Variable------------Value--
+*|  run               | true  |
 *|  debug_mode        | false |
 *|  measure_time      | false |
 *|  do_exec           | true  |
@@ -51,10 +54,45 @@ std::vector<std::string> tunit{
 	" s"
 }; // len 4
 
-std::string newline = ">>> ";
-std::string multiline = "... ";	
+const static std::string newline = ">>> ";
+const static std::string multiline = "... ";	
 
-void printvec(std::vector<std::string> print){
+typedef struct{
+	int major;
+	int minor;
+	int rev;
+
+	bool special;
+	int vertype;
+	int specialrev;
+}version;
+
+const version curversion = {0, 0, 0, false, -1, -1};
+
+#if defined(__clang__)
+	const version compilerversion = {__clang_major__,
+									 __clang_minor__,
+	 								 __clang_patchlevel__,
+	 								 false,
+	 								 -1,
+	 								 -1};
+	const std::string compiler = "Clang";
+#elif defined(__GNUC__) || defined(__GNUG__)
+	const version compilerversion = {__GNUC__,
+									 __GNUC_MINOR__,
+	 								 __GNUC_PATCHLEVEL__,
+	 								 false,
+	 								 -1,
+	 								 -1};
+	const std::string compiler = "GCC";							 
+#elif defined(_MSC_VER)
+	const std::string compiler = "MSVC ".append(std::to_string(_MSC_VER));
+#else
+	const version compilerversion = {-1,-1,-1, false, -1, -1};
+	const std::string compiler = "Unknown";
+#endif
+
+static void printvec(std::vector<std::string> print){
 	std::cout << '[';
 	for(unsigned long i=0; i < print.size(); i++){
 		if(i >= 1){
@@ -65,7 +103,7 @@ void printvec(std::vector<std::string> print){
 	std::cout << ']';
 }
 
-void printvectoken(std::vector<token> print){
+static void printvectoken(std::vector<token> print){
 	std::cout << '[';
 	for(unsigned long i=0; i < print.size(); i++){
 		if(i >= 1){
@@ -76,8 +114,39 @@ void printvectoken(std::vector<token> print){
 	std::cout << ']';
 }
 
+static std::string versioncomp(version ver){
+	if(ver.major == -1){
+		return "";
+	}
+	std::string output;
+	output.append(std::to_string(ver.major));
+	output.append(".");
+	output.append(std::to_string(ver.minor));
+	output.append(".");
+	output.append(std::to_string(ver.rev));
+	if(ver.special){
+		switch(ver.vertype){
+			case 0: // Alpha
+				output.append("-a.");
+				output.append(std::to_string(ver.specialrev));
+				break;
+			case 1: // Beta
+				output.append("-b.");
+				output.append(std::to_string(ver.specialrev));
+				break;
+			case 2: // Release candidate
+				output.append("-rc.");
+				output.append(std::to_string(ver.specialrev));
+				break;
+			default:
+				return output;				
+		}
+	}
+	return output;
+}
+
 // commands using the "/" symbol
-void command(std::string com){
+static void command(std::string com){
 	if(com[0] == '/'){
 		return;
 	}else if(com[0] == ';'){
@@ -90,9 +159,9 @@ void command(std::string com){
 
 	cmdargv.push_back(" "); // add space to make size > 1 in some cases to prevent SIGSEGV
 
-	if(cmdargv[0] == "debug" || 
-	   cmdargv[0] == "Debug" || 
-	   cmdargv[0] == "dbg"){
+	if(cmdargv.front() == "debug" || 
+	   cmdargv.front() == "Debug" || 
+	   cmdargv.front() == "dbg"){
 		if(debug_mode){
 			debug_mode = false;
 			std::cout << "Debug off\n";
@@ -100,19 +169,15 @@ void command(std::string com){
 			debug_mode = true;
 			std::cout << "Debug on\n";
 		}
-	}else if(cmdargv[0] == "exit"){
-		exit(0);
-	}else if(cmdargv[0] == "Cache" || 
-			 cmdargv[0] == "cache"){
-		if(cmdargv[1] == "show"){
-			std::vector<std::string> iden = cch::getiden();
-			std::vector<std::string> val = cch::getval();
-			std::cout << "Size: " << val.size() << "\n--------\n";
-			for(unsigned long int idx=0; idx < iden.size(); idx++){
-				std::cout << "\"" << iden[idx] << "\": \"" << val[idx] << "\"\n";
-			}
-		}else if(cmdargv[1] == "clear"){
+	}else if(cmdargv.front() == "exit"){
+		run = false;
+		return;
+	}else if(cmdargv.front() == "Cache" || 
+			 cmdargv.front() == "cache"){
+		
+		if(cmdargv[1] == "clear"){
 			cch::reset();
+			var::clearbuffer();
 			std::cout << "Cache cleared\n";
 		}else if(cmdargv[1] == "toggle"){
 			if(cch::getstate()){
@@ -122,14 +187,25 @@ void command(std::string com){
 				cch::setstate(true);
 				std::cout << "Cache enabled\n";
 			}
+		}else if(cmdargv[1] == "setmax"){
+			cch::setmaxlen(std::stoull(cmdargv[2]));
+			var::setbuffermax(std::stoull(cmdargv[2]));
+		}else if(cmdargv[1] == "show"){
+			std::vector<std::string> iden = cch::getiden();
+			std::vector<std::string> val = cch::getval();
+			std::cout << "Size: " << val.size() << "\n--------\n";
+			for(unsigned long int idx=0; idx < iden.size(); idx++){
+				std::cout << "\"" << iden[idx] << "\": \"" << val[idx] << "\"\n";
+			}
 		}else{
 			std::cout << "Options for command \"" << 
-						cmdargv[0] << "\"\n   " << 
-						cmdargv[0] << " show\n   " << 
-						cmdargv[0] << " clear\n   " <<
-						cmdargv[0] << " toggle\n";
+						cmdargv.front() << "\"\n   " << 
+						cmdargv.front() << " clear\n   " << 
+						cmdargv.front() << " toggle\n   " <<
+						cmdargv.front() << " setmax <max>\n   " <<
+						cmdargv.front() << " show\n";
 		}
-	}else if(cmdargv[0] == "del"){
+	}else if(cmdargv.front() == "del"){
 		int delsuccess = 0;
 		std::vector<std::string> vgls = var::globals();
 		for(auto x: vgls){
@@ -140,7 +216,7 @@ void command(std::string com){
 		if(delsuccess >= 1){
 			std::cout << "Undefined variable: \"" << cmdargv[1] << "\"\n";
 		}
-	}else if(cmdargv[0] == "time"){
+	}else if(cmdargv.front() == "time"){
 		if(measure_time){
 			measure_time = false;
 			std::cout << "Time off\n";
@@ -149,7 +225,7 @@ void command(std::string com){
 			std::cout << "Time on\n";
 
 		}
-	}else if(cmdargv[0] == "exec"){
+	}else if(cmdargv.front() == "exec"){
 		if(do_exec){
 			do_exec = false;
 			std::cout << "Execute off\n";
@@ -157,7 +233,7 @@ void command(std::string com){
 			do_exec = true;
 			std::cout << "Execute on\n";
 		}
-	}else if(cmdargv[0] == "bar"){
+	}else if(cmdargv.front() == "bar"){
 		if(do_bar){
 			do_bar = false;
 			std::cout << "Progress Bar off\n";
@@ -165,14 +241,14 @@ void command(std::string com){
 			do_bar = true;
 			std::cout << "Progress Bar on\n";
 		}
-	}else if(cmdargv[0] == "help"){
-		std::cout << "   bar             Toggles progress bar \n"
-				  << "   cache           Commands related to cache\n"
-				  << "   debug           Toggles debug mode\n"
-				  << "   del <var>       Deletes a variable\n"
-				  << "   exit            Exits the program\n"
-				  << "   time            Times calculations\n"
-				  << "   ; <Command>     Executes system command\n";
+	}else if(cmdargv.front() == "help"){
+		std::cout << "   bar                      Toggles progress bar \n"
+				  << "   cache <Options>          Commands related to cache\n"
+				  << "   debug                    Toggles debug mode\n"
+				  << "   del <var>                Deletes a variable\n"
+				  << "   exit                     Exits the program\n"
+				  << "   time                     Times calculations\n"
+				  << "   ; <Command>              Executes system command\n";
 	}else{
 
 		// Command not found
@@ -181,28 +257,35 @@ void command(std::string com){
 
 }
 
-void arghandler(std::vector<std::string> args){
+static void arghandler(std::vector<std::string> args){
 	unsigned long int arg_index = 1;
 	while(arg_index < args.size()){
 		if(args.at(arg_index) == "--version"){
-			std::cout << args.front() <<" Version 0.0.0\n";
-			exit(0);
+			std::cout << args.front() << " Version " << versioncomp(curversion) << "\n"
+									  << "  Built with " << compiler << " " << versioncomp(compilerversion) << "\n";
+			run = false;
+			return;
 		}else if(args.at(arg_index) == "--debug"){
 			debug_mode = true;
+		}else if(args.at(arg_index) == "--nobuffer"){
+			do_buffer = false;
 		}else if(args.at(arg_index) == "--noexec"){
 			do_exec = true;
 		}else if(args.at(arg_index) == "--nohandle"){
 			do_sighandle = false;
 		}else if(args.at(arg_index) == "--help"){
-			std::cout << "Options\n"
+			std::cout << "Usage: " << args.front() << " [Options] ...\n\n"
+					  << "Options:\n"
 					  << "  --version                Display version information\n"
 					  << "  --help                   Display this information\n\n"
-					  // intentional space
+					  // Intentional Space
 					  << "  --debug                  Start with debug mode on\n"
+					  << "  --nobuffer               Disables variable buffer\n"
 					  << "  --noexec                 Start with execution disabled\n"
 					  << "  --nohandle               Disables signal handling\n";
 
-			exit(0);
+			run = false;
+			return;
 		}else{
 			// Unknown argument
 		}	
@@ -223,7 +306,7 @@ void arghandler(std::vector<std::string> args){
 *///------------------------------------------------------------------------------------------------------------
 
 // Directly executing statements
-std::string calcExecuter(std::string input){
+static std::string calcExecuter(std::string input){
 	bool writecache = true;
 	int tscale;
 	double totaltime;
@@ -234,6 +317,8 @@ std::string calcExecuter(std::string input){
 	std::chrono::_V2::steady_clock::time_point tcomp_tend;
 	std::chrono::_V2::steady_clock::time_point shyd_tstart;
 	std::chrono::_V2::steady_clock::time_point shyd_tend;
+	std::chrono::_V2::steady_clock::time_point varfill_tstart;
+	std::chrono::_V2::steady_clock::time_point varfill_tend;
 	std::chrono::_V2::steady_clock::time_point exec_tstart;
 	std::chrono::_V2::steady_clock::time_point exec_tend;
 	
@@ -245,7 +330,7 @@ std::string calcExecuter(std::string input){
 	lex_tend = std::chrono::steady_clock::now();
 
 	if(debug_mode){
-		std::cout << "Lexer:        ";
+		std::cout << "Parser:             ";
 		printvec(s_out);
 		std::cout << "\n";
 	}	
@@ -253,7 +338,7 @@ std::string calcExecuter(std::string input){
 	output = comp::tokenComp(s_out);	
 	tcomp_tend = std::chrono::steady_clock::now();	
 	if(debug_mode){
-		std::cout << "TokenComp:    ";
+		std::cout << "Lexer:              ";
 		printvectoken(output);
 		std::cout << "\n";
 	}
@@ -267,12 +352,14 @@ std::string calcExecuter(std::string input){
 	output = comp::shuntingYard(output, true); // Zetacompiler.hpp
 	shyd_tend = std::chrono::steady_clock::now();					
 	if(debug_mode){
-		std::cout << "ShuntingYard: ";
+		std::cout << "Compile:            ";
 		printvectoken(output);
 		std::cout << "\n\n";
 	}
 	
+	varfill_tstart = std::chrono::steady_clock::now();
 	output = comp::fillallvars(output); // Zetacompiler.hpp
+	varfill_tend = std::chrono::steady_clock::now();
 
 	// Check for undefined Vars
 	for(unsigned long int i=0; i < output.size(); i++){
@@ -300,8 +387,9 @@ std::string calcExecuter(std::string input){
 	double lextime = std::chrono::duration<double, std::nano>(lex_tend - lex_tstart).count();
 	double tcomptime = std::chrono::duration<double, std::nano>(tcomp_tend - tcomp_tstart).count();
 	double shydtime = std::chrono::duration<double, std::nano>(shyd_tend - shyd_tstart).count();
+	double varfilltime = std::chrono::duration<double, std::nano>(varfill_tend - varfill_tstart).count();
 	double exectime = std::chrono::duration<double, std::nano>(exec_tend - exec_tstart).count();
-	totaltime = lextime+tcomptime+shydtime+exectime;
+	totaltime = lextime+tcomptime+shydtime+varfilltime+exectime;
 	if(totaltime < 1000){
 		tscale = 0;
 	}else if(totaltime >= 1000 && totaltime < 1000000){
@@ -309,6 +397,7 @@ std::string calcExecuter(std::string input){
 		lextime /= 1000;
 		tcomptime /= 1000;
 		shydtime /= 1000;
+		varfilltime /= 1000;
 		exectime /= 1000;
 		totaltime /= 1000;
 	}else if(totaltime >= 1000000 && totaltime < 1000000000){
@@ -316,6 +405,7 @@ std::string calcExecuter(std::string input){
 		lextime /= 1000000;
 		tcomptime /= 1000000;
 		shydtime /= 1000000;
+		varfilltime /= 1000000;
 		exectime /= 1000000;
 		totaltime /= 1000000;
 	}else{
@@ -323,22 +413,24 @@ std::string calcExecuter(std::string input){
 		lextime /= 1000000000;
 		tcomptime /= 1000000000;
 		shydtime /= 1000000000;
+		varfilltime /= 1000000000;
 		exectime /= 1000000000;
 		totaltime /= 1000000000;
 	}
 	if(measure_time){
-	std::cout << "Time variable:\n   Lexer:        " << lextime << 
-				 tunit[tscale] << " \n   TokenComp:    " << tcomptime  <<
-				 tunit[tscale] << " \n   ShuntingYard: " << shydtime << 
-				 tunit[tscale] << " \n   Execution:    " << exectime << 
-				 tunit[tscale] << " \n   Total:        " << totaltime <<
+	std::cout << "Time variable:\n   Parse:              " << lextime << 
+				 tunit[tscale] << " \n   Lexer:              " << tcomptime  <<
+				 tunit[tscale] << " \n   Compile:            " << shydtime <<
+				 tunit[tscale] << " \n   Variable Filler:    " << varfilltime <<
+				 tunit[tscale] << " \n   Execution:          " << exectime <<
+				 tunit[tscale] << " \n   Total:              " << totaltime <<
 				 tunit[tscale] << " \n\n";
 	}
 	return finalOutput;
 }
 
 // execute then assign statement
-std::string asnExecuter(std::string input, int etype){
+static std::string asnExecuter(std::string input, int etype){
 	int tscale;
 	double totaltime;
 
@@ -348,6 +440,8 @@ std::string asnExecuter(std::string input, int etype){
 	std::chrono::_V2::steady_clock::time_point tcomp_tend;
 	std::chrono::_V2::steady_clock::time_point shyd_tstart;
 	std::chrono::_V2::steady_clock::time_point shyd_tend;
+	std::chrono::_V2::steady_clock::time_point varfill_tstart;
+	std::chrono::_V2::steady_clock::time_point varfill_tend;
 	std::chrono::_V2::steady_clock::time_point exec_tstart;
 	std::chrono::_V2::steady_clock::time_point exec_tend;
 
@@ -364,7 +458,7 @@ std::string asnExecuter(std::string input, int etype){
 	lex_tend = std::chrono::steady_clock::now();
 
 	if(debug_mode){
-		std::cout << "Lexer:        ";
+		std::cout << "Parser:             ";
 		printvec(s_out);
 		std::cout << "\n";
 	}	
@@ -372,7 +466,7 @@ std::string asnExecuter(std::string input, int etype){
 	output = comp::tokenComp(s_out);	
 	tcomp_tend = std::chrono::steady_clock::now();	
 	if(debug_mode){
-		std::cout << "TokenComp:    ";
+		std::cout << "Lexer:              ";
 		printvectoken(output);
 		std::cout << "\n";
 	}
@@ -388,12 +482,14 @@ std::string asnExecuter(std::string input, int etype){
 		output.insert(output.begin(), tok);
 	}
 	if(debug_mode){
-		std::cout << "ShuntingYard: ";
+		std::cout << "Compile:            ";
 		printvectoken(output);
 		std::cout << "\n\n";
 	}
 
+	varfill_tstart = std::chrono::steady_clock::now();
 	output = comp::fillallvars(output); // Zetacompiler.hpp
+	varfill_tend = std::chrono::steady_clock::now();
 
 	// Check for undefined Vars
 	for(unsigned long int i=0; i < output.size(); i++){
@@ -416,8 +512,9 @@ std::string asnExecuter(std::string input, int etype){
 	double lextime = std::chrono::duration<double, std::nano>(lex_tend - lex_tstart).count();
 	double tcomptime = std::chrono::duration<double, std::nano>(tcomp_tend - tcomp_tstart).count();
 	double shydtime = std::chrono::duration<double, std::nano>(shyd_tend - shyd_tstart).count();
+	double varfilltime = std::chrono::duration<double, std::nano>(varfill_tend - varfill_tstart).count();
 	double exectime = std::chrono::duration<double, std::nano>(exec_tend - exec_tstart).count();
-	totaltime = lextime+tcomptime+shydtime+exectime;
+	totaltime = lextime+tcomptime+shydtime+varfilltime+exectime;
 	if(totaltime < 1000){
 		tscale = 0;
 	}else if(totaltime >= 1000 && totaltime < 1000000){
@@ -425,6 +522,7 @@ std::string asnExecuter(std::string input, int etype){
 		lextime /= 1000;
 		tcomptime /= 1000;
 		shydtime /= 1000;
+		varfilltime /= 1000;
 		exectime /= 1000;
 		totaltime /= 1000;
 	}else if(totaltime >= 1000000 && totaltime < 1000000000){
@@ -432,6 +530,7 @@ std::string asnExecuter(std::string input, int etype){
 		lextime /= 1000000;
 		tcomptime /= 1000000;
 		shydtime /= 1000000;
+		varfilltime /= 1000000;
 		exectime /= 1000000;
 		totaltime /= 1000000;
 	}else{
@@ -439,15 +538,17 @@ std::string asnExecuter(std::string input, int etype){
 		lextime /= 1000000000;
 		tcomptime /= 1000000000;
 		shydtime /= 1000000000;
+		varfilltime /= 1000000000;
 		exectime /= 1000000000;
 		totaltime /= 1000000000;
 	}
 	if(measure_time){
-	std::cout << "Time variable:\n   Lexer:        " << lextime << 
-				 tunit[tscale] << " \n   TokenComp:    " << tcomptime  <<
-				 tunit[tscale] << " \n   ShuntingYard: " << shydtime << 
-				 tunit[tscale] << " \n   Execution:    " << exectime << 
-				 tunit[tscale] << " \n   Total:        " << totaltime <<
+	std::cout << "Time variable:\n   Parse:              " << lextime << 
+				 tunit[tscale] << " \n   Lexer:              " << tcomptime  <<
+				 tunit[tscale] << " \n   Compile:            " << shydtime <<
+				 tunit[tscale] << " \n   Variable Filler:    " << varfilltime <<
+				 tunit[tscale] << " \n   Execution:          " << exectime <<
+				 tunit[tscale] << " \n   Total:              " << totaltime <<
 				 tunit[tscale] << " \n\n";
 	}
 	if(do_exec){
@@ -457,13 +558,13 @@ std::string asnExecuter(std::string input, int etype){
 }
 
 // Define a function
-void deffunction(std::string input){
+static void deffunction(std::string input){
 	std::vector<std::string> partasn = comp::spliteq(input);
 	partasn.back() = comp::removeWhiteSpace(partasn.back());
 	std::vector<std::string> sfunchead = comp::lex(partasn.front());
 	std::vector<std::string> sfuncbody = comp::lex(partasn.back());
 	if(debug_mode){
-		std::cout << "Lexer:        [";
+		std::cout << "Parser:             [";
 		for(std::string x: sfunchead){
 			std::cout << x << ", ";
 		}
@@ -480,7 +581,7 @@ void deffunction(std::string input){
 	std::vector<token> funchead = comp::tokenComp(sfunchead);
 	std::vector<token> funcbody = comp::tokenComp(sfuncbody);
 	if(debug_mode){
-		std::cout << "TokenComp:    [";
+		std::cout << "Lexer:              [";
 		for(token x: funchead){
 			std::cout << x.data << ", ";
 		}
@@ -498,7 +599,7 @@ void deffunction(std::string input){
 	return;
 }
 
-void sighandle(int sigtype){
+static void sighandle(int sigtype){
 	std::cout << "\nSignal (" << sigtype << ")";
 	exit(0); 
 }
@@ -517,6 +618,14 @@ int main(int argc, char* argv[]){
 	}
 
 	std::thread progress(bar::barmanager);
+	std::thread buffer(var::buffer, do_buffer);
+
+	if(!do_buffer){
+		var::setbuffermax(0);
+		var::joinbuffer();
+		buffer.join();
+	}
+	
 
 	int runtype;
 	int lbcnt;
@@ -529,7 +638,7 @@ int main(int argc, char* argv[]){
 	std::string output;
 	std::string finalOutput;
 
-	while(true){
+	while(run){
 		bar::finish();
 		std::cout << newline;
 		std::getline(std::cin, input);
@@ -610,5 +719,9 @@ int main(int argc, char* argv[]){
 	}
 	bar::join();
 	progress.join();
+	if(do_buffer){
+		var::joinbuffer();
+		buffer.join();
+	}
 	return 0;
 }

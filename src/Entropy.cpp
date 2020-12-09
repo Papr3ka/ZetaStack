@@ -170,7 +170,7 @@ seed)
 0x00000000000015F7);
 }
 
-long getrand(long seed){
+long getrandnum(long seed){
 	register long int t = urandom(seed);
 	t ^= t << 23;
 	t ^= t >> 17;
