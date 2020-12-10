@@ -2,6 +2,7 @@
   Copyright (C) 2020, Benjamin Yao
 */
 #include<iostream>
+#include<iomanip>
 #include<string>
 #include<vector>
 #include<algorithm>
@@ -68,6 +69,7 @@ typedef struct{
 }version;
 
 const version curversion = {0, 0, 0, false, -1, -1};
+bool detect_comp = true;
 
 #if defined(__clang__)
 	const version compilerversion = {__clang_major__,
@@ -90,6 +92,7 @@ const version curversion = {0, 0, 0, false, -1, -1};
 #else
 	const version compilerversion = {-1,-1,-1, false, -1, -1};
 	const std::string compiler = "Unknown";
+	detect_comp = false;
 #endif
 
 static void printvec(std::vector<std::string> print){
@@ -236,9 +239,11 @@ static void command(std::string com){
 	}else if(cmdargv.front() == "bar"){
 		if(do_bar){
 			do_bar = false;
+			bar::setstate(false);
 			std::cout << "Progress Bar off\n";
 		}else{
 			do_bar = true;
+			bar::setstate(true);
 			std::cout << "Progress Bar on\n";
 		}
 	}else if(cmdargv.front() == "help"){
@@ -261,9 +266,11 @@ static void arghandler(std::vector<std::string> args){
 	unsigned long int arg_index = 1;
 	while(arg_index < args.size()){
 		if(args.at(arg_index) == "--version"){
-			std::cout << args.front() << " Version " << versioncomp(curversion) << "\n"
-									  << "  Built with " << compiler << " " << versioncomp(compilerversion) << "\n";
+			std::cout << args.front() << " Version " << versioncomp(curversion) << "\n";
+			if(detect_comp)	std::cout << "  Built with " << compiler << " " << versioncomp(compilerversion) << "\n";
 			run = false;
+			do_sighandle = false;
+			do_buffer = false;
 			return;
 		}else if(args.at(arg_index) == "--debug"){
 			debug_mode = true;
@@ -285,6 +292,8 @@ static void arghandler(std::vector<std::string> args){
 					  << "  --nohandle               Disables signal handling\n";
 
 			run = false;
+			do_sighandle = false;
+			do_buffer = false;
 			return;
 		}else{
 			// Unknown argument
@@ -297,11 +306,12 @@ static void arghandler(std::vector<std::string> args){
 
 
 /*-Interpreting process order-----------------------------------------------Resposible Files--------------------
-*|  1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)] 		        |  Preprocessor.hpp / Preprocessor.cpp |
-*|  2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC]			            |  Preprocessor.hpp / Preprocessor.cpp |
+*|  1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)]                |  Preprocessor.hpp / Preprocessor.cpp |
+*|  2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC]                        |  Preprocessor.hpp / Preprocessor.cpp |
 *|  3. Recursive Function link, replaces functions with their bodies    |  Link.hpp / Link.cpp                 |
 *|  4. ShuntingYard  [2, 14, 12, ADD, MUL]                              |  Zetacompiler.hpp / Zetacompiler.cpp |
 *|  5. Fill all leftover variables                                      |  Zetacompiler.hpp / Zetacompiler.cpp |
+*|  5. ---                                                              |  Variable.cpp / Variable.hpp         |  
 *|  6. Execute                                                          |  Execute.hpp / Execute.cpp	       |
 *///------------------------------------------------------------------------------------------------------------
 
@@ -311,55 +321,62 @@ static std::string calcExecuter(std::string input){
 	int tscale;
 	double totaltime;
 
-	std::chrono::_V2::steady_clock::time_point lex_tstart;
-	std::chrono::_V2::steady_clock::time_point lex_tend;
-	std::chrono::_V2::steady_clock::time_point tcomp_tstart;
-	std::chrono::_V2::steady_clock::time_point tcomp_tend;
-	std::chrono::_V2::steady_clock::time_point shyd_tstart;
-	std::chrono::_V2::steady_clock::time_point shyd_tend;
-	std::chrono::_V2::steady_clock::time_point varfill_tstart;
-	std::chrono::_V2::steady_clock::time_point varfill_tend;
-	std::chrono::_V2::steady_clock::time_point exec_tstart;
-	std::chrono::_V2::steady_clock::time_point exec_tend;
+	bar::start();
+
+	std::chrono::_V2::high_resolution_clock::time_point lex_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point lex_tend;
+	std::chrono::_V2::high_resolution_clock::time_point tcomp_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point tcomp_tend;
+	std::chrono::_V2::high_resolution_clock::time_point shyd_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point shyd_tend;
+	std::chrono::_V2::high_resolution_clock::time_point varfill_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point varfill_tend;
+	std::chrono::_V2::high_resolution_clock::time_point exec_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point exec_tend;
 	
 	std::vector<token> output;
 	std::vector<std::string> s_out;
 	std::string finalOutput;
-	lex_tstart = std::chrono::steady_clock::now();	
+
+	bar::inform("Parsing");
+	lex_tstart = std::chrono::high_resolution_clock::now();	
 	s_out = comp::lex(input);	
-	lex_tend = std::chrono::steady_clock::now();
+	lex_tend = std::chrono::high_resolution_clock::now();
 
 	if(debug_mode){
 		std::cout << "Parser:             ";
 		printvec(s_out);
 		std::cout << "\n";
-	}	
-	tcomp_tstart = std::chrono::steady_clock::now();	
+	}
+	bar::inform("Lexing");
+	tcomp_tstart = std::chrono::high_resolution_clock::now();	
 	output = comp::tokenComp(s_out);	
-	tcomp_tend = std::chrono::steady_clock::now();	
+	tcomp_tend = std::chrono::high_resolution_clock::now();	
 	if(debug_mode){
 		std::cout << "Lexer:              ";
 		printvectoken(output);
 		std::cout << "\n";
 	}
 	
-	output = ld::recurselink(output); // Link.hpp
+	//output = ld::recurselink(output); // Link.hpp
 
 	if(comp::hasvar(output)){
 		writecache = false;
 	}
-	shyd_tstart = std::chrono::steady_clock::now();
+	bar::inform("Compiling");
+	shyd_tstart = std::chrono::high_resolution_clock::now();
 	output = comp::shuntingYard(output, true); // Zetacompiler.hpp
-	shyd_tend = std::chrono::steady_clock::now();					
+	shyd_tend = std::chrono::high_resolution_clock::now();					
 	if(debug_mode){
 		std::cout << "Compile:            ";
 		printvectoken(output);
 		std::cout << "\n\n";
 	}
 	
-	varfill_tstart = std::chrono::steady_clock::now();
+	bar::inform("Filling Variables");
+	varfill_tstart = std::chrono::high_resolution_clock::now();
 	output = comp::fillallvars(output); // Zetacompiler.hpp
-	varfill_tend = std::chrono::steady_clock::now();
+	varfill_tend = std::chrono::high_resolution_clock::now();
 
 	// Check for undefined Vars
 	for(unsigned long int i=0; i < output.size(); i++){
@@ -369,10 +386,12 @@ static std::string calcExecuter(std::string input){
 	}
 
 	if(do_exec){
+		bar::changemode(1);
 		if(do_bar) bar::init((long int)output.size());
-		exec_tstart = std::chrono::steady_clock::now();
+		bar::inform("Executing");
+		exec_tstart = std::chrono::high_resolution_clock::now();
 		finalOutput = xmath::calculate(output, do_bar);
-		exec_tend = std::chrono::steady_clock::now();
+		exec_tend = std::chrono::high_resolution_clock::now();
 		if(do_bar) bar::stop();
 		if(writecache){ // check if vars are in
 			cch::update(input, finalOutput);
@@ -381,7 +400,7 @@ static std::string calcExecuter(std::string input){
 			bar::finish(); // print out <CR> and whitespace
 		}
 	}else{
-		exec_tstart = std::chrono::steady_clock::now();
+		exec_tstart = std::chrono::high_resolution_clock::now();
 		exec_tend = exec_tstart;
 	}
 	double lextime = std::chrono::duration<double, std::nano>(lex_tend - lex_tstart).count();
@@ -434,16 +453,18 @@ static std::string asnExecuter(std::string input, int etype){
 	int tscale;
 	double totaltime;
 
-	std::chrono::_V2::steady_clock::time_point lex_tstart;
-	std::chrono::_V2::steady_clock::time_point lex_tend;
-	std::chrono::_V2::steady_clock::time_point tcomp_tstart;
-	std::chrono::_V2::steady_clock::time_point tcomp_tend;
-	std::chrono::_V2::steady_clock::time_point shyd_tstart;
-	std::chrono::_V2::steady_clock::time_point shyd_tend;
-	std::chrono::_V2::steady_clock::time_point varfill_tstart;
-	std::chrono::_V2::steady_clock::time_point varfill_tend;
-	std::chrono::_V2::steady_clock::time_point exec_tstart;
-	std::chrono::_V2::steady_clock::time_point exec_tend;
+	bar::start();
+
+	std::chrono::_V2::high_resolution_clock::time_point lex_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point lex_tend;
+	std::chrono::_V2::high_resolution_clock::time_point tcomp_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point tcomp_tend;
+	std::chrono::_V2::high_resolution_clock::time_point shyd_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point shyd_tend;
+	std::chrono::_V2::high_resolution_clock::time_point varfill_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point varfill_tend;
+	std::chrono::_V2::high_resolution_clock::time_point exec_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point exec_tend;
 
 	std::vector<std::string> partasn;
 	std::vector<token> output;
@@ -453,29 +474,32 @@ static std::string asnExecuter(std::string input, int etype){
 	partasn = comp::spliteq(input);
 	input = partasn.back();
 
-	lex_tstart = std::chrono::steady_clock::now();	
+	bar::inform("Parsing");
+	lex_tstart = std::chrono::high_resolution_clock::now();	
 	s_out = comp::lex(input);	
-	lex_tend = std::chrono::steady_clock::now();
+	lex_tend = std::chrono::high_resolution_clock::now();
 
 	if(debug_mode){
 		std::cout << "Parser:             ";
 		printvec(s_out);
 		std::cout << "\n";
 	}	
-	tcomp_tstart = std::chrono::steady_clock::now();	
+	bar::inform("Lexing");
+	tcomp_tstart = std::chrono::high_resolution_clock::now();	
 	output = comp::tokenComp(s_out);	
-	tcomp_tend = std::chrono::steady_clock::now();	
+	tcomp_tend = std::chrono::high_resolution_clock::now();	
 	if(debug_mode){
 		std::cout << "Lexer:              ";
 		printvectoken(output);
 		std::cout << "\n";
 	}
 
-	output = ld::recurselink(output); // Link.hpp
+	//output = ld::recurselink(output); // Link.hpp
 
-	shyd_tstart = std::chrono::steady_clock::now();
+	bar::inform("Compiling");
+	shyd_tstart = std::chrono::high_resolution_clock::now();
 	output = comp::shuntingYard(output); // Zetacompiler.hpp
-	shyd_tend = std::chrono::steady_clock::now();
+	shyd_tend = std::chrono::high_resolution_clock::now();
 	if(etype != 0){	
 		output.insert(output.end(), comp::getop(etype - 1));
 		token tok(var::search(partasn.front()), 0);
@@ -487,9 +511,10 @@ static std::string asnExecuter(std::string input, int etype){
 		std::cout << "\n\n";
 	}
 
-	varfill_tstart = std::chrono::steady_clock::now();
+	bar::inform("Filling Variables");
+	varfill_tstart = std::chrono::high_resolution_clock::now();
 	output = comp::fillallvars(output); // Zetacompiler.hpp
-	varfill_tend = std::chrono::steady_clock::now();
+	varfill_tend = std::chrono::high_resolution_clock::now();
 
 	// Check for undefined Vars
 	for(unsigned long int i=0; i < output.size(); i++){
@@ -497,16 +522,18 @@ static std::string asnExecuter(std::string input, int etype){
 	}
 	
 	if(do_exec){
+		bar::changemode(1);
 		bar::init((long int)output.size()+1);
-		exec_tstart = std::chrono::steady_clock::now();
+		bar::inform("Executing");
+		exec_tstart = std::chrono::high_resolution_clock::now();
 		finalOutput = xmath::calculate(output, do_bar);
-		exec_tend = std::chrono::steady_clock::now();
+		exec_tend = std::chrono::high_resolution_clock::now();
 		if(do_bar){
 			bar::stop();
 			bar::finish(); // print out <CR> and whitespace
 		}		
 	}else{
-		exec_tstart = std::chrono::steady_clock::now();
+		exec_tstart = std::chrono::high_resolution_clock::now();
 		exec_tend = exec_tstart;
 	}
 	double lextime = std::chrono::duration<double, std::nano>(lex_tend - lex_tstart).count();
@@ -626,6 +653,7 @@ int main(int argc, char* argv[]){
 		buffer.join();
 	}
 	
+	bar::setstate(do_bar);
 
 	int runtype;
 	int lbcnt;
