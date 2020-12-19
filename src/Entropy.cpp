@@ -9,6 +9,7 @@ The CIA encourages code obfuscation. They make it more complicated than necessar
 */
 
 long
+int
 urandom
 (long
 seed){
@@ -34,7 +35,6 @@ x
 0x0000000000000802
 -
 0x0000000000000A06);
-register
 long
 xryybz2fa
 = /*rand()*/
@@ -170,10 +170,35 @@ seed)
 0x00000000000015F7);
 }
 
-long getrandnum(long seed){
-	register long int t = urandom(seed);
+long int getrandnum(long seed){
+	long int t = urandom(seed);
 	t ^= t << 23;
 	t ^= t >> 17;
 	t ^= seed ^ (seed >> 26);
-	return abs(urandom(t^seed)-t*seed);
+	return std::abs(urandom(t^seed)-t*seed);
 }
+
+bool getrandbit(long seed){
+	return (getrandnum(seed) ^ seed) % 2;
+}
+
+long int getrandl(long seed){
+	long long int output = 0;
+	for(long long int bitpos = 0; bitpos < 32; bitpos++){
+		if(getrandbit(seed)){
+			output += 1 << bitpos;
+		}
+	}
+	return (long int)(output+seed) ^ seed;
+}
+
+unsigned long long int getrandull(long seed){
+	long long int output = 0;
+	for(unsigned long long int bitpos = 0; bitpos < 64; bitpos++){
+		if(getrandbit(seed)){
+			output += 1 << bitpos;
+		}
+	}
+	return output;
+}
+

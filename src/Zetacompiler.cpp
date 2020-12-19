@@ -7,6 +7,7 @@
 #include<iostream>
 
 #include "Zetacompiler.hpp"
+#include "Function.hpp"
 #include "Variable.hpp"
 #include "Token.hpp"
 
@@ -37,7 +38,11 @@ namespace comp {
 		"SHR",
 		"FLOORDIV",
 		"OR",
-		"AND"
+		"AND",
+		"EQL",
+		"NQL",
+		"GQL",
+		"LQL",
 	};
 
 	bool string_isnum(std::string str){
@@ -111,22 +116,24 @@ namespace comp {
 
 	unsigned int precedence(std::string op){
 		if(op.back() == '('){
-			return 8;
+			return 9;
 		}else if(op == "POW"){
-			return 7;
+			return 8;
 		}else if(op == "MUL" || op == "DIV" || op == "MOD" || op == "FLOORDIV"){
-			return 6;
+			return 7;
 		}else if(op == "ADD" || op == "SUB"){
-			return 5;
+			return 6;
 		}else if(op == "SHL" || op == "SHR"){
-			return 4;
+			return 5;
 		}else if(op == "AND"){
-			return 3;
+			return 4;
 		}else if(op == "XOR"){
-			return 2;
+			return 3;
 		}else if(op == "OR"){
+			return 2;
+		}else if(op == "EQL" || op == "NQL" || op == "GQL" || op == "LQL"){
 			return 1;
-		}else {
+		}else{
 			return 0; // ERROR
 		}
 	}
@@ -143,7 +150,11 @@ namespace comp {
 		   op == "SHR" ||
 		   op == "AND" ||
 		   op == "XOR" ||
-		   op == "OR"){
+		   op == "OR"  ||
+		   op == "EQL" ||
+		   op == "NQL" ||
+		   op == "GQL" ||
+		   op == "LQL"){
 			return true;
 		}else{
 			return false;
@@ -167,9 +178,18 @@ namespace comp {
 	}
 
 	// fcomp = false, bool used for function jit comp
-	std::vector<token> shuntingYard(std::vector<token> tokens, const bool fcomp){
+	std::vector<token> shuntingYard(std::vector<token> tokens){
 		std::vector<token> operatorStack;
 		std::vector<token> outputQueue;
+		std::vector<token> functionStack;
+		long int layer = 0;
+		long int infunction = 0;
+		
+		// Debug code
+		// for(token x: tokens){
+		// 	std::cout << " " << x.type << "\n";
+		// }
+
 		while(!tokens.empty()){
 			/*
 			0 - NUM
@@ -179,6 +199,7 @@ namespace comp {
 			4 - FUNCTION
 			5 - VARIABLE
 			6 - R FUNC
+			7 - SEP
 			*/
 			switch(tokens.front().type){
 				case 0: // NUM
@@ -200,6 +221,7 @@ namespace comp {
 					tokens.erase(tokens.begin());
 					break;
 				case 2:
+					layer++;
 					operatorStack.push_back(tokens.front());
 					tokens.erase(tokens.begin());
 					break;
@@ -212,9 +234,17 @@ namespace comp {
 						operatorStack.pop_back();
 					}
 					tokens.erase(tokens.begin());
+					layer--;
+					if(layer == infunction && !functionStack.empty()){					
+						outputQueue.push_back(functionStack.back());
+						functionStack.pop_back();
+						infunction--;
+					}		
 					break;
-				case 4: // FUNC, if there is function at this stage, there is an error
-					outputQueue.push_back(tokens.front());
+				case 4:
+					infunction++;
+					layer = infunction;
+					functionStack.push_back(tokens.front());
 					tokens.erase(tokens.begin());
 					break;
 				case 5: // Variable
@@ -225,14 +255,20 @@ namespace comp {
 					outputQueue.push_back(tokens.front());
 					tokens.erase(tokens.begin());
 					break;
-				case 7: // SEP
-					if(fcomp){
-						token tk;
-						tk.data = "SEP";
-						tk.type = -1;
-						outputQueue.push_back(tk);
-					}
+				case 7: // SEP - Dump all
 					tokens.erase(tokens.begin());
+					while(!operatorStack.empty()){
+						if(operatorStack.back().data == "L_BRAC" || operatorStack.back().data == "R_BRAC"){
+							operatorStack.pop_back();
+						}
+						if(operatorStack.back().type == 4){
+							functionStack.push_back(operatorStack.back());
+							operatorStack.pop_back();
+						}else if(operatorStack.size() >= 1){
+							outputQueue.push_back(operatorStack.back());
+							operatorStack.pop_back();
+						}
+					}
 					break;
 				default:
 					tokens.erase(tokens.begin());
@@ -245,6 +281,18 @@ namespace comp {
 			}
 			outputQueue.push_back(operatorStack.back());
 			operatorStack.pop_back();
+		}
+		while(!functionStack.empty()){
+			outputQueue.push_back(functionStack.back());
+			functionStack.pop_back();
+		}
+		unsigned long int checkidx = 0;
+		while(checkidx < outputQueue.size()){
+			if(outputQueue[checkidx].type == 2){
+				outputQueue.erase(outputQueue.begin() + checkidx);
+			}else{
+				checkidx++;
+			}
 		}
 		return outputQueue;
 	}

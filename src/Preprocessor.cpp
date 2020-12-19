@@ -235,155 +235,132 @@ namespace comp {
 		return returnedTokens;
 	}
 
+/*
+	0 - NUM
+	1 - OPERATOR
+	2 - LEFT BRACKET
+	3 - RIGHT BRACKET
+	4 - FUNCTION
+	5 - VARIABLE
+	6 - R FUNC
+	7 - Separator / Func End
+*/	
+
 	std::vector<token> tokenComp(std::vector<std::string> tokensInput){
 		std::vector<token> output;
 		for(unsigned long int index = 0;index<tokensInput.size();index++){
-			token tk;
 			if(!isdigit(tokensInput[index][0])){
 				if(tokensInput[index] == ","){
-					tk.data = "SEP";
-					tk.type = 7;
+					token tk("SEP",7);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "+"){
-					tk.data = "ADD";
-					tk.type = 1;
+					token tk("ADD",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "-"){
-					tk.data = "SUB";
-					tk.type = 1;
+					token tk("SUB",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "*"){
-					tk.data = "MUL";
-					tk.type = 1;
+					token tk("MUL",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "/"){
-					tk.data = "DIV";
-					tk.type = 1;
+					token tk("DIV",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "%"){
-					tk.data = "MOD";
-					tk.type = 1;
+					token tk("MOD",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "^"){
-					tk.data = "XOR";
-					tk.type = 1;
+					token tk("XOR",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "!"){
-					tk.data = "FACT";
-					tk.type = 6;
+					token tk("FACT",6);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "("){
-					tk.data = "L_BRAC";
-					tk.type = 2;
+					token tk("L_BRAC",2);
 					output.push_back(tk);
 				}else if(tokensInput[index] == ")"){
-					tk.data = "R_BRAC";
-					tk.type = 3;
+					token tk("R_BRAC",3);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "="){
-					tk.data = "ASN";
-					tk.type = 10;
+					token tk("ASN",10);
 					output.push_back(tk); // Assign
 				}else if(tokensInput[index] == "**"){
-					tk.data = "POW";
-					tk.type = 1;
+					token tk("POW",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "//"){
-					tk.data = "FLOORDIV";
-					tk.type = 1;
+					token tk("FLOORDIV",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "||"){
-					tk.data = "OR";
-					tk.type = 1;
+					token tk("OR",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "&&"){
-					tk.data = "AND";
-					tk.type = 1;
+					token tk("AND",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "<<"){
-					tk.data = "SHL";
-					tk.type = 1;
+					token tk("SHL",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == ">>"){
-					tk.data = "SHR";
-					tk.type = 1;
+					token tk("SHR",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "=="){
-					tk.data = "ADD";
-					tk.type = 11;
+					token tk("EQL",1);
 					output.push_back(tk); // Equal
 				}else if(tokensInput[index] == "!="){
-					tk.data = "NQL";
-					tk.type = 11;
+					token tk("NQL",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == ">="){
-					tk.data = "GQL";
-					tk.type = 11;
+					token tk("GQL",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "<="){
-					tk.data = "LQL";
-					tk.type = 11;
+					token tk("LQL",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "+="){
-					tk.data = "ADDASN";
-					tk.type = 10;
+					token tk("ADDASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "-="){
-					tk.data = "SUBASN";
-					tk.type = 10;
+					token tk("SUBASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "*="){
-					tk.data = "MULASN";
-					tk.type = 10;
+					token tk("MULASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "/="){
-					tk.data = "DIVASN";
-					tk.type = 10;
+					token tk("DIVASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "^="){
-					tk.data = "XORASN";
-					tk.type = 10;
+					token tk("XORASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "<<="){
-					tk.data = "SHLASN";
-					tk.type = 10;
+					token tk("SHLASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == ">>="){
-					tk.data = "SHRASN";
-					tk.type = 10;
+					token tk("SHRASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "**="){
-					tk.data = "POWASN";
-					tk.type = 10;
+					token tk("POWASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "//="){
-					tk.data = "FLOORDIVASN";
-					tk.type = 10;
+					token tk("FLOORDIVASN",10);
 					output.push_back(tk);
 				}else if(tokensInput[index][0] == '.'){
-					tk.data = tokensInput[index];
-					tk.type = 0;
+					token tk(tokensInput[index],0);
 					output.push_back(tk);
-				}else if(isalpha(tokensInput[index][0])){
-					tk.data = tokensInput[index];
-					tk.type = 5;
+				}else if(isalpha(tokensInput[index].back())){
+					token tk(tokensInput[index],5);
+					output.push_back(tk);
+				}else if(tokensInput[index].back() == '('){
+					token tk(tokensInput[index],4);
 					output.push_back(tk);
 				}else{
-					tk.data = "NULL";
-					tk.type = -1;
+					token tk("NULL",-1);
 					output.push_back(tk);
 				}
 			}else if(tokensInput[index].back() == '('){
-				tk.data = tokensInput[index];
-				tk.type = 4;
+				token tk(tokensInput[index],4);
 				output.push_back(tk);
 			}else if(ttype(tokensInput[index]) == 0){
-				tk.data = tokensInput[index];
-				tk.type = 0;
+				token tk(tokensInput[index],0);
 				output.push_back(tk);			
 			}else{
-				tk.data = tokensInput[index];
-				tk.type = 5;
+				token tk(tokensInput[index],5);
 				output.push_back(tk);
 			}
 		}
@@ -453,6 +430,19 @@ namespace comp {
 				}
 			}
 		}
+		/*
+			-1 Error
+			0 ASN     =
+			1 ADDASN  +=
+			2 SUBASN  -=
+			3 MULASN  *=
+			4 DIVASN  /=
+			5 MODASN  %=
+			6 XORASN  ^=
+			7 POWASN  **=
+			8 SHLASN  <<=
+			9 SHRASN  >>=
+		*/		
 		return 0;
 	}
 
@@ -498,12 +488,27 @@ namespace comp {
 		if(eqpos == std::string::npos){
 			return 0;
 		}else{
-			unsigned long int ieqpos = static_cast<unsigned long int>(eqpos);
+			long int ieqpos = static_cast<long int>(eqpos);
+			if(ieqpos - 2 >= 0){
+				if(str[ieqpos - 2] == '>' || str[ieqpos - 2] == '<' || str[ieqpos - 2] == '*'){
+					return 1;
+				}
+			}
+			if(ieqpos - 1 >= 0){
+				if(str[ieqpos - 1] == '>' || str[ieqpos - 1] == '<' || str[ieqpos - 1] == '!'){
+					return 0;
+				}			
+			}
+			if((unsigned long int)ieqpos + 1 < str.size()){
+				if(str[ieqpos + 1] == '='){
+					return 0;
+				}
+			}
 			if(str[ieqpos] == '='){
 				if(fbrac == std::string::npos){
 					return 1;
 				}else{
-					unsigned long int fbracpos =  static_cast<unsigned long int>(fbrac);
+					long int fbracpos = static_cast<long int>(fbrac);
 					if(fbracpos < ieqpos){
 						return 2;
 					}else{

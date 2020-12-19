@@ -30,7 +30,7 @@ namespace var{
 	static std::vector<long int> randbuffer;
 
 	static long getrand(void){
-		register long int retval;
+		long int retval;
 		if(!randbuffer.empty()){
 			retval = randbuffer.front();
 			randbuffer.erase(randbuffer.begin());

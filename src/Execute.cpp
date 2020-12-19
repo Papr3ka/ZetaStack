@@ -4,12 +4,11 @@
 #include<cstdlib>
 #include<iostream>
 
-#include<gmpxx.h>
-
 #include "Execute.hpp"
 #include "Function.hpp"
 #include "Status.hpp"
 #include "Token.hpp"
+#include "Zetacompiler.hpp"
 
 namespace xmath {
 
@@ -69,6 +68,26 @@ namespace xmath {
 		return x >> y;
 	}
 
+	double eql(double x, double y){
+		if(x == y) return 1;
+		return 0;
+	}
+
+	double nql(double x, double y){
+		if(x != y) return 1;
+		return 0;
+	}
+
+	double gql(double x, double y){
+		if(x >= y) return 1;
+		return 0;
+	}
+
+	double lql(double x, double y){
+		if(x <= y) return 1;
+		return 0;
+	}	
+
 	long long factorial(long long x){
 		long long ans=1;
 		for(;x>0;x--){
@@ -78,9 +97,12 @@ namespace xmath {
 	}
 
 	std::string calculate(std::vector<token> tokens, bool showprogress){
+		bool forcerun = false;
 		unsigned long int index = 0;
-		if(tokens.size() <= 1){
+		if(tokens.size() <= 1 && tokens.front().type != 4){
 			return tokens.front().data;
+		}else if(tokens.size() == 1){
+			forcerun = true;
 		}
 		/*
 		X	0 - NUM
@@ -92,8 +114,9 @@ namespace xmath {
 		-	6 - R FUNC
 		-	7 - Separator
 		*/	
+		std::vector<token> argpack; // To be used in functions
 		// Cannot use recursion because in certain cases, it will lead to stack overflow
-		while(tokens.size() > 1){
+		while(tokens.size() > 1 || forcerun){
 			if(showprogress) bar::setcount((float)tokens.size());
 			// if(index > tokens.size()){
 			// 	index = 0;
@@ -182,14 +205,48 @@ namespace xmath {
 							tk.type = 0;
 							tokens.insert(tokens.begin()+(index-2),1,tk);
 							index = 0;	
-					}else if(tokens[index].data == "SHR"){
-							long long x = std::stoll(tokens[index-2].data);
-							long long y = std::stoll(tokens[index-1].data);
+			// comparisons
+					}else if(tokens[index].data == "EQL"){
+							double x = std::stod(tokens[index-2].data);
+							double y = std::stod(tokens[index-1].data);
 							tokens.erase(tokens.begin()+index-2);
 							tokens.erase(tokens.begin()+index-2);
 							tokens.erase(tokens.begin()+index-2);
 							token tk;
-							tk.data = std::to_string(shr(x, y));
+							tk.data = std::to_string(eql(x, y));
+							tk.type = 0;
+							tokens.insert(tokens.begin()+(index-2),1,tk);
+							index = 0;	
+					}else if(tokens[index].data == "NQL"){
+							double x = std::stod(tokens[index-2].data);
+							double y = std::stod(tokens[index-1].data);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							token tk;
+							tk.data = std::to_string(nql(x, y));
+							tk.type = 0;
+							tokens.insert(tokens.begin()+(index-2),1,tk);
+							index = 0;	
+					}else if(tokens[index].data == "GQL"){
+							double x = std::stod(tokens[index-2].data);
+							double y = std::stod(tokens[index-1].data);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							token tk;
+							tk.data = std::to_string(gql(x, y));
+							tk.type = 0;
+							tokens.insert(tokens.begin()+(index-2),1,tk);
+							index = 0;	
+					}else if(tokens[index].data == "LQL"){
+							double x = std::stod(tokens[index-2].data);
+							double y = std::stod(tokens[index-1].data);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							token tk;
+							tk.data = std::to_string(lql(x, y));
 							tk.type = 0;
 							tokens.insert(tokens.begin()+(index-2),1,tk);
 							index = 0;	
@@ -197,9 +254,19 @@ namespace xmath {
 						goto lblend; // Error
 					}
 				break;
-			case 4: // Standard Function
-				break;
-			case 6: // Right Function
+			case 4:{ // Standard Function
+				std::string funcname = tokens[index].data;
+				long int argcnt = argcount(funcname);
+				for(long int ix = 0; ix < argcnt; ix++){
+					argpack.push_back(tokens[index - ix]);
+				}
+				tokens.erase(tokens.begin()+index-argcnt - 1,tokens.begin()+index);
+				for(unsigned int x = 0; x < argpack.size(); x++) std::cout << " " << argpack[x].data << std::flush;
+				token tk(calculate(comp::fillallvars(call(argpack, funcname)), false), 0);
+				tokens.insert(tokens.begin()+index-argcnt,1, tk);
+				index = 0;
+				}break;
+			case 6:{ // Right Function && single arg
 				if(tokens[index].data == "FACT"){
 					double x = std::stod(tokens[index-1].data);
 					tokens.erase(tokens.begin()+index-1);
@@ -209,13 +276,19 @@ namespace xmath {
 					tk.type = 0;
 					tokens.insert(tokens.begin()+(index-1),1,tk);		
 					}		
-				break;
-			default:
+				}break;
+			case 7:{
+				tokens.erase(tokens.begin()+index);
+			}break;
+			default:{
 				index++;
 				if(index > tokens.size()){
 					goto lblend;
 				}
-				break;
+				}break;
+			}
+			if(forcerun || index > tokens.size()){
+				goto lblend;
 			}
 		}
 		lblend:
@@ -223,58 +296,4 @@ namespace xmath {
 	}
 
 	
-	// now done in Link.cpp
-
-	// // For debugging purposes
-	// void printvec(std::vector<std::string> print){
-	// 	std::cout << '[';
-	// 	for(unsigned long i=0; i < print.size(); i++){
-	// 		if(i >= 1){
-	// 			std::cout << ", ";
-	// 		}
-	//    		std::cout << print.at(i);
-	// 	}
-	// 	std::cout << "]\n";
-	// }
-	
-
-
-	// std::vector<std::string> callall(std::vector<std::string> tokens){
-	// 	std::vector<std::string> arguments;
-	// 	std::vector<std::string> output;
-	// 	unsigned long int argcnt;
-	// 	unsigned long int startdel;
-	// 	unsigned long int index = 0;
-	// 	unsigned long int reachsize = tokens.size();
-	// 	while(index < reachsize){
-	// 		std::cout << index << " i\n";
-	// 		if(tokens.at(index).back() == '('){
-	// 			argcnt = argcount(tokens.at(index));
-	// 			startdel = index - argcnt;
-	// 			for(unsigned long int subindex = index - argcnt; subindex <= argcnt; subindex++){
-	// 				arguments.push_back(tokens[subindex]); // Pack args
-	// 			}
-	// 			printvec(output);
-	// 			std::cout << " out\n";
-	// 			for(unsigned long int subindex = index - argcnt; subindex < argcnt; subindex++){
-	// 				output.erase(output.begin()+startdel); // Delete args
-	// 			}
-	// 			printvec(output);
-	// 			std::cout << " out\n";
-	// 			printvec(arguments);
-	// 			reachsize -= arguments.size() - 1;
-	// 			index -= arguments.size() - 1;
-	// 			printvec(output);
-	// 			output.push_back(calculate(call(arguments)));
-	// 			printvec(output);
-	// 			arguments.clear();
-	// 		}else{
-	// 			output.push_back(tokens.at(index));
-	// 		}
-	// 		index++;
-			
-	// 	}
-		
-	// 	return output;
-	// }
 }

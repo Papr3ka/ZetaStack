@@ -11,14 +11,16 @@
 #include "Zetacompiler.hpp"
 #include "Token.hpp"
 
+token lookup(token var, std::vector<token> identifiers, std::vector<token> args);
+
+std::vector<token> fillvars(std::vector<token> argsname, std::vector<token> argsvar, std::vector<token> fbody);
+
 void def(std::vector<token> assignTo, std::vector<token> body);
 
 void udef(std::string name);
 
-std::vector<token> call(std::vector< std::vector<token> > fargs, std::string name);
+std::vector<token> call(std::vector<token> fargs, std::string name);
 
-unsigned long int argcount(std::string name);
-
-void clearfuncdata(std::string name);
+long int argcount(std::string name);
 
 #endif

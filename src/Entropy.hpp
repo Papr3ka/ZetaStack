@@ -4,8 +4,14 @@
 #include<chrono>
 #include<thread>
 
-long urandom(long seed);
+long int urandom(long seed);
 
-long getrandnum(long seed);
+long int getrandnum(long seed);
+
+bool getrandbit(long seed);
+
+long int getrandl(long seed);
+
+unsigned long long int getrandull(long seed);
 
 #endif

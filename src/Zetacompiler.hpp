@@ -34,7 +34,7 @@ namespace comp {
 	
 	int checkrightBrac(std::string tokens);
 	
-	std::vector<token> shuntingYard(std::vector<token> tokens, const bool fcomp=false);
+	std::vector<token> shuntingYard(std::vector<token> tokens);
 
 	std::vector<token> fillallvars(std::vector<token> tokens);
 }

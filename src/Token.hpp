@@ -3,12 +3,25 @@
 
 #include<string>
 
+// Main data type to be processed
+
 /*
 typedef struct{
 	std::string data;
 	int type;
 }token;
 */
+
+/*
+	0 - NUM
+	1 - OPERATOR
+	2 - LEFT BRACKET
+	3 - RIGHT BRACKET
+	4 - FUNCTION
+	5 - VARIABLE
+	6 - R FUNC
+	7 - Separator / Func End
+*/	
 
 class token{
 	private:

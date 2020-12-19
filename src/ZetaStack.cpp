@@ -5,12 +5,11 @@
 #include<iomanip>
 #include<string>
 #include<vector>
+#include<atomic>
 #include<algorithm>
 #include<chrono>
 #include<ratio>
 #include<thread>
-
-#include<gmpxx.h>
 
 #include<cstdlib>
 #include<cstdio>
@@ -18,6 +17,7 @@
 #include<cmath>
 #include<cctype>
 #include<csignal>
+#include<ctime>
 
 #include "Preprocessor.hpp"
 #include "Zetacompiler.hpp"
@@ -55,6 +55,12 @@ std::vector<std::string> tunit{
 	" s"
 }; // len 4
 
+//std::atomic<bool> blocker(false);
+
+/* Symbols
+*  ⲗ 𝜁
+*/
+
 const static std::string newline = ">>> ";
 const static std::string multiline = "... ";	
 
@@ -68,7 +74,13 @@ typedef struct{
 	int specialrev;
 }version;
 
-const version curversion = {0, 0, 0, false, -1, -1};
+const version curversion = {0, 
+							0, 
+							0, 
+							false, 
+							-1, 
+							-1};
+
 bool detect_comp = true;
 
 #if defined(__clang__)
@@ -79,6 +91,9 @@ bool detect_comp = true;
 	 								 -1,
 	 								 -1};
 	const std::string compiler = "Clang";
+#elif defined(__INTEL_COMPILER) 
+	const std::string compiler = "ICC";
+	const version compilerversion = {-1,-1,-1, false, -1, -1};
 #elif defined(__GNUC__) || defined(__GNUG__)
 	const version compilerversion = {__GNUC__,
 									 __GNUC_MINOR__,
@@ -89,12 +104,28 @@ bool detect_comp = true;
 	const std::string compiler = "GCC";							 
 #elif defined(_MSC_VER)
 	const std::string compiler = "MSVC ".append(std::to_string(_MSC_VER));
+
 #else
 	const version compilerversion = {-1,-1,-1, false, -1, -1};
 	const std::string compiler = "Unknown";
 	detect_comp = false;
 #endif
 
+#ifdef _WIN32
+	const std::string operatingsystem = "Windows 32-bit";
+#elif _WIN64
+	const std::string operatingsystem = "Windows 64-bit";
+#elif __APPLE__ || __MACH__
+	const std::string operatingsystem = "Mac OSX";
+#elif __linux__
+	const std::string operatingsystem = "Linux";
+#elif __FreeBSD__
+	const std::string operatingsystem = "FreeBSD";
+#elif __unix || __unix__
+	const std::string operatingsystem = "Unix";
+#else
+	const std::string operatingsystem = "";
+#endif
 static void printvec(std::vector<std::string> print){
 	std::cout << '[';
 	for(unsigned long i=0; i < print.size(); i++){
@@ -116,6 +147,8 @@ static void printvectoken(std::vector<token> print){
 	}
 	std::cout << ']';
 }
+
+bool sigint_immune_flag = false;
 
 static std::string versioncomp(version ver){
 	if(ver.major == -1){
@@ -148,12 +181,33 @@ static std::string versioncomp(version ver){
 	return output;
 }
 
+static void showclock(void){
+	sigint_immune_flag = true;
+	std::chrono::_V2::system_clock::time_point chrono_ctp;
+	time_t tpointnow;
+	char buffer[32];
+	while(sigint_immune_flag){
+		chrono_ctp = std::chrono::system_clock::now();
+		tpointnow = std::chrono::system_clock::to_time_t(chrono_ctp);
+		std::strftime(buffer,sizeof(buffer),"%B %d %Y %T",std::localtime(&tpointnow));
+		std::cout << "\r" << buffer << ":" << 
+		std::chrono::duration_cast<std::chrono::milliseconds>(
+			chrono_ctp.time_since_epoch()
+			).count() % 1000 <<
+		"\r";
+
+		std::cout.flush();
+		std::this_thread::sleep_for(std::chrono::microseconds(512));
+	}
+	return;
+}
+
 // commands using the "/" symbol
 static void command(std::string com){
 	if(com[0] == '/'){
 		return;
 	}else if(com[0] == ';'){
-		std::system((com.substr(1,com.size()-1)).c_str());
+		std::system(com.substr(1,com.size()-1).c_str());
 		return;
 	}
 
@@ -219,6 +273,12 @@ static void command(std::string com){
 		if(delsuccess >= 1){
 			std::cout << "Undefined variable: \"" << cmdargv[1] << "\"\n";
 		}
+	}else if(cmdargv.front() == "globals"){
+		std::vector<std::string> globalvars = var::globals();
+		std::cout << "Size: " << globalvars.size() << "\n--------\n";
+		for(std::string vgls: globalvars){
+			std::cout << "\"" << vgls << "\": " << var::search(vgls) << "\n";
+		}
 	}else if(cmdargv.front() == "time"){
 		if(measure_time){
 			measure_time = false;
@@ -228,6 +288,9 @@ static void command(std::string com){
 			std::cout << "Time on\n";
 
 		}
+	}else if(cmdargv.front() == "clock"){
+		showclock();
+		return;
 	}else if(cmdargv.front() == "exec"){
 		if(do_exec){
 			do_exec = false;
@@ -249,6 +312,7 @@ static void command(std::string com){
 	}else if(cmdargv.front() == "help"){
 		std::cout << "   bar                      Toggles progress bar \n"
 				  << "   cache <Options>          Commands related to cache\n"
+				  << "   clock                    Displays a clock\n"
 				  << "   debug                    Toggles debug mode\n"
 				  << "   del <var>                Deletes a variable\n"
 				  << "   exit                     Exits the program\n"
@@ -259,7 +323,6 @@ static void command(std::string com){
 		// Command not found
 		std::cout << "Unkown Command: " << com << "\n";
 	}
-
 }
 
 static void arghandler(std::vector<std::string> args){
@@ -267,7 +330,19 @@ static void arghandler(std::vector<std::string> args){
 	while(arg_index < args.size()){
 		if(args.at(arg_index) == "--version"){
 			std::cout << args.front() << " Version " << versioncomp(curversion) << "\n";
-			if(detect_comp)	std::cout << "  Built with " << compiler << " " << versioncomp(compilerversion) << "\n";
+			if(detect_comp){
+				std::cout << "  (Built with " << compiler << " " << versioncomp(compilerversion);
+				#if defined(__DATE__) && defined(__TIME__)
+					std::cout << ", " <<__DATE__ << ", " << __TIME__ << ")";
+				#else
+					std::cout << ")";
+				#endif
+				if(operatingsystem != ""){
+					std::cout << " on " << operatingsystem << "\n";
+				}else{
+					std::cout << "\n";
+				}
+			}
 			run = false;
 			do_sighandle = false;
 			do_buffer = false;
@@ -306,13 +381,12 @@ static void arghandler(std::vector<std::string> args){
 
 
 /*-Interpreting process order-----------------------------------------------Resposible Files--------------------
-*|  1. Lexical Analysis "2*(14+12)" -> [2,*,(,14,+,12,)]                |  Preprocessor.hpp / Preprocessor.cpp |
-*|  2. TokenComp [2,MUL,L_BRAC,14,ADD,12,R_BRAC]                        |  Preprocessor.hpp / Preprocessor.cpp |
-*|  3. Recursive Function link, replaces functions with their bodies    |  Link.hpp / Link.cpp                 |
-*|  4. ShuntingYard  [2, 14, 12, ADD, MUL]                              |  Zetacompiler.hpp / Zetacompiler.cpp |
-*|  5. Fill all leftover variables                                      |  Zetacompiler.hpp / Zetacompiler.cpp |
-*|  5. ---                                                              |  Variable.cpp / Variable.hpp         |  
-*|  6. Execute                                                          |  Execute.hpp / Execute.cpp	       |
+*|  1. Parser "2*(14+12)" -> [2,*,(,14,+,12,)]                          |  Preprocessor.hpp / Preprocessor.cpp |
+*|  2. Lexer [2,MUL,L_BRAC,14,ADD,12,R_BRAC]                            |  Preprocessor.hpp / Preprocessor.cpp |
+*|  3. Compile  [2, 14, 12, ADD, MUL]                                   |  Zetacompiler.hpp / Zetacompiler.cpp |
+*|  4. Fill all leftover variables                                      |  Zetacompiler.hpp / Zetacompiler.cpp |
+*|  4. ---                                                              |  Variable.cpp / Variable.hpp         |  
+*|  5. Execute                                                          |  Execute.hpp / Execute.cpp	       |
 *///------------------------------------------------------------------------------------------------------------
 
 // Directly executing statements
@@ -365,7 +439,7 @@ static std::string calcExecuter(std::string input){
 	}
 	bar::inform("Compiling");
 	shyd_tstart = std::chrono::high_resolution_clock::now();
-	output = comp::shuntingYard(output, true); // Zetacompiler.hpp
+	output = comp::shuntingYard(output); // Zetacompiler.hpp
 	shyd_tend = std::chrono::high_resolution_clock::now();					
 	if(debug_mode){
 		std::cout << "Compile:            ";
@@ -445,6 +519,7 @@ static std::string calcExecuter(std::string input){
 				 tunit[tscale] << " \n   Total:              " << totaltime <<
 				 tunit[tscale] << " \n\n";
 	}
+	var::update("ans",finalOutput);
 	return finalOutput;
 }
 
@@ -523,7 +598,7 @@ static std::string asnExecuter(std::string input, int etype){
 	
 	if(do_exec){
 		bar::changemode(1);
-		bar::init((long int)output.size()+1);
+		bar::init((long int)output.size());
 		bar::inform("Executing");
 		exec_tstart = std::chrono::high_resolution_clock::now();
 		finalOutput = xmath::calculate(output, do_bar);
@@ -580,6 +655,7 @@ static std::string asnExecuter(std::string input, int etype){
 	}
 	if(do_exec){
 		var::update(partasn.front(),finalOutput);
+		var::update("ans",finalOutput);
 	}
 	return finalOutput;
 }
@@ -622,13 +698,40 @@ static void deffunction(std::string input){
 		}
 		std::cout << "]\n";
 	}
+	funcbody = comp::shuntingYard(funcbody);
+	if(debug_mode){
+		std::cout << "Compile:            [";
+		for(unsigned long int x = 0; x < funcbody.size(); x++){
+			std::cout << funcbody[x].data;
+			if(x + 1 < funcbody.size()){
+				std::cout << ", ";
+			}
+		}
+		std::cout << "]\n";
+	}	
 	def(funchead, funcbody);
 	return;
 }
 
 static void sighandle(int sigtype){
-	std::cout << "\nSignal (" << sigtype << ")";
-	exit(0); 
+	switch(sigtype){
+		case SIGINT:
+			if(sigint_immune_flag){
+				sigint_immune_flag = false;
+				return;
+			}else{
+				std::cout << "\nSignal (" << sigtype << ")";
+				exit(0);	
+			}
+		case SIGCHLD:
+			return;
+		case SIGWINCH:
+			return;
+		default:
+			std::cout << "\nSignal (" << sigtype << ")";
+			exit(0); 
+	}
+
 }
 
 
