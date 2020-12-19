@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -O3 -g -pipe -Wall -Wextra -Wpedantic
-LIBS = -lgmpxx
 
-ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/variable.o src/Cache.o src/Entropy.o src/Function.o src/Link.o src/Status.o
+
+ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/variable.o src/Cache.o src/Entropy.o src/Function.o src/Status.o
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 src/ZetaStack.o: src/ZetaStack.cpp src/Zetacompiler.hpp src/Token.hpp
@@ -27,9 +27,6 @@ src/Entropy.o: src/Entropy.cpp src/Entropy.hpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 src/Function.o: src/Function.cpp src/Function.hpp src/Token.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
-src/Link.o: src/Link.cpp src/Link.hpp src/Token.hpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 src/Status.o: src/Status.cpp src/Status.hpp
