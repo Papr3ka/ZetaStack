@@ -41,9 +41,24 @@ namespace var{
 		}
 	}
 
+	unsigned long int getrandbufsize(void){
+		return randbuffer.size();
+	}
+
 	void setbuffermax(unsigned long int setval){
 		buffermax = setval;
+		if(setval == 0){
+			std::vector<long int>().swap(randbuffer);
+		}
+		while(randbuffer.size() > buffermax){
+			randbuffer.pop_back();
+		}
+		randbuffer.shrink_to_fit();
 		return;
+	}
+
+	unsigned long int getbuffermax(void){
+		return buffermax;
 	}
 
 	void clearbuffer(void){
@@ -120,8 +135,8 @@ namespace var{
 			return;
 		}
 		while(runbuffer && run){
-			if(randbuffer.size() <= buffermax){
-				while(randbuffer.size() <= buffermax){
+			if(randbuffer.size() < buffermax){
+				while(randbuffer.size() < buffermax){
 					prevr = getrandnum(prevr) ^ 127;
 					randbuffer.push_back(prevr);
 				}

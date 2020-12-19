@@ -1,6 +1,12 @@
 #ifndef STATUS_HPP
 #define STATUS_HPP
 
+std::string strunc(float x, short prec);
+
+std::string prec_str(double fstr);
+
+std::string strunc(double x, unsigned long  int prec);
+
 namespace bar {
 
 	void setstate(bool mode);

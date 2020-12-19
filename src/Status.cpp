@@ -23,7 +23,8 @@ static std::string operator * (std::string str, float mul){
 	return output;
 }
 
-static std::string strunc(float x, short prec){
+std::string strunc(float x, short prec){
+	if(std::isnan(x)) return "0";
 	std::string out = std::to_string(x);
 	if((short)out.size() <= prec){
 		return out.substr(0,out.size());
@@ -32,7 +33,17 @@ static std::string strunc(float x, short prec){
 	}
 }
 
-static std::string prec_str(double fstr){
+std::string strunc(double x, unsigned long  int prec){
+	if(std::isnan(x)) return "0";
+	std::string out = std::to_string(x);
+	if(out.size() <= prec){
+		return out.substr(0,out.size());
+	}else{
+		return out.substr(0, prec);
+	}
+}
+
+std::string prec_str(double fstr){
 	std::string str = std::to_string(fstr);
 	str = str.substr(0,str.size()-5);
 	if(str.find(".") == std::string::npos){
@@ -43,7 +54,6 @@ static std::string prec_str(double fstr){
 }
 
 namespace bar {
-
 
 	std::chrono::_V2::steady_clock::time_point start_time;
 	std::chrono::_V2::steady_clock::time_point next_time;

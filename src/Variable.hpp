@@ -10,7 +10,11 @@
 // Function Prototypes
 
 namespace var {
+	unsigned long int getrandbufsize(void);
+
 	void setbuffermax(unsigned long int setval);
+
+	unsigned long int getbuffermax(void);
 
 	void joinbuffer(void);
 

@@ -22,7 +22,6 @@
 #include "Preprocessor.hpp"
 #include "Zetacompiler.hpp"
 #include "Function.hpp"
-#include "Link.hpp"
 #include "Execute.hpp"
 #include "Token.hpp"
 
@@ -229,12 +228,27 @@ static void command(std::string com){
 	}else if(cmdargv.front() == "exit"){
 		run = false;
 		return;
+	}else if(cmdargv.front() == "buffer"){
+		if(cmdargv[1] == "clear"){
+			var::clearbuffer();
+		}else if(cmdargv[1] == "size"){
+			unsigned long int rbsize = var::getrandbufsize();
+			unsigned long int buffmax = var::getbuffermax();
+			std::cout << rbsize << "/" << buffmax << " [" << strunc((double)rbsize / (double)buffmax * 100, 5) << "%]\n";
+		}else if(cmdargv[1] == "setmax"){
+			var::setbuffermax(std::stoull(cmdargv[2]));
+		}else{
+			std::cout << "Options for command \"" << 
+						cmdargv.front() << "\"\n   " << 
+						cmdargv.front() << " clear\n   " << 
+						cmdargv.front() << " setmax <max>\n   " <<
+						cmdargv.front() << " size\n";
+		}
 	}else if(cmdargv.front() == "Cache" || 
 			 cmdargv.front() == "cache"){
 		
 		if(cmdargv[1] == "clear"){
 			cch::reset();
-			var::clearbuffer();
 			std::cout << "Cache cleared\n";
 		}else if(cmdargv[1] == "toggle"){
 			if(cch::getstate()){
@@ -246,7 +260,6 @@ static void command(std::string com){
 			}
 		}else if(cmdargv[1] == "setmax"){
 			cch::setmaxlen(std::stoull(cmdargv[2]));
-			var::setbuffermax(std::stoull(cmdargv[2]));
 		}else if(cmdargv[1] == "show"){
 			std::vector<std::string> iden = cch::getiden();
 			std::vector<std::string> val = cch::getval();
@@ -311,6 +324,7 @@ static void command(std::string com){
 		}
 	}else if(cmdargv.front() == "help"){
 		std::cout << "   bar                      Toggles progress bar \n"
+				  << "   buffer <Options>         Commands related to buffer\n"
 				  << "   cache <Options>          Commands related to cache\n"
 				  << "   clock                    Displays a clock\n"
 				  << "   debug                    Toggles debug mode\n"
@@ -333,7 +347,7 @@ static void arghandler(std::vector<std::string> args){
 			if(detect_comp){
 				std::cout << "  (Built with " << compiler << " " << versioncomp(compilerversion);
 				#if defined(__DATE__) && defined(__TIME__)
-					std::cout << ", " <<__DATE__ << ", " << __TIME__ << ")";
+					std::cout << ", " << __DATE__ << ", " << __TIME__ << ")";
 				#else
 					std::cout << ")";
 				#endif
@@ -386,7 +400,7 @@ static void arghandler(std::vector<std::string> args){
 *|  3. Compile  [2, 14, 12, ADD, MUL]                                   |  Zetacompiler.hpp / Zetacompiler.cpp |
 *|  4. Fill all leftover variables                                      |  Zetacompiler.hpp / Zetacompiler.cpp |
 *|  4. ---                                                              |  Variable.cpp / Variable.hpp         |  
-*|  5. Execute                                                          |  Execute.hpp / Execute.cpp	       |
+*|  5. Execute                                                          |  Execute.hpp / Execute.cpp           |
 *///------------------------------------------------------------------------------------------------------------
 
 // Directly executing statements
