@@ -27,7 +27,7 @@ Options:
 
 # Variables
 
-You can assign manipulate and delete variables in ZetaStack. Assigning variables are the same as any other programming language.
+You can assign, manipulate and delete variables in ZetaStack. Assigning variables are the same as any other programming language.
 
 ### Examples
 
@@ -35,6 +35,7 @@ You can assign manipulate and delete variables in ZetaStack. Assigning variables
 >>> x = 123
 >>> var = 2*(1+4)
 >>> var += 4 // Variable must be defined first
+>>> /del var
 ```
 
 ### Special Variables
