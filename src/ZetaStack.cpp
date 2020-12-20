@@ -74,11 +74,11 @@ typedef struct{
 }version;
 
 const version curversion = {0, 
+							1, 
 							0, 
+							true, 
 							0, 
-							false, 
-							-1, 
-							-1};
+							1};
 
 bool detect_comp = true;
 
