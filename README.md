@@ -56,7 +56,10 @@ Commenting can be done with **//** or **/\*\*/**
 
 # Commands
 
-Commands can be accessed and used via the '/' key. After, enter a command shown below.
+Commands can be accessed and used via the '/' key.
+
+### Available commands
+
 ```
    bar                      Toggles progress bar
    buffer <Options>         Commands related to buffer
