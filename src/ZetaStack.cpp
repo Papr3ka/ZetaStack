@@ -78,7 +78,7 @@ const version curversion = {0,
 							0, 
 							true, 
 							0, 
-							1};
+							2};
 
 bool detect_comp = true;
 
