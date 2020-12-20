@@ -28,13 +28,19 @@ class token{
 	public:
 
 		std::string data;
-		int type;
+		long int type;
+		long int reserved = -1;
 
 		// overloaded constructors for optional parameters
 		token(){}
 		token(std::string d, int t){ 
 			data = d;
 			type = t;
+		}
+		token(std::string d, int t, int res){
+			data = d;
+			type = t;
+			reserved = res;
 		}
 		~token(){}
 
@@ -55,6 +61,11 @@ class token{
 		friend bool operator == (token x, const char mval[]){
 			if(x.data.c_str() == mval) return true;
 			return false;
+		}
+
+		std::string pass_unary(void){
+			if(reserved == -1) return data;
+			return data.substr(reserved + 1, data.size()-1);
 		}
 };
 

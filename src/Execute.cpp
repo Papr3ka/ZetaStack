@@ -2,7 +2,10 @@
 #include<string>
 #include<vector>
 #include<cstdlib>
+#include<limits>
+#include<sstream>
 #include<iostream>
+#include<iomanip>
 
 #include "Execute.hpp"
 #include "Function.hpp"
@@ -11,6 +14,12 @@
 #include "Zetacompiler.hpp"
 
 namespace xmath {
+
+	std::string to_string_hprec(double x) {
+		std::ostringstream doublestring;
+		doublestring << std::setprecision(std::numeric_limits<double>::digits10) << x;
+		return doublestring.str();
+	}
 
 	bool string_isnum(std::string str){
 		if(str.size() <= 1){
@@ -88,6 +97,10 @@ namespace xmath {
 		return 0;
 	}	
 
+	double neg(double x){
+		return x*-1;
+	}
+
 	long long factorial(long long x){
 		long long ans=1;
 		for(;x>0;x--){
@@ -124,132 +137,142 @@ namespace xmath {
 			switch(tokens[index].type){
 				case 1:
 					if(tokens[index].data == "ADD"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk(std::to_string(add(x, y)), 0);
-							tokens.insert(tokens.begin()+(index-2),1, tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(add(x, y)), 0);
+						tokens.insert(tokens.begin()+(index-2),1, tk);
+						index = 0;	
 					}else if(tokens[index].data == "SUB"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk(std::to_string(sub(x, y)), 0);
-							tokens.insert(tokens.begin()+(index-2),1, tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(sub(x, y)), 0);
+						tokens.insert(tokens.begin()+(index-2),1, tk);
+						index = 0;	
 					}else if(tokens[index].data == "MUL"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk(std::to_string(mul(x, y)), 0);
-							tokens.insert(tokens.begin()+(index-2),1, tk);
-							index = 0;
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(mul(x, y)), 0);
+						tokens.insert(tokens.begin()+(index-2),1, tk);
+						index = 0;
 					}else if(tokens[index].data == "DIV"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(divide(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(divide(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;
 					}else if(tokens[index].data == "MOD"){
-							double x = std::stoll(tokens[index-2].data);
-							double y = std::stoll(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(mod(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						double x = std::stoll(tokens[index-2].data);
+						double y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(mod(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 					}else if(tokens[index].data == "POW"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(power(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(power(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 					}else if(tokens[index].data == "XOR"){
-							long long x = std::stoll(tokens[index-2].data);
-							long long y = std::stoll(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(exclusiveOr(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(exclusiveOr(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 					}else if(tokens[index].data == "SHL"){
-							long long x = std::stoll(tokens[index-2].data);
-							long long y = std::stoll(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(shl(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(shl(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 			// comparisons
 					}else if(tokens[index].data == "EQL"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(eql(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(eql(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 					}else if(tokens[index].data == "NQL"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(nql(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(nql(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 					}else if(tokens[index].data == "GQL"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(gql(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(gql(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
 					}else if(tokens[index].data == "LQL"){
-							double x = std::stod(tokens[index-2].data);
-							double y = std::stod(tokens[index-1].data);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							tokens.erase(tokens.begin()+index-2);
-							token tk;
-							tk.data = std::to_string(lql(x, y));
-							tk.type = 0;
-							tokens.insert(tokens.begin()+(index-2),1,tk);
-							index = 0;	
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(lql(x, y));
+						tk.type = 0;
+						tokens.insert(tokens.begin()+(index-2),1,tk);
+						index = 0;	
+					}else if(tokens[index].data == "NEG"){
+						double x = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-1);
+						tokens.erase(tokens.begin()+index-1);
+						token tk(to_string_hprec(neg(x)), 0);
+						tokens.insert(tokens.begin()+(index-1),1,tk);
+						index = 0;					
+					}else if(tokens[index].data == "POS"){
+						tokens.erase(tokens.begin()+index);
+						index = 0;					
 					}else{
 						goto lblend; // Error
 					}
@@ -272,7 +295,7 @@ namespace xmath {
 					tokens.erase(tokens.begin()+index-1);
 					tokens.erase(tokens.begin()+index-1);
 					token tk;
-					tk.data = std::to_string(factorial((long long)x));
+					tk.data = to_string_hprec(factorial((long long)x));
 					tk.type = 0;
 					tokens.insert(tokens.begin()+(index-1),1,tk);		
 					}		

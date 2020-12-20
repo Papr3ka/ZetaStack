@@ -9,7 +9,6 @@
 #include "Zetacompiler.hpp"
 #include "Token.hpp"
 
-
 class func{
 	private:
 		long int argcnt = 0;
@@ -101,14 +100,16 @@ std::vector<func> nfunctions; // Callable normal functions
 // Wrapper functions
 
 // delete function
-void udef(std::string name){
+int udef(std::string name){
 	unsigned long int idx = 0;
 	for(func f_id: nfunctions){
 		if(f_id.fname() == name){
 			nfunctions.erase(nfunctions.begin()+idx);
+			return 0;
 		}
 		idx++;
 	}
+	return 1;
 }
 
 void def(std::vector<token> assignTo, std::vector<token> body){ // Input must go through lexical analyzer and tokenComp

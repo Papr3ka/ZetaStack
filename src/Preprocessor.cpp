@@ -364,33 +364,47 @@ namespace comp {
 				output.push_back(tk);
 			}
 		}
-		if(output.size() > 1){
-			if(output[0].data == "SUB" && output[0].type == 1){			
-				output.erase(output.begin());
-				output[0].data.insert(output[0].data.begin(),1,'-');
-				//std::cout << output[0] << "\n";
+		unsigned long int replidx = 1;
+		if(output.front().type == 1 && output.front().data == "SUB"){
+			output.at(0).data = "NEG"; 
+			output.at(0).type = 1;			
+		}else if(output.front().type == 1 && output.front().data == "ADD"){
+			output.at(0).data = "POS"; 
+			output.at(0).type = 1;				
+		}
+		if(output.size() >= 2){
+			if(output.front().type == 1 && (output.front().data == "SUB" || output.front().data == "ADD")){
+				if(output.at(1).type == 0 || output.at(1).type == 5){
+					if(output.front().data == "SUB"){
+						output.at(0).data = "NEG"; 
+						output.at(0).type = 1;
+					}else if(output.front().data == "ADD"){
+						output.at(0).data = "POS"; 
+						output.at(0).type = 1;						
+					}
+				}
 			}
 		}
-		// Unary Sign
-		for(unsigned long int idx=1; idx < output.size() - 1; idx++){
-			if(output[idx - 1].type == 1 && output[idx].data == "SUB" && output[idx + 1].type == 0){
-				output.erase(output.begin() + idx);
-				if(output[idx].data.front() == '+' || output[idx].data.front()== '-'){
-					output[idx].data[0] = '-';
-				}else{
-					output[idx].data.insert(output[idx].data.begin(),1,'-');
+		while(replidx < output.size()){
+			if(replidx + 1 < output.size() && output.at(replidx).type == 1 &&
+			 (output.at(replidx).data == "SUB" || output.at(replidx).data == "ADD")){
+				if((output.at(replidx + 1).type == 2 || 
+					output.at(replidx + 1).type == 1 || 
+					output.at(replidx - 1).type == 2 || 
+					output.at(replidx - 1).type == 1) &&
+					output.at(replidx - 1).type != 0 &&
+					output.at(replidx - 1).type != 5){
+					if(output.at(replidx).data == "SUB"){
+						output.at(replidx).data = "NEG"; 
+						output.at(replidx).type = 1;
+					}else if(output.at(replidx).data == "ADD"){
+						output.at(replidx).data = "POS"; 
+						output.at(replidx).type = 1;						
+					}
 				}
-			}else if(output[idx - 1].type == 1 && output[idx].data == "ADD" && output[idx + 1].type == 0){
-				output.erase(output.begin() + idx);
-				if(output[idx].data.front() == '+' || output[idx].data.front() == '-'){
-					output[idx].data[0] = '+';
-				}else{
-					output[idx].data.insert(output[idx].data.begin(),1,'+');
-				}
-			}else{
-				// Error
 			}
-		}
+			replidx++;
+		}		
 		return output;
 	}
 

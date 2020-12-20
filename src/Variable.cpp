@@ -12,15 +12,15 @@ namespace var{
 
 	// specials to be moved to separate file for more accurate processing
 	std::vector<std::string> specialIden{
-		"pi",
-	};
-	std::vector<std::string> specialVal{
-		"3.1415"
-
+		"pi"
 	};
 
-	std::vector<std::string> varidentifier;
-	std::vector<std::string> varvalue;
+	std::vector<std::string> varidentifier{
+		"pi"
+	};
+	std::vector<std::string> varvalue{
+		"3.14159265"
+	};
 
 	unsigned long int buffermax = 4096;
 	bool runbuffer = true;
@@ -74,7 +74,7 @@ namespace var{
 	// Add variable to vector
 	void update(std::string iden, std::string val){
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
-		if (it == varidentifier.end())	{
+		if (it == varidentifier.end()){
 		  	varidentifier.push_back(iden);
 			varvalue.push_back(val);
 		}else{
@@ -88,18 +88,12 @@ namespace var{
 	// Return var value if identifier is found else return NULL
 	std::string search(std::string iden){
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
-		if (it == varidentifier.end())	{
-			auto it2 = std::find(specialIden.begin(), specialIden.end(), iden);
-			if(it2 == specialIden.end()){
-				if(iden == "rand"){
-					return std::to_string(getrand());
-				}else{
-		  			return "NULL";
-		  		}
+		if (it == varidentifier.end()){
+			if(iden == "rand"){
+				return std::to_string(getrand());
 			}else{
-		  		int index = std::distance(varidentifier.begin(), it);
-		  		return specialVal[index];
-			}
+	  			return "NULL";
+	  		}
 		}else{
 		  int index = std::distance(varidentifier.begin(), it);
 		  return varvalue[index];
@@ -112,7 +106,11 @@ namespace var{
 	}
 
 	// Delete variable, return 1 if not present 0 if success
+	// 2 if cannot be deleted
 	int delvar(std::string variden){
+		for(std::string chkstr : specialIden){
+			if(variden == chkstr) return 3;
+		}
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), variden);
 		if (it == varidentifier.end()){
 			return 1;
@@ -146,8 +144,6 @@ namespace var{
 		}
 		return;
 	}
-
-
 }
 
 // Like substr but for vectors

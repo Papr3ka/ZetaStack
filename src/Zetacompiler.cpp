@@ -116,6 +116,8 @@ namespace comp {
 
 	unsigned int precedence(std::string op){
 		if(op.back() == '('){
+			return 10;
+		}else if(op == "NEG" || op == "POS"){
 			return 9;
 		}else if(op == "POW"){
 			return 8;

@@ -17,7 +17,7 @@ std::vector<token> fillvars(std::vector<token> argsname, std::vector<token> args
 
 void def(std::vector<token> assignTo, std::vector<token> body);
 
-void udef(std::string name);
+int udef(std::string name);
 
 std::vector<token> call(std::vector<token> fargs, std::string name);
 

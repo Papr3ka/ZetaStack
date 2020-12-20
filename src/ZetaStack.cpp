@@ -277,14 +277,23 @@ static void command(std::string com){
 		}
 	}else if(cmdargv.front() == "del"){
 		int delsuccess = 0;
-		std::vector<std::string> vgls = var::globals();
-		for(auto x: vgls){
-			if(x == cmdargv[1]){
-				delsuccess += var::delvar(cmdargv[1]);
+		if(cmdargv[1].back() == '('){
+			delsuccess = udef(cmdargv[1]);
+			if(delsuccess == 1){
+				std::cout << "Undefined function: \"" << cmdargv[1] << "\"\n";
 			}
-		}
-		if(delsuccess >= 1){
-			std::cout << "Undefined variable: \"" << cmdargv[1] << "\"\n";
+		}else{
+			std::vector<std::string> vgls = var::globals();
+			for(auto x: vgls){
+				if(x == cmdargv[1]){
+					delsuccess += var::delvar(cmdargv[1]);
+				}
+			}
+			if(delsuccess == 1){
+				std::cout << "Undefined variable: \"" << cmdargv[1] << "\"\n";
+			}else if(delsuccess == 2){
+				std::cout << "Variable \"" << cmdargv[1] << "\" cannot be deleted\n";
+			}
 		}
 	}else if(cmdargv.front() == "globals"){
 		std::vector<std::string> globalvars = var::globals();
