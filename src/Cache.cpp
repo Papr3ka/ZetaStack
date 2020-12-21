@@ -13,6 +13,7 @@ namespace cch {
 
 	std::vector<std::string> identifier;
 	std::vector<std::string> value;
+	std::vector< std::vector <std::string> > metadata;
 
 	std::vector<std::string> getiden(void){
 		return identifier;
@@ -33,6 +34,14 @@ namespace cch {
 
 	void setmaxlen(unsigned long int ml){
 		maxlen = ml;
+		while(identifier.size() > maxlen){
+			identifier.pop_back();
+			value.pop_back();
+			metadata.pop_back();
+		}
+		identifier.shrink_to_fit();
+		value.shrink_to_fit();
+		metadata.shrink_to_fit();
 		return;
 	}
 
@@ -46,24 +55,39 @@ namespace cch {
 		return;
 	}
 
-	void update(std::string iden, std::string val){
+	void update(std::string iden, std::string val, std::vector<std::string> depends){
 		if(cache_enable){
 			auto it = std::find(identifier.begin(), identifier.end(), iden);
 			if(it == identifier.end()){
 				identifier.insert(identifier.begin(),iden);
 				value.insert(value.begin(),val);
-			}else{
+			}else if(identifier.size() < maxlen){
 				int index = std::distance(identifier.begin(), it);
 				identifier.erase(identifier.begin()+index);
 				value.erase(value.begin()+index);
 				identifier.insert(identifier.begin(),iden);
 				value.insert(value.begin(),val);
-			}
-			if(identifier.size() > maxlen){
-				identifier.pop_back();
-				value.pop_back();
+				metadata.erase(metadata.begin()+index);
+				metadata.insert(metadata.begin(), depends);
 			}
 		}
+		return;
+	}
+
+	void refreshDepends(std::string change){
+		unsigned long int index = 0;
+		while(index < metadata.size()){
+			for(std::string fmeta: metadata.at(index)){
+				if(fmeta == change){
+					identifier.erase(identifier.begin()+index);
+					value.erase(value.begin()+index);
+					metadata.erase(metadata.begin()+index);
+					index--;
+				}	
+			}
+			index++;
+		}
+		return;
 	}
 
 

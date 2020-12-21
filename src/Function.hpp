@@ -19,6 +19,8 @@ void def(std::vector<token> assignTo, std::vector<token> body);
 
 int udef(std::string name);
 
+bool fexists(std::string name);
+
 std::vector<token> call(std::vector<token> fargs, std::string name);
 
 long int argcount(std::string name);

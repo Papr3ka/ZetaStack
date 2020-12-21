@@ -54,14 +54,13 @@ class func{
 token lookup(token var, std::vector<token> identifiers, std::vector<token> args){
 	long int index = 0;
 	for(token id: identifiers){
-		if(id == var){
+		if(id.data == var.data){
 			return args.at(index);
-		}else{
-			index++;
 		}
+		index++;
+		
 	}
-	token tk("NULL",-1);
-	return tk;
+	return var;
 }
 /*
 	argsname ex a, b, c : identifiers
@@ -72,15 +71,10 @@ std::vector<token> fillvars(std::vector<token> argsname, std::vector<token> args
 	if(argsname.size() == 0) return fbody; // Return if there are no arguments
 	std::vector<token> output;
 	token varfilldata;
-	while(!fbody.empty()){
+	while(!fbody.empty()){ 
 		switch(fbody.front().type){
 			case 5:
 				varfilldata = lookup(fbody.front(), argsname, argsvar);
-				if(varfilldata.type == -1){
-					output.push_back(fbody.front());
-					fbody.erase(fbody.begin());
-					break;
-				}
 				output.push_back(varfilldata);
 				fbody.erase(fbody.begin());
 				break;
@@ -121,6 +115,14 @@ void def(std::vector<token> assignTo, std::vector<token> body){ // Input must go
 
 }
 
+bool fexists(std::string name){
+	for(func f_id: nfunctions){
+		if(f_id.fname() == name){
+			return true;
+		}
+	}
+	return false;
+}
 
 // call function returns body list of tokens with vars filled
 // format = funcname(, arg1, arg2, ...

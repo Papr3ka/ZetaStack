@@ -43,6 +43,8 @@ namespace comp {
 		"NQL",
 		"GQL",
 		"LQL",
+		"GRT",
+		"LST"
 	};
 
 	bool string_isnum(std::string str){
@@ -133,7 +135,7 @@ namespace comp {
 			return 3;
 		}else if(op == "OR"){
 			return 2;
-		}else if(op == "EQL" || op == "NQL" || op == "GQL" || op == "LQL"){
+		}else if(op == "EQL" || op == "NQL" || op == "GQL" || op == "LQL" || op == "GRT" || op == "LST"){
 			return 1;
 		}else{
 			return 0; // ERROR
@@ -156,7 +158,9 @@ namespace comp {
 		   op == "EQL" ||
 		   op == "NQL" ||
 		   op == "GQL" ||
-		   op == "LQL"){
+		   op == "LQL" ||
+		   op == "GRT" ||
+		   op == "LST"){
 			return true;
 		}else{
 			return false;
@@ -184,6 +188,7 @@ namespace comp {
 		std::vector<token> operatorStack;
 		std::vector<token> outputQueue;
 		std::vector<token> functionStack;
+		std::vector<unsigned long int> lockstack;
 		long int layer = 0;
 		long int infunction = 0;
 		
@@ -240,6 +245,7 @@ namespace comp {
 					if(layer == infunction && !functionStack.empty()){					
 						outputQueue.push_back(functionStack.back());
 						functionStack.pop_back();
+						lockstack.pop_back();
 						infunction--;
 					}		
 					break;
@@ -248,6 +254,7 @@ namespace comp {
 					layer = infunction;
 					functionStack.push_back(tokens.front());
 					tokens.erase(tokens.begin());
+					lockstack.push_back(operatorStack.size() + 1);
 					break;
 				case 5: // Variable
 					outputQueue.push_back(tokens.front());
@@ -259,7 +266,7 @@ namespace comp {
 					break;
 				case 7: // SEP - Dump all
 					tokens.erase(tokens.begin());
-					while(!operatorStack.empty()){
+					while(!operatorStack.empty() && operatorStack.size() > lockstack.back()){
 						if(operatorStack.back().data == "L_BRAC" || operatorStack.back().data == "R_BRAC"){
 							operatorStack.pop_back();
 						}

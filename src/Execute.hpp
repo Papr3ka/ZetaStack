@@ -5,13 +5,16 @@
 #include<string>
 #include<vector>
 #include<cstdlib>
-#include<gmpxx.h>
 
 #include "Token.hpp"
 
 // Function Prototypes
 
 namespace xmath {
+
+	void setmaxrecurse(long long maxR);
+
+	long long getmaxrecurse(void);
 
 	bool string_isnum(std::string str);
 
@@ -34,6 +37,20 @@ namespace xmath {
 	long long shl(long long x, long long y);
 
 	long long shr(long long x, long long y);
+
+	double eql(double x, double y);
+
+	double nql(double x, double y);
+
+	double gql(double x, double y);
+
+	double lql(double x, double y);
+
+	double grt(double x, double y);
+
+	double lst(double x, double y);
+
+	double neg(double x);
 
 	long long factorial(long long x);
 

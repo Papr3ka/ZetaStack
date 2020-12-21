@@ -23,7 +23,9 @@ namespace cch {
 
 	void reset(void);
 
-	void update(std::string iden, std::string val);
+	void update(std::string iden, std::string val, std::vector<std::string> depends);
+
+	void refreshDepends(std::string change);
 
 	std::string search(std::string iden);
 
