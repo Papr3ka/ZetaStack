@@ -25,11 +25,36 @@ Options:
   --nohandle               Disables signal handling
  ```
 
+# Functions
+
+## Examples
+
+### Creating
+
+```
+>>> f(x,y)=x/y
+>>> fma(a,b,c)=a+b*c
+```
+
+### Using
+
+```
+>>> f(fma(2,4+4,6*12),2/3-2)
+>>> f(1,7)
+```
+
+### Deleting
+
+```
+>>> /del f(
+>>> /del fma(
+```
+
 # Variables
 
 You can assign, manipulate and delete variables in ZetaStack. Assigning variables are the same as any other programming language.
 
-### Examples
+## Examples
 
 ```
 >>> x = 123
@@ -47,7 +72,7 @@ You can assign, manipulate and delete variables in ZetaStack. Assigning variable
 # Commenting
 Commenting can be done with **//** or **/\*\*/**
 
-### Example
+## Example
 
 ```
 >>> 64*(/*Comment here*/2+41/*will read as 4125*/25)
