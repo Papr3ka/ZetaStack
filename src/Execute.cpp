@@ -387,10 +387,6 @@ namespace xmath {
 		}
 		lblend:
 		recursionCount = 0;
-		if(tokens.front().type == 0 && tokens.size() == 1){
-			return tokens.front().data;
-		}else{
-			return "";
-		}
+		return tokens.front().data;
 	}
 }
