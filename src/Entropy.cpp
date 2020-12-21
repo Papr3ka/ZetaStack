@@ -12,7 +12,7 @@ long urandom(long seed){
 	volatile long wait = 1;
 	volatile long x=2;
 
-	register long tepoch = std::chrono::duration_cast<std::chrono::seconds>
+	long tepoch = std::chrono::duration_cast<std::chrono::seconds>
 						(std::chrono::system_clock::now().time_since_epoch()).count();
 
 	std::chrono::_V2::steady_clock::time_point start;
@@ -21,7 +21,7 @@ long urandom(long seed){
 	start = std::chrono::steady_clock::now();
 
 	for(volatile long cnt = 0;
-		cnt < (tepoch % 8191+65521)* seed %131071;
+		cnt < (tepoch % 8191+65521) * seed %131071;
 		cnt++){
 
 		wait = x*x-x;

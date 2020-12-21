@@ -51,7 +51,7 @@ namespace var{
 			std::vector<long int>().swap(randbuffer);
 		}
 		while(randbuffer.size() > buffermax){
-			randbuffer.pop_back();
+			randbuffer.erase(randbuffer.begin());
 		}
 		randbuffer.shrink_to_fit();
 		return;

@@ -132,6 +132,12 @@ namespace comp {
 				}else if(lexInput[index] == '='){
 					index++;
 					returnedTokens.push_back("=");
+				}else if(lexInput[index] == '>'){
+					index++;
+					returnedTokens.push_back(">");
+				}else if(lexInput[index] == '<'){
+					index++;
+					returnedTokens.push_back("<");
 				}else{
 					//error
 				}
@@ -312,6 +318,12 @@ namespace comp {
 					output.push_back(tk);
 				}else if(tokensInput[index] == "<="){
 					token tk("LQL",1);
+					output.push_back(tk);
+				}else if(tokensInput[index] == ">"){
+					token tk("GRT",1);
+					output.push_back(tk);
+				}else if(tokensInput[index] == "<"){
+					token tk("LST",1);
 					output.push_back(tk);
 				}else if(tokensInput[index] == "+="){
 					token tk("ADDASN",10);
