@@ -129,6 +129,7 @@ namespace bar {
 
 	void inform(std::string md){
 		inform_mode = md;
+		std::cout << spacechar*(barlen*2+prec+5) << "    \r";
 		return;
 	}
 
@@ -202,11 +203,11 @@ namespace bar {
 						std::this_thread::sleep_for(std::chrono::milliseconds(25));
 						break;
 					default:
-						std::this_thread::sleep_for(std::chrono::milliseconds(125));
+						std::this_thread::sleep_for(std::chrono::milliseconds(200));
 						break;
 				}
 			}else{
-				std::this_thread::sleep_for(std::chrono::milliseconds(125));
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			}
 		}
 		return;

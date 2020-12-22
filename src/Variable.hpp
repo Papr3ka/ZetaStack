@@ -20,15 +20,21 @@ namespace var {
 
 	void clearbuffer(void);
 
+	bool changable(std::string iden);
+
 	void update(std::string iden, std::string val);
 	
-	std::string search(std::string iden);
+	std::string search(std::string iden, bool nothrow=false);
+
+	std::string	mostrecent(void);
 
 	unsigned long int count(void);
 
 	int delvar(std::string variden);
 
 	std::vector<std::string> globals(void);
+
+	std::vector<std::string> specials(void);
 
 	void buffer(bool run);
 

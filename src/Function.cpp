@@ -58,7 +58,6 @@ token lookup(token var, std::vector<token> identifiers, std::vector<token> args)
 			return args.at(index);
 		}
 		index++;
-		
 	}
 	return var;
 }
