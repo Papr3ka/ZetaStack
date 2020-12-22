@@ -32,22 +32,22 @@ Options:
 ### Creating
 
 ```
->>> f(x,y)=x/y
->>> fma(a,b,c)=a+b*c
+=== f(x,y)=x/y
+=== fma(a,b,c)=a+b*c
 ```
 
 ### Using
 
 ```
->>> f(fma(2,4+4,6*12),2/3-2)
->>> f(1,7)
+=== f(fma(2,4+4,6*12),2/3-2)
+=== f(1,7)
 ```
 
 ### Deleting
 
 ```
->>> /del f(
->>> /del fma(
+=== /del f(
+=== /del fma(
 ```
 
 # Variables
@@ -57,10 +57,10 @@ You can assign, manipulate and delete variables in ZetaStack. Assigning variable
 ## Examples
 
 ```
->>> x = 123
->>> var = 2*(1+4)
->>> var += 4 // Variable must be defined first
->>> /del var
+=== x = 123
+=== var = 2*(1+4)
+=== var += 4 // Variable must be defined first
+=== /del var
 ```
 
 ### Special Variables
@@ -75,8 +75,8 @@ Commenting can be done with **//** or **/\*\*/**
 ## Example
 
 ```
->>> 64*(/*Comment here*/2+41/*will read as 4125*/25)
->>> 256**2 //Everything after here will be gone
+=== 64*(/*Comment here*/2+41/*will read as 4125*/25)
+=== 256**2 //Everything after here will be gone
 ```
 
 # Commands
