@@ -12,8 +12,7 @@
 #include "Status.hpp"
 #include "Token.hpp"
 #include "Zetacompiler.hpp"
-
-
+#include "Variable.hpp"
 
 namespace xmath {
 
@@ -30,11 +29,23 @@ namespace xmath {
 	}
 
 
-	std::string to_string_hprec(double x) {
+	std::string to_string_hprec(double x){
 		std::ostringstream doublestring;
 		doublestring << std::setprecision(std::numeric_limits<double>::digits10) << x;
 		return doublestring.str();
 	}
+
+	void resetsstreamsettings(void){
+		std::stringstream strstream(std::stringstream::in | std::stringstream::out);
+		strstream << std::setprecision(6);
+		return;
+	}	
+
+	std::string to_string_hprec(long long x){
+		std::ostringstream llstring;
+		llstring << std::setprecision(std::numeric_limits<long long>::digits10) << x;
+		return llstring.str();
+	}	
 
 	bool string_isnum(std::string str){
 		if(str.size() <= 1){
@@ -80,7 +91,7 @@ namespace xmath {
 		return pow(x, y);
 	}
 
-	long long exclusiveOr(long long x, long long y){
+	long long bitexclusiveOr(long long x, long long y){
 		return x ^ y;
 	}
 
@@ -126,12 +137,184 @@ namespace xmath {
 		return x*-1;
 	}
 
+	long long bitwor(long long x, long long y){
+		return x | y;
+	}
+
+	long long bitwand(long long x, long long y){
+		return x & y;
+	}
+
+	double land(double x, double y){
+		return x && y;
+	}
+
+	double lor(double x, double y){
+		return x || y;
+	}
+
 	long long factorial(long long x){
 		long long ans=1;
 		for(;x>0;x--){
 			ans *= x;
 		}
 		return ans;
+	}
+
+	/*
+	0 ASN     =
+	1 ADDASN  +=
+	2 SUBASN  -=
+	3 MULASN  *=
+	4 DIVASN  /=
+	5 MODASN  %=
+	6 XORASN  ^=
+	7 POWASN  **=
+	8 SHLASN  <<=
+	9 SHRASN  >>=
+	*/
+
+	void asn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(val));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void addasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(add(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void subasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(sub(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void mulasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(mul(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void divasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(divide(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void modasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(mod(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void exclusiveOrasn(std::string iden, long long val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(bitexclusiveOr(std::stoll(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void powasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(pow(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void shlasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(shl(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void shrasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(shr(std::stod(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}
+
+	void bitexclusiveOrasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(bitexclusiveOr(std::stoll(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}	
+
+	void bitorasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(bitwor(std::stoll(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
+	}	
+
+	void bitandasn(std::string iden, double val){
+		if(var::changable(iden)){
+			var::update(iden,to_string_hprec(bitwand(std::stoll(var::search(iden)), val)));
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}
 	}
 
 	std::string calculate(std::vector<token> tokens, bool showprogress){
@@ -142,16 +325,12 @@ namespace xmath {
 			recursionCount = 0;
 			throw error;
 		}
+		const token first = tokens.front();
 		recursionCount++;
-		bool forcerun = false;
 		unsigned long int index = 0;
 		long int argtracker = 0;
 		long int farg_max;
-		if(tokens.size() <= 1 && tokens.front().type != 4){
-			return tokens.front().data;
-		}else if(tokens.size() == 1){
-			forcerun = true;
-		}
+
 		/*
 		X	0 - NUM
 		-	1 - OPERATOR
@@ -163,8 +342,9 @@ namespace xmath {
 		-	7 - Separator
 		*/	
 		std::vector<token> argpack; // To be used in functions
-		// Cannot use recursion because in certain cases, it will lead to stack overflow
-		while(tokens.size() > 1 || forcerun){
+		goto forceRun; // At least run through once loop
+		while(tokens.size() > 1){
+			forceRun:
 			if(showprogress) bar::setcount((float)tokens.size());
 			// if(index > tokens.size()){
 			// 	index = 0;
@@ -176,149 +356,171 @@ namespace xmath {
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk(to_string_hprec(add(x, y)), 0);
-						tokens.insert(tokens.begin()+(index-2),1, tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "SUB"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk(to_string_hprec(sub(x, y)), 0);
-						tokens.insert(tokens.begin()+(index-2),1, tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "MUL"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk(to_string_hprec(mul(x, y)), 0);
-						tokens.insert(tokens.begin()+(index-2),1, tk);
+						tokens.at(index-2) = tk;
 						index -= 3;
 					}else if(tokens[index].data == "DIV"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
-						token tk;
-						tk.data = to_string_hprec(divide(x, y));
-						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						token tk(to_string_hprec(divide(x, y)), 0);
+						tokens.at(index-2) = tk;
 						index -= 3;
 					}else if(tokens[index].data == "MOD"){
 						double x = std::stoll(tokens[index-2].data);
 						double y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
-						token tk;
-						tk.data = to_string_hprec(mod(x, y));
-						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						token tk(to_string_hprec(mod(x, y)), 0);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "POW"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
-						token tk;
-						tk.data = to_string_hprec(power(x, y));
-						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						token tk(to_string_hprec(power(x, y)), 0);
+						tokens.at(index-2) = tk;
 						index -= 3;	
-					}else if(tokens[index].data == "XOR"){
+					}else if(tokens[index].data == "BITXOR"){
 						long long x = std::stoll(tokens[index-2].data);
 						long long y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(bitexclusiveOr(x, y)), 0);
+						tokens.at(index-2) = tk;
+						index -= 3;	
+					}else if(tokens[index].data == "BITOR"){
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(bitwor(x, y)), 0);
+						tokens.at(index-2) = tk;
+						index -= 3;	
+					}else if(tokens[index].data == "BITAND"){
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(bitwand(x, y)), 0);
+						tokens.at(index-2) = tk;
+						index -= 3;
+					}else if(tokens[index].data == "LAND"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk(to_string_hprec(land(x, y)), 0);
+						tokens.at(index-2) = tk;
+						index -= 3;
+					}else if(tokens[index].data == "LOR"){
+						double x = std::stod(tokens[index-2].data);
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
 						token tk;
-						tk.data = to_string_hprec(exclusiveOr(x, y));
+						tk.data = to_string_hprec(lor(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
-						index -= 3;	
+						tokens.at(index-2) = tk;
+						index -= 3;
 					}else if(tokens[index].data == "SHL"){
 						long long x = std::stoll(tokens[index-2].data);
 						long long y = std::stoll(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(shl(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
+					}else if(tokens[index].data == "SHR"){
+						long long x = std::stoll(tokens[index-2].data);
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						token tk;
+						tk.data = to_string_hprec(shr(x, y));
+						tk.type = 0;
+						tokens.at(index-2) = tk;
+						index -= 3;
 			// comparisons
 					}else if(tokens[index].data == "EQL"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(eql(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "NQL"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(nql(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "GQL"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(gql(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "LQL"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(lql(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "GRT"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(grt(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "LST"){
 						double x = std::stod(tokens[index-2].data);
 						double y = std::stod(tokens[index-1].data);
 						tokens.erase(tokens.begin()+index-2);
 						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
 						token tk;
 						tk.data = to_string_hprec(lst(x, y));
 						tk.type = 0;
-						tokens.insert(tokens.begin()+(index-2),1,tk);
+						tokens.at(index-2) = tk;
 						index -= 3;	
 					}else if(tokens[index].data == "NEG"){
 						double x = std::stod(tokens[index-1].data);
@@ -326,10 +528,10 @@ namespace xmath {
 						tokens.erase(tokens.begin()+index-1);
 						token tk(to_string_hprec(neg(x)), 0);
 						tokens.insert(tokens.begin()+(index-1),1,tk);
-						index -= 2;					
+						index -= 2;
 					}else if(tokens[index].data == "POS"){
 						tokens.erase(tokens.begin()+index);
-						index--;					
+						index--;
 					}else{
 						goto lblend; // Error
 					}
@@ -374,6 +576,108 @@ namespace xmath {
 			case 7:{
 				tokens.erase(tokens.begin()+index);
 			}break;
+
+			case 10:{
+					if(tokens[index].data == "ASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						asn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "ADDASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						addasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "SUBASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						subasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "MULASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						mulasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "DIVASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						divasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "MODASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						modasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "BITXORASN"){
+						std::string idenx = tokens[index-2].data;
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						bitexclusiveOrasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "BITORASN"){
+						std::string idenx = tokens[index-2].data;
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						bitorasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "BITANDASN"){
+						std::string idenx = tokens[index-2].data;
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						bitandasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "POWASN"){
+						std::string idenx = tokens[index-2].data;
+						double y = std::stod(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						powasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "SHLASN"){
+						std::string idenx = tokens[index-2].data;
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						shlasn(idenx, y);
+						index -= 3;	
+					}else if(tokens[index].data == "SHRASN"){
+						std::string idenx = tokens[index-2].data;
+						long long y = std::stoll(tokens[index-1].data);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						tokens.erase(tokens.begin()+index-2);
+						shrasn(idenx, y);
+						index -= 3;	
+					}else{
+						goto lblend;
+					}
+				}break;
 			default:{
 				index++;
 				if(index > tokens.size()){
@@ -381,12 +685,16 @@ namespace xmath {
 				}
 				}break;
 			}
-			if(forcerun || index > tokens.size()){
-				goto lblend;
-			}
 		}
 		lblend:
 		recursionCount = 0;
+		if(tokens.size() <= 0){
+			return var::mostrecent();
+		}else if(first.type != 0 && first == tokens.front()){
+			std::string error = "Unexpected Token";
+			throw error;
+		} 
 		return tokens.front().data;
+		
 	}
 }

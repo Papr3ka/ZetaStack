@@ -10,6 +10,13 @@
 #include "Variable.hpp"
 #include "Token.hpp"
 
+typedef struct{
+	unsigned long int nums;
+	unsigned long int operators;
+	unsigned long int bracs;
+	unsigned long int functions;
+} comp_metadata;
+
 // Function Prototypes
 
 namespace comp {
@@ -26,15 +33,13 @@ namespace comp {
 
 	bool associativity(std::string op);
 
-	std::vector<std::string> lex(std::string lexInput);
-
-	std::vector<token> tokenComp(std::vector<std::string> tokensInput);
-
 	int checkleftBrac(std::string tokens);
 	
 	int checkrightBrac(std::string tokens);
+
+	comp_metadata getcompdata(std::vector<token> vecdata);
 	
-	std::vector<token> shuntingYard(std::vector<token> tokens);
+	std::vector<token> shuntingYard(std::vector<token> tokens, comp_metadata meta);
 
 	std::vector<token> fillallvars(std::vector<token> tokens);
 }

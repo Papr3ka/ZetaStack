@@ -16,9 +16,9 @@ std::vector<std::string> split(std::string str, std::string split){
     while((end = str.find(split, start)) != std::string::npos){
         token = str.substr(start, end - start);
         start = end + splitLen;
-        output.push_back(token);
+        output.emplace_back(token);
     }
-    output.push_back(str.substr(start));
+    output.emplace_back(str.substr(start));
     return output;
 }
 
@@ -70,74 +70,77 @@ namespace comp {
 					dualchar = lexInput.substr(index,2);
 					if(dualchar == "**"){
 						index += 2;
-						returnedTokens.push_back("**");
+						returnedTokens.emplace_back("**");
 					}else if(dualchar == "//"){
 						index += 2;
-						returnedTokens.push_back("//");
+						returnedTokens.emplace_back("//");
 					}else if(dualchar == "||"){
 						index += 2;
-						returnedTokens.push_back("||");
+						returnedTokens.emplace_back("||");
 					}else if(dualchar == "&&"){
 						index += 2;
-						returnedTokens.push_back("&&");
+						returnedTokens.emplace_back("&&");
 					}else if(dualchar == "<<"){
 						index += 2;
-						returnedTokens.push_back("<<");
+						returnedTokens.emplace_back("<<");
 					}else if(dualchar == ">>"){
 						index += 2;
-						returnedTokens.push_back(">>");
+						returnedTokens.emplace_back(">>");
 					}else if(dualchar == "=="){
 						index += 2;
-						returnedTokens.push_back("==");
+						returnedTokens.emplace_back("==");
 					}else if(dualchar == "!="){
 						index += 2;
-						returnedTokens.push_back("!=");
+						returnedTokens.emplace_back("!=");
 					}else if(dualchar == ">="){
 						index += 2;
-						returnedTokens.push_back(">=");
+						returnedTokens.emplace_back(">=");
 					}else if(dualchar == "<="){
 						index += 2;
-						returnedTokens.push_back("<=");
+						returnedTokens.emplace_back("<=");
 					}else{
 						// error
 					}
 				}
 				if(lexInput[index] == '+'){
 					index++;
-					returnedTokens.push_back("+");
+					returnedTokens.emplace_back("+");
 				}else if(lexInput[index] == '-'){
 					index++;
-					returnedTokens.push_back("-");
+					returnedTokens.emplace_back("-");
 				}else if(lexInput[index] == '*'){
 					index++;
-					returnedTokens.push_back("*");
+					returnedTokens.emplace_back("*");
 				}else if(lexInput[index] == '/'){
 					index++;
-					returnedTokens.push_back("/");
+					returnedTokens.emplace_back("/");
 				}else if(lexInput[index] == '%'){
 					index++;
-					returnedTokens.push_back("%");
+					returnedTokens.emplace_back("%");
 				}else if(lexInput[index] == '^'){
 					index++;
-					returnedTokens.push_back("^");
+					returnedTokens.emplace_back("^");
 				}else if(lexInput[index] == '!'){
 					index++;
-					returnedTokens.push_back("!");
+					returnedTokens.emplace_back("!");
 				}else if(lexInput[index] == '('){
 					index++;
-					returnedTokens.push_back("(");
+					returnedTokens.emplace_back("(");
 				}else if(lexInput[index] == ')'){
 					index++;
-					returnedTokens.push_back(")");
+					returnedTokens.emplace_back(")");
 				}else if(lexInput[index] == '='){
 					index++;
-					returnedTokens.push_back("=");
+					returnedTokens.emplace_back("=");
 				}else if(lexInput[index] == '>'){
 					index++;
-					returnedTokens.push_back(">");
-				}else if(lexInput[index] == '<'){
+					returnedTokens.emplace_back(">");
+				}else if(lexInput[index] == '&'){
 					index++;
-					returnedTokens.push_back("<");
+					returnedTokens.emplace_back("&");
+				}else if(lexInput[index] == '|'){
+					index++;
+					returnedTokens.emplace_back("|");
 				}else{
 					//error
 				}
@@ -151,11 +154,11 @@ namespace comp {
 				}
 				if(lexInput[countindex] == '('){
 					// if functions call
-					returnedTokens.push_back(lexInput.substr(index,countindex-index + 1));
+					returnedTokens.emplace_back(lexInput.substr(index,countindex-index + 1));
 					index += countindex-index + 1;
-					returnedTokens.push_back("(");
+					returnedTokens.emplace_back("(");
 				}else{
-					returnedTokens.push_back(lexInput.substr(index,countindex-index));
+					returnedTokens.emplace_back(lexInput.substr(index,countindex-index));
 					index += countindex-index;
 				}
 			}else if(isdigit(lexInput[index]) || lexInput[index] == '.'){
@@ -167,11 +170,17 @@ namespace comp {
 					if(lexInput[countindex] == '.'){
 						countindex++;
 						goto decimal;
+					}else if(lexInput[countindex] == 'e' || lexInput[countindex] == 'E'){
+						countindex += 2;
+						goto decimal;			
+					}else if(lexInput[countindex] == 'j'){
+						countindex++;
+						break;
 					}
-				returnedTokens.push_back(lexInput.substr(index,countindex-index));
+				returnedTokens.emplace_back(lexInput.substr(index,countindex-index));
 				index += countindex-index;
 			}else if(lexInput[index] == ','){
-				returnedTokens.push_back(","); // default sep
+				returnedTokens.emplace_back(","); // default sep
 				index++;
 			}else{
 				index++;
@@ -182,58 +191,51 @@ namespace comp {
 			}
 		}
 		for(unsigned long index = 1; index < returnedTokens.size(); index++){
-			if(returnedTokens[index-1] == "*" && returnedTokens[index] == "*="){
+			if(returnedTokens[index-1] == "**" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"**=");
+				returnedTokens.at(index-1) = "**=";
 			}else if(returnedTokens[index-1] == "<<" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"<<=");
+				returnedTokens.at(index-1) = "<<=";
 			}else if(returnedTokens[index-1] == ">>" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,">>=");
+				returnedTokens.at(index-1) = ">>=";
 			}else if(returnedTokens[index-1] == "+" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"+=");
+				returnedTokens.at(index-1) = "+=";
 			}else if(returnedTokens[index-1] == "-" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"-=");
+				returnedTokens.at(index-1) = "-=";
 			}else if(returnedTokens[index-1] == "*" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"*=");
+				returnedTokens.at(index-1) = "*=";
 			}else if(returnedTokens[index-1] == "/" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"/=");
+				returnedTokens.at(index-1) = "/=";
 			}else if(returnedTokens[index-1] == "%" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"%=");
+				returnedTokens.at(index-1) = "%=";
 			}else if(returnedTokens[index-1] == "^" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"^=");
+				returnedTokens.at(index-1) = "^=";
 			}else if(returnedTokens[index-1] == "=" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"==");
+				returnedTokens.at(index-1) = "==";
 			}else if(returnedTokens[index-1] == "!" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"!=");
+				returnedTokens.at(index-1) = "!=";
 			}else if(returnedTokens[index-1] == ">" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,">=");
+				returnedTokens.at(index-1) = ">=";
 			}else if(returnedTokens[index-1] == "<" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.at(index-1) = "<=";
+			}else if(returnedTokens[index-1] == "|" && returnedTokens[index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.insert(returnedTokens.begin()+index-1,1,"<=");
+				returnedTokens.at(index-1) = "|=";
+			}else if(returnedTokens[index-1] == "&" && returnedTokens[index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+index-1);
+				returnedTokens.at(index-1) = "&=";
 			}else{
 				// Error
 			}
@@ -254,126 +256,133 @@ namespace comp {
 
 	std::vector<token> tokenComp(std::vector<std::string> tokensInput){
 		std::vector<token> output;
+		output.reserve(tokensInput.size());
 		for(unsigned long int index = 0;index<tokensInput.size();index++){
 			if(!isdigit(tokensInput[index][0])){
 				if(tokensInput[index] == ","){
 					token tk("SEP",7);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "+"){
 					token tk("ADD",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "-"){
 					token tk("SUB",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "*"){
 					token tk("MUL",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "/"){
 					token tk("DIV",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "%"){
 					token tk("MOD",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "^"){
-					token tk("XOR",1);
-					output.push_back(tk);
+					token tk("BITXOR",1);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "!"){
 					token tk("FACT",6);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "("){
 					token tk("L_BRAC",2);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == ")"){
 					token tk("R_BRAC",3);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "="){
 					token tk("ASN",10);
-					output.push_back(tk); // Assign
+					output.emplace_back(tk); // Assign
 				}else if(tokensInput[index] == "**"){
 					token tk("POW",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "//"){
 					token tk("FLOORDIV",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "||"){
-					token tk("OR",1);
-					output.push_back(tk);
+					token tk("LOR",1);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "&&"){
-					token tk("AND",1);
-					output.push_back(tk);
-				}else if(tokensInput[index] == "<<"){
-					token tk("SHL",1);
-					output.push_back(tk);
+					token tk("LAND",1);
+					output.emplace_back(tk);
+				}else if(tokensInput[index] == "&"){
+					token tk("BITAND",1);
+					output.emplace_back(tk);
+				}else if(tokensInput[index] == "|"){
+					token tk("BITOR",1);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == ">>"){
 					token tk("SHR",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "=="){
 					token tk("EQL",1);
-					output.push_back(tk); // Equal
+					output.emplace_back(tk); // Equal
 				}else if(tokensInput[index] == "!="){
 					token tk("NQL",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == ">="){
 					token tk("GQL",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "<="){
 					token tk("LQL",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == ">"){
 					token tk("GRT",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "<"){
 					token tk("LST",1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "+="){
 					token tk("ADDASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "-="){
 					token tk("SUBASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "*="){
 					token tk("MULASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "/="){
 					token tk("DIVASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "^="){
-					token tk("XORASN",10);
-					output.push_back(tk);
+					token tk("BITXORASN",10);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "<<="){
 					token tk("SHLASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == ">>="){
 					token tk("SHRASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "**="){
 					token tk("POWASN",10);
-					output.push_back(tk);
-				}else if(tokensInput[index] == "//="){
-					token tk("FLOORDIVASN",10);
-					output.push_back(tk);
+					output.emplace_back(tk);
+				}else if(tokensInput[index] == "|="){
+					token tk("BITORASN",10);
+					output.emplace_back(tk);
+				}else if(tokensInput[index] == "&="){
+					token tk("BITANDASN",10);
+					output.emplace_back(tk);
 				}else if(tokensInput[index][0] == '.'){
 					token tk(tokensInput[index],0);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(isalpha(tokensInput[index].back())){
 					token tk(tokensInput[index],5);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else if(tokensInput[index].back() == '('){
 					token tk(tokensInput[index],4);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}else{
 					token tk("NULL",-1);
-					output.push_back(tk);
+					output.emplace_back(tk);
 				}
 			}else if(tokensInput[index].back() == '('){
 				token tk(tokensInput[index],4);
-				output.push_back(tk);
+				output.emplace_back(tk);
 			}else if(ttype(tokensInput[index]) == 0){
 				token tk(tokensInput[index],0);
-				output.push_back(tk);			
+				output.emplace_back(tk);			
 			}else{
 				token tk(tokensInput[index],5);
-				output.push_back(tk);
+				output.emplace_back(tk);
 			}
 		}
 		unsigned long int replidx = 1;
@@ -517,7 +526,7 @@ namespace comp {
 			long int ieqpos = static_cast<long int>(eqpos);
 			if(ieqpos - 2 >= 0){
 				if(str[ieqpos - 2] == '>' || str[ieqpos - 2] == '<' || str[ieqpos - 2] == '*'){
-					return 1;
+					return 0;
 				}
 			}
 			if(ieqpos - 1 >= 0){
@@ -532,13 +541,13 @@ namespace comp {
 			}
 			if(str[ieqpos] == '='){
 				if(fbrac == std::string::npos){
-					return 1;
+					return 0;
 				}else{
 					long int fbracpos = static_cast<long int>(fbrac);
 					if(fbracpos < ieqpos){
 						return 2;
 					}else{
-						return 1;
+						return 0;
 					}
 				}
 			}

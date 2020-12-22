@@ -7,7 +7,7 @@
 
 namespace cch {
 
-	unsigned long int maxlen = 4096; // How big the cache can be before discarding
+	unsigned long int maxlen = 1024; // How big the cache can be before discarding
 
 	bool cache_enable = true;
 
@@ -61,6 +61,7 @@ namespace cch {
 			if(it == identifier.end()){
 				identifier.insert(identifier.begin(),iden);
 				value.insert(value.begin(),val);
+				metadata.insert(metadata.begin(), depends);
 			}else if(identifier.size() < maxlen){
 				int index = std::distance(identifier.begin(), it);
 				identifier.erase(identifier.begin()+index);
@@ -76,8 +77,10 @@ namespace cch {
 
 	void refreshDepends(std::string change){
 		unsigned long int index = 0;
+		std::vector<std::string> tempvec;
 		while(index < metadata.size()){
-			for(std::string fmeta: metadata.at(index)){
+			tempvec = metadata.at(index);
+			for(std::string fmeta: tempvec){
 				if(fmeta == change){
 					identifier.erase(identifier.begin()+index);
 					value.erase(value.begin()+index);

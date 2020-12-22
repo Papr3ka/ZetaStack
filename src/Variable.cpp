@@ -12,15 +12,29 @@ namespace var{
 
 	// specials to be moved to separate file for more accurate processing
 	std::vector<std::string> specialIden{
-		"pi"
+		"rand",
+		"pi",
+		"euler",
+		"phi",
+		"omega"
 	};
 
 	std::vector<std::string> varidentifier{
-		"pi"
+		"pi",
+		"euler",
+		"phi",
+		"omega"
 	};
 	std::vector<std::string> varvalue{
-		"3.14159265"
+		"3.14159265358979",
+		"2.71828182845904",
+		"1.61803398874989",
+		"0.56714329040978"
+
 	};
+
+	std::string mostrecentiden;
+	std::string mostrecentvar;
 
 	unsigned long int buffermax = 4096;
 	bool runbuffer = true;
@@ -71,33 +85,59 @@ namespace var{
 		return;
 	}
 
+	bool changable(std::string iden){
+		for(std::string vconst: specialIden){
+			if(vconst == iden){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	// Add variable to vector
 	void update(std::string iden, std::string val){
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
 		if (it == varidentifier.end()){
-		  	varidentifier.push_back(iden);
-			varvalue.push_back(val);
+		  	varidentifier.emplace_back(iden);
+			varvalue.emplace_back(val);
+			mostrecentiden = iden;
+			mostrecentvar = val;
 		}else{
 		  int index = std::distance(varidentifier.begin(), it);
 		  varvalue.erase(varvalue.begin()+index);
 		  varvalue.insert(varvalue.begin()+index,1,val);
+		  mostrecentiden = varidentifier.at(index);
+		  mostrecentvar = val;
 		}
 
 	}
 
 	// Return var value if identifier is found else return NULL
-	std::string search(std::string iden){
+	std::string search(std::string iden, bool nothrow){
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
 		if (it == varidentifier.end()){
 			if(iden == "rand"){
 				return std::to_string(getrand());
 			}else{
-	  			return "NULL";
+				if(nothrow){
+					return "NULL";
+				}else{
+					std::string error = "Undefined Variable: \"";
+		  			error.append(iden).append("\"");
+		  			throw error;
+		  		}
 	  		}
 		}else{
 		  int index = std::distance(varidentifier.begin(), it);
 		  return varvalue[index];
 		}
+	}
+
+	std::string	mostrecent(void){
+		if(mostrecentiden == "rand"){
+			return std::to_string(getrand());
+		}
+		return mostrecentvar;
 	}
 
 	// Wrapper for amount of variables
@@ -109,7 +149,7 @@ namespace var{
 	// 2 if cannot be deleted
 	int delvar(std::string variden){
 		for(std::string chkstr : specialIden){
-			if(variden == chkstr) return 3;
+			if(variden == chkstr) return 2;
 		}
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), variden);
 		if (it == varidentifier.end()){
@@ -127,6 +167,10 @@ namespace var{
 		return varidentifier;
 	}
 
+	std::vector<std::string> specials(void){
+		return specialIden;
+	}
+
 
 	void buffer(bool run){
 		if(!run){
@@ -136,7 +180,7 @@ namespace var{
 			if(randbuffer.size() < buffermax){
 				while(randbuffer.size() < buffermax){
 					prevr = getrandnum(prevr) ^ 127;
-					randbuffer.push_back(prevr);
+					randbuffer.emplace_back(prevr);
 				}
 			}else{
 				std::this_thread::sleep_for(std::chrono::milliseconds(125));
@@ -150,7 +194,7 @@ namespace var{
 std::vector<std::string> subVec(std::vector<std::string> vec, unsigned long start, unsigned long end){
 	std::vector<std::string> output;
 	for(;start < end; start++){
-		output.push_back(vec[start]);
+		output.emplace_back(vec[start]);
 	}
 	return output;
 }

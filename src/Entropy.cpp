@@ -9,8 +9,8 @@ The CIA encourages code obfuscation. They make it more complicated than necessar
 */
 
 long urandom(long seed){
-	volatile long wait = 1;
-	volatile long x=2;
+	long wait = 1;
+	long x=2;
 
 	long tepoch = std::chrono::duration_cast<std::chrono::seconds>
 						(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -20,7 +20,7 @@ long urandom(long seed){
 
 	start = std::chrono::steady_clock::now();
 
-	for(volatile long cnt = 0;
+	for(long cnt = 0;
 		cnt < (tepoch % 8191+65521) * seed %131071;
 		cnt++){
 
