@@ -1,13 +1,12 @@
+#include<algorithm>
+#include<atomic>
+#include<cmath>
+#include<cstdlib>
 #include<iostream>
 #include<ostream>
 #include<string>
-#include<vector>
-#include<algorithm>
-#include<cstdlib>
-#include<cmath>
-
 #include<thread>
-#include<atomic>
+#include<vector>
 
 #include "Status.hpp"
 
@@ -145,7 +144,7 @@ namespace bar {
 	}
 
 	// Actually update the bar
-	void updatepercent(void){
+	inline void updatepercent(void){
 		dispbar = barlen-(count/countmax)*barlen;
 		barbody = (loadchar*dispbar).append(spacechar*(barlen-dispbar));
 		percent = 100-count/countmax*100;
@@ -155,7 +154,7 @@ namespace bar {
 		return;
 	}
 
-	void updatecycle(void){
+	inline void updatecycle(void){
 		if(direction){
 			barbody = (spacechar*(float)spos).append(right).append(spacechar*(float)(dotbarlen-(spos+right.size())));
 			elapsed = std::round(std::chrono::duration<double, std::milli>(next_time - start_time).count()/100)/10;
@@ -191,16 +190,21 @@ namespace bar {
 		right = right*8.0f;
 		left = left*8.0f; 
 		while(run_bar){
+			backtoloop:
 			if(dostat && state){
 				next_time = std::chrono::steady_clock::now();
 				switch(loadtype){
 					case 0:
 						updatecycle();
+						if(!state) goto backtoloop;
 						std::this_thread::sleep_for(std::chrono::milliseconds(16));
+						if(!state) goto backtoloop;
 						break;
 					case 1:
 						updatepercent();
+						if(!state) goto backtoloop;
 						std::this_thread::sleep_for(std::chrono::milliseconds(25));
+						if(!state) goto backtoloop;
 						break;
 					default:
 						std::this_thread::sleep_for(std::chrono::milliseconds(200));

@@ -1,15 +1,15 @@
 #ifndef FUNCTION_HPP
 #define FUNCTION_HPP
 
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<string>
+#include<vector>
 
 #include "Function.hpp"
-#include "Zetacompiler.hpp"
 #include "Token.hpp"
+#include "Zetacompiler.hpp"
 
 token lookup(token var, std::vector<token> identifiers, std::vector<token> args);
 

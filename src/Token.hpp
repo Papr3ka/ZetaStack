@@ -21,6 +21,9 @@ typedef struct{
 	5 - VARIABLE
 	6 - R FUNC
 	7 - Separator / Func End
+	8
+	9 - String
+	10 - assign operator
 */	
 
 class token{

@@ -215,14 +215,13 @@ namespace comp {
 		return output;
 	}
 
-	// fcomp = false, bool used for function jit comp
 	std::vector<token> shuntingYard(std::vector<token> tokens, comp_metadata meta){
 		std::vector<token> operatorStack;
 		std::vector<token> outputQueue;
 		std::vector<token> functionStack;
 		operatorStack.reserve(meta.operators+meta.bracs);
 		outputQueue.reserve(meta.nums+meta.operators+meta.functions);
-		outputQueue.reserve(meta.functions);
+		functionStack.reserve(meta.functions);
 		std::vector<unsigned long int> lockstack;
 		lockstack.reserve(meta.functions);
 		long int layer = 0;
@@ -319,6 +318,7 @@ namespace comp {
 					}
 					break;
 				default:
+					outputQueue.emplace_back(tokens.front());
 					tokens.erase(tokens.begin());
 					break;
 			}
@@ -354,8 +354,8 @@ namespace comp {
 						continue;
 					}
 				}
-				tokens.at(index).data = var::search(tokens.at(index).data);
-				tokens.at(index).type = 0;
+				token tk(var::search(tokens.at(index).data, false), 0);
+				tokens.at(index) = tk;
 			}
 		}
 		return tokens;

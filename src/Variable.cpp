@@ -1,12 +1,12 @@
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<string>
 #include<thread>
+#include<vector>
 
-#include "Variable.hpp"
 #include "Entropy.hpp"
+#include "Variable.hpp"
 
 namespace var{
 
@@ -94,6 +94,15 @@ namespace var{
 		return true;
 	}
 
+	bool exists(std::string iden){
+		for(std::string vars: varidentifier){
+			if(vars == iden){
+				return true;
+			}
+		}
+		return false;		
+	}
+
 	// Add variable to vector
 	void update(std::string iden, std::string val){
 		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
@@ -171,7 +180,7 @@ namespace var{
 		return specialIden;
 	}
 
-
+	// Target to thread
 	void buffer(bool run){
 		if(!run){
 			return;

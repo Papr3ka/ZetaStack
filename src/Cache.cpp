@@ -1,7 +1,7 @@
+#include<algorithm>
 #include<iostream>
 #include<string>
 #include<vector>
-#include<algorithm>
 
 #include "Cache.hpp"
 
@@ -14,6 +14,8 @@ namespace cch {
 	std::vector<std::string> identifier;
 	std::vector<std::string> value;
 	std::vector< std::vector <std::string> > metadata;
+
+	std::vector<std::string> requestqueue;
 
 	std::vector<std::string> getiden(void){
 		return identifier;
@@ -52,6 +54,7 @@ namespace cch {
 	void reset(void){
 		std::vector<std::string>().swap(identifier);
 		std::vector<std::string>().swap(value);
+		std::vector< std::vector<std::string> >().swap(metadata);
 		return;
 	}
 
@@ -76,6 +79,7 @@ namespace cch {
 	}
 
 	void refreshDepends(std::string change){
+		if(metadata.size() <= 0) return;
 		unsigned long int index = 0;
 		std::vector<std::string> tempvec;
 		while(index < metadata.size()){
@@ -85,14 +89,27 @@ namespace cch {
 					identifier.erase(identifier.begin()+index);
 					value.erase(value.begin()+index);
 					metadata.erase(metadata.begin()+index);
-					index--;
-				}	
+				}else{
+					index++;
+					if(index > metadata.size()) return;
+				}
 			}
-			index++;
 		}
 		return;
 	}
 
+	void add_depend(std::string change){
+		requestqueue.emplace_back(change);
+		return;
+	}
+
+	void fulfill_depends(void){
+		for(std::string toref: requestqueue){
+			refreshDepends(toref);
+		}
+		std::vector<std::string>().swap(requestqueue);
+		return;
+	}
 
 	std::string search(std::string iden){
 		if(cache_enable){

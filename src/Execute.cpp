@@ -1,18 +1,19 @@
 #include<cmath>
-#include<string>
-#include<vector>
 #include<cstdlib>
+#include<iomanip>
+#include<iostream>
 #include<limits>
 #include<sstream>
-#include<iostream>
-#include<iomanip>
+#include<string>
+#include<vector>
 
+#include "Cache.hpp"
 #include "Execute.hpp"
 #include "Function.hpp"
 #include "Status.hpp"
 #include "Token.hpp"
-#include "Zetacompiler.hpp"
 #include "Variable.hpp"
+#include "Zetacompiler.hpp"
 
 namespace xmath {
 
@@ -29,7 +30,7 @@ namespace xmath {
 	}
 
 
-	std::string to_string_hprec(double x){
+	inline std::string to_string_hprec(double x){
 		std::ostringstream doublestring;
 		doublestring << std::setprecision(std::numeric_limits<double>::digits10) << x;
 		return doublestring.str();
@@ -41,13 +42,13 @@ namespace xmath {
 		return;
 	}	
 
-	std::string to_string_hprec(long long x){
+	inline std::string to_string_hprec(long long x){
 		std::ostringstream llstring;
 		llstring << std::setprecision(std::numeric_limits<long long>::digits10) << x;
 		return llstring.str();
 	}	
 
-	bool string_isnum(std::string str){
+	inline bool string_isnum(std::string str){
 		if(str.size() <= 1){
 			if(isdigit(str[0]) || str[0] == '.'){
 				return true;
@@ -67,93 +68,93 @@ namespace xmath {
 	}
 
 	// Placeholder functions for Arbitrary math
-	double add(double x, double y){
+	inline double add(double x, double y){
 		return x+y;
 	}
 
-	double sub(double x, double y){
+	inline double sub(double x, double y){
 		return x-y;
 	}
 
-	double mul(double x, double y){
+	inline double mul(double x, double y){
 		return x*y;
 	}
 
-	double divide(double x, double y){
+	inline double divide(double x, double y){
 		return x/y;
 	}
 
-	double mod(double x, double y){
+	inline double mod(double x, double y){
 		return fmod(x,y);
 	}
 
-	double power(double x, double y){
+	inline double power(double x, double y){
 		return pow(x, y);
 	}
 
-	long long bitexclusiveOr(long long x, long long y){
+	inline long long bitexclusiveOr(long long x, long long y){
 		return x ^ y;
 	}
 
-	long long shl(long long x, long long y){
+	inline long long shl(long long x, long long y){
 		return x << y;
 	}
 
-	long long shr(long long x, long long y){
+	inline long long shr(long long x, long long y){
 		return x >> y;
 	}
 
-	double eql(double x, double y){
+	inline double eql(double x, double y){
 		if(x == y) return 1;
 		return 0;
 	}
 
-	double nql(double x, double y){
+	inline double nql(double x, double y){
 		if(x != y) return 1;
 		return 0;
 	}
 
-	double gql(double x, double y){
+	inline double gql(double x, double y){
 		if(x >= y) return 1;
 		return 0;
 	}
 
-	double lql(double x, double y){
+	inline double lql(double x, double y){
 		if(x <= y) return 1;
 		return 0;
 	}	
 
-	double grt(double x, double y){
+	inline double grt(double x, double y){
 		if(x > y) return 1;
 		return 0;
 	}
 
-	double lst(double x, double y){
+	inline double lst(double x, double y){
 		if(x < y) return 1;
 		return 0;
 	}
 
-	double neg(double x){
+	inline double neg(double x){
 		return x*-1;
 	}
 
-	long long bitwor(long long x, long long y){
+	inline long long bitwor(long long x, long long y){
 		return x | y;
 	}
 
-	long long bitwand(long long x, long long y){
+	inline long long bitwand(long long x, long long y){
 		return x & y;
 	}
 
-	double land(double x, double y){
+	inline double land(double x, double y){
 		return x && y;
 	}
 
-	double lor(double x, double y){
+	inline double lor(double x, double y){
 		return x || y;
 	}
 
-	long long factorial(long long x){
+	inline long long factorial(long long x){
 		long long ans=1;
 		for(;x>0;x--){
 			ans *= x;
@@ -174,7 +175,20 @@ namespace xmath {
 	9 SHRASN  >>=
 	*/
 
-	void asn(std::string iden, double val){
+	inline void sasn(std::string iden, std::string val){
+		cch::add_depend(iden);
+		if(var::changable(iden)){
+			var::update(iden, val);
+			return;
+		}else{
+			std::string error = "Variable \"";
+			error.append(iden).append("\" is read-only");
+			throw error;		
+		}		
+	}
+
+	inline void asn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(val));
 			return;
@@ -185,7 +199,8 @@ namespace xmath {
 		}
 	}
 
-	void addasn(std::string iden, double val){
+	inline void addasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(add(std::stod(var::search(iden)), val)));
 			return;
@@ -196,7 +211,8 @@ namespace xmath {
 		}
 	}
 
-	void subasn(std::string iden, double val){
+	inline void subasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(sub(std::stod(var::search(iden)), val)));
 			return;
@@ -207,7 +223,8 @@ namespace xmath {
 		}
 	}
 
-	void mulasn(std::string iden, double val){
+	inline void mulasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(mul(std::stod(var::search(iden)), val)));
 			return;
@@ -218,7 +235,8 @@ namespace xmath {
 		}
 	}
 
-	void divasn(std::string iden, double val){
+	inline void divasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(divide(std::stod(var::search(iden)), val)));
 			return;
@@ -229,7 +247,8 @@ namespace xmath {
 		}
 	}
 
-	void modasn(std::string iden, double val){
+	inline void modasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(mod(std::stod(var::search(iden)), val)));
 			return;
@@ -240,7 +259,8 @@ namespace xmath {
 		}
 	}
 
-	void exclusiveOrasn(std::string iden, long long val){
+	inline void exclusiveOrasn(std::string iden, long long val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(bitexclusiveOr(std::stoll(var::search(iden)), val)));
 			return;
@@ -251,7 +271,8 @@ namespace xmath {
 		}
 	}
 
-	void powasn(std::string iden, double val){
+	inline void powasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(pow(std::stod(var::search(iden)), val)));
 			return;
@@ -262,7 +283,8 @@ namespace xmath {
 		}
 	}
 
-	void shlasn(std::string iden, double val){
+	inline void shlasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(shl(std::stod(var::search(iden)), val)));
 			return;
@@ -273,7 +295,8 @@ namespace xmath {
 		}
 	}
 
-	void shrasn(std::string iden, double val){
+	inline void shrasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(shr(std::stod(var::search(iden)), val)));
 			return;
@@ -284,7 +307,8 @@ namespace xmath {
 		}
 	}
 
-	void bitexclusiveOrasn(std::string iden, double val){
+	inline void bitexclusiveOrasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(bitexclusiveOr(std::stoll(var::search(iden)), val)));
 			return;
@@ -295,7 +319,8 @@ namespace xmath {
 		}
 	}	
 
-	void bitorasn(std::string iden, double val){
+	inline void bitorasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(bitwor(std::stoll(var::search(iden)), val)));
 			return;
@@ -306,7 +331,8 @@ namespace xmath {
 		}
 	}	
 
-	void bitandasn(std::string iden, double val){
+	inline void bitandasn(std::string iden, double val){
+		cch::add_depend(iden);
 		if(var::changable(iden)){
 			var::update(iden,to_string_hprec(bitwand(std::stoll(var::search(iden)), val)));
 			return;
@@ -579,13 +605,23 @@ namespace xmath {
 
 			case 10:{
 					if(tokens[index].data == "ASN"){
-						std::string idenx = tokens[index-2].data;
-						double y = std::stod(tokens[index-1].data);
-						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
-						tokens.erase(tokens.begin()+index-2);
-						asn(idenx, y);
-						index -= 3;	
+						if(tokens[index - 1].type == 9){
+							std::string idenx = tokens[index-2].data;
+							std::string strval = tokens[index-1].data;
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							sasn(idenx, strval);
+							index -= 3;	
+						}else{
+							std::string idenx = tokens[index-2].data;
+							double y = std::stod(tokens[index-1].data);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							tokens.erase(tokens.begin()+index-2);
+							asn(idenx, y);
+							index -= 3;			
+						}
 					}else if(tokens[index].data == "ADDASN"){
 						std::string idenx = tokens[index-2].data;
 						double y = std::stod(tokens[index-1].data);

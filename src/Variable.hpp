@@ -1,11 +1,11 @@
 #ifndef VARIABLE_HPP
 #define VARIABLE_HPP
 
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<string>
+#include<vector>
 
 // Function Prototypes
 
@@ -21,6 +21,8 @@ namespace var {
 	void clearbuffer(void);
 
 	bool changable(std::string iden);
+
+	bool exists(std::string iden);
 
 	void update(std::string iden, std::string val);
 	

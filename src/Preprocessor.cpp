@@ -1,13 +1,13 @@
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
 #include<iostream>
+#include<string>
+#include<vector>
 
 #include "Preprocessor.hpp"
-#include "Zetacompiler.hpp"
 #include "Token.hpp"
+#include "Zetacompiler.hpp"
 
 std::vector<std::string> split(std::string str, std::string split){
     size_t start = 0, end, splitLen = split.size();
@@ -33,7 +33,9 @@ namespace comp {
 		"*=",
 		"/=",
 		"^=",
-		"%="
+		"%=",
+		"|=",
+		"&=",
 		"==",
 		"!=",
 		">=",
@@ -64,7 +66,22 @@ namespace comp {
 		std::string dualchar;
 		unsigned long int loopcount = 0;
 		unsigned long int index = 0;
+		unsigned long int countindex;
 		while(index <= lexInput.size()){
+			if(lexInput[index] == '"'){
+				countindex = index;
+				while(index < lexInput.size()){
+					index++;
+					if(lexInput[index] == '"' && lexInput[index - 1] != '\\'){
+						index++;
+						break;
+					}
+				}
+				returnedTokens.emplace_back(lexInput.substr(countindex, index));
+				if(returnedTokens.back().back() != ' '){
+					returnedTokens.back().pop_back();
+				}
+			}
 			if(ispunct(lexInput[index]) && lexInput[index] != '.' && lexInput[index] != ','){
 				if(index+1 < lexInput.size()){
 					dualchar = lexInput.substr(index,2);
@@ -148,7 +165,7 @@ namespace comp {
 
 			}else if(isalpha(lexInput[index])){
 				// check if variable first
-				unsigned long int countindex = index;
+				countindex = index;
 				while(countindex < lexInput.size() && isalpha(lexInput[countindex])){
 					countindex++;
 				}
@@ -162,7 +179,7 @@ namespace comp {
 					index += countindex-index;
 				}
 			}else if(isdigit(lexInput[index]) || lexInput[index] == '.'){
-				unsigned long int countindex = index;
+				countindex = index;
 				decimal:
 					while(countindex < lexInput.size() && isdigit(lexInput[countindex])){
 						countindex++;
@@ -370,6 +387,9 @@ namespace comp {
 				}else if(tokensInput[index].back() == '('){
 					token tk(tokensInput[index],4);
 					output.emplace_back(tk);
+				}else if(tokensInput[index].front() == '"' || tokensInput[index].back() == '"'){
+					token tk(tokensInput[index], 9);
+					output.emplace_back(tk);
 				}else{
 					token tk("NULL",-1);
 					output.emplace_back(tk);
@@ -380,6 +400,9 @@ namespace comp {
 			}else if(ttype(tokensInput[index]) == 0){
 				token tk(tokensInput[index],0);
 				output.emplace_back(tk);			
+			}else if(tokensInput[index].front() == '"' || tokensInput[index].back() == '"'){
+				token tk(tokensInput[index], 9);
+				output.emplace_back(tk);
 			}else{
 				token tk(tokensInput[index],5);
 				output.emplace_back(tk);
@@ -483,7 +506,23 @@ namespace comp {
 
 
 	std::string removeWhiteSpace(std::string str){
-		str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+		bool instring = false;
+		for(unsigned long int rindx = 0; rindx < str.size(); rindx++){
+			if(!instring && str[rindx] == ' '){
+				str.erase(str.begin()+rindx);
+			}
+			if(str[rindx] == '"'){
+				if(!instring){
+					instring = true;
+				}else{
+					if(rindx >= 1){
+						if(str[rindx - 1] == '\\') continue;
+					}else{
+						instring = false;
+					}
+				}
+			}
+		}
 		return str;
 	}
 

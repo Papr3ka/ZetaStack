@@ -2,9 +2,9 @@
 #define EXECUTE_HPP
 
 #include<cmath>
+#include<cstdlib>
 #include<string>
 #include<vector>
-#include<cstdlib>
 
 #include "Token.hpp"
 
@@ -20,11 +20,7 @@ namespace xmath {
 
 	bool string_isnum(std::string str);
 
-	long long factorial(long long x);
-
 	std::string calculate(std::vector<token> tokens, bool showprogress);
-
-	//std::vector<std::string> callall(std::vector<std::string> tokens);
 }
 
 #endif
