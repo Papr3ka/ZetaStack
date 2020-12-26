@@ -17,6 +17,11 @@ namespace cch {
 
 	std::vector<std::string> requestqueue;
 
+	std::vector<std::string> reservedmeta{
+		"ans",
+		"rand"
+	};
+
 	std::vector<std::string> getiden(void){
 		return identifier;
 	}
@@ -59,6 +64,17 @@ namespace cch {
 	}
 
 	void update(std::string iden, std::string val, std::vector<std::string> depends){
+		unsigned long int erase_idx=0;
+		for(std::string tcheck: reservedmeta){
+			erase_idx=0;
+			while(erase_idx < depends.size()){
+				if(depends[erase_idx] == tcheck){
+					return;
+				}else{
+					erase_idx++;
+				}	
+			}
+		}
 		if(cache_enable){
 			auto it = std::find(identifier.begin(), identifier.end(), iden);
 			if(it == identifier.end()){

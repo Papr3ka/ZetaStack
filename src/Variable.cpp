@@ -33,6 +33,7 @@ namespace var{
 
 	};
 
+
 	std::string mostrecentiden;
 	std::string mostrecentvar;
 
