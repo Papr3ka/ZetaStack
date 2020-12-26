@@ -94,6 +94,7 @@ namespace cch {
 					if(index > metadata.size()) return;
 				}
 			}
+			if(tempvec.size() <= 0) index++;
 		}
 		return;
 	}
