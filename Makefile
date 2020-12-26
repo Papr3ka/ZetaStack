@@ -2,7 +2,6 @@ CXX = g++
 CXXFLAGS = -O3 -g -pipe -Wall -Wextra -Wpedantic -pthread
 LD = g++
 
-
 ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/variable.o src/Cache.o src/Entropy.o src/Function.o src/Status.o
 	$(LD) -o $@ $^ $(CXXFLAGS)
 
@@ -31,4 +30,4 @@ src/Function.o: src/Function.cpp src/Function.hpp src/Token.hpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 src/Status.o: src/Status.cpp src/Status.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)	
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
