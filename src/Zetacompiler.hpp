@@ -1,14 +1,14 @@
 #ifndef ZETACOMPILER_HPP
 #define ZETACOMPILER_HPP
 
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<string>
+#include<vector>
 
-#include "Variable.hpp"
 #include "Token.hpp"
+#include "Variable.hpp"
 
 typedef struct{
 	unsigned long int nums;

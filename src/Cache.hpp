@@ -1,10 +1,10 @@
 #ifndef CACHE_HPP
 #define CACHE_HPP
 
+#include<algorithm>
 #include<iostream>
 #include<string>
 #include<vector>
-#include<algorithm>
 
 // Function Prototypes
 
@@ -26,6 +26,10 @@ namespace cch {
 	void update(std::string iden, std::string val, std::vector<std::string> depends);
 
 	void refreshDepends(std::string change);
+
+	void add_depend(std::string change);
+
+	void fulfill_depends(void);
 
 	std::string search(std::string iden);
 

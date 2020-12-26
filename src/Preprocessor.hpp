@@ -1,11 +1,11 @@
 #ifndef PREPROCESSOR_HPP
 #define PREPROCESSOR_HPP
 
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<string>
+#include<vector>
 
 #include "Token.hpp"
 
