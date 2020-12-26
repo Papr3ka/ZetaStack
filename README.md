@@ -10,6 +10,12 @@
 
 </div>
 
+# Prerequisites
+
+- Requires C++11 or later preferably C++17 or later
+
+- [Make](https://www.gnu.org/software/make/) utility
+
 # Usage
 
 ```
@@ -92,7 +98,9 @@ Commands can be accessed and used via the '/' key.
    clock                    Displays a clock
    debug                    Toggles debug mode
    del <var>                Deletes a variable
+   exec                     Toggles execution
    exit                     Exits the program
+   export <var>             Writes a variable to text
    time                     Times calculations
    ; <Command>              Executes system command
 ```
