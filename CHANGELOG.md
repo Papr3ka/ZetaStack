@@ -1,5 +1,20 @@
 # Changelog
 
+# [0.2.1](#0.2.1) - 2020-12-25
+
+### Fixed
+
+- Bar appears after calculation
+- Cache metadata bug
+
+### Changed
+
+- inlined functions used by executer
+
+### Added
+
+- Exporting variables to a text file
+
 # [0.2.0](#0.2.0) - 2020-12-22
 
 ### Fixed
