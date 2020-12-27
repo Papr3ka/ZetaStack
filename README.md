@@ -1,6 +1,6 @@
-# ZetaStack
-
 <div align="center">
+
+# ZetaStack
 
 [![license](https://img.shields.io/github/license/Papr3ka/ZetaStack?style=flat-square)](https://github.com/Papr3ka/ZetaStack/blob/main/LICENSE)
 [![C++](https://img.shields.io/badge/-C++-00599C?style=flat-square&logo=c)](https://github.com/Papr3ka)
