@@ -22,16 +22,19 @@
 Usage: ZetaStack [Options] ...
 
 Options:
-  --version                Display version information
-  --help                   Display this information
+  -h  --help                   Display this information
+  -v  --version                Display version information
 
-  --debug                  Start with debug mode on
-  --nobuffer               Disables variable buffer
-  --noexec                 Start with execution disabled
-  --nohandle               Disables signal handling
+  --debug                      Start with debug mode on
+  --nobuffer                   Disables variable buffer
+  --noexec                     Start with execution disabled
+  --nohandle                   Disables signal handling
+  --maxrecurse <int>           Sets the maximum recursion depth
  ```
 
 # Functions
+
+Function overloading is supported
 
 ## Examples
 
