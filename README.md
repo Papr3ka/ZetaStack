@@ -4,9 +4,8 @@
 
 [![license](https://img.shields.io/github/license/Papr3ka/ZetaStack?style=flat-square)](https://github.com/Papr3ka/ZetaStack/blob/main/LICENSE)
 [![C++](https://img.shields.io/badge/-C++-00599C?style=flat-square&logo=c)](https://github.com/Papr3ka)
-[![Files](https://tokei.rs/b1/github/Papr3ka/ZetaStack?category=files)](https://github.com/Papr3ka/ZetaStack)
 [![Repo Size](https://img.shields.io/github/repo-size/Papr3ka/ZetaStack?style=flat-square)](https://github.com/Papr3ka/ZetaStack)
-[![Lines Of Code](https://tokei.rs/b1/github/Papr3ka/ZetaStack?category=code)](https://github.com/Papr3ka/ZetaStack)
+[![Lines Of Code](https://img.shields.io/tokei/lines/github/Papr3ka/ZetaStack?style=flat-square)](https://github.com/Papr3ka/ZetaStack)
 
 An advanced command-line calculator
 
@@ -109,3 +108,7 @@ Commands can be accessed and used via the '/' key.
    time                     Times calculations
    ; <Command>              Executes system command
 ```
+
+# License
+
+[GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
