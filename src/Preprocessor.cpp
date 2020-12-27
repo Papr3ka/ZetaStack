@@ -78,7 +78,7 @@ namespace comp {
 					}
 				}
 				returnedTokens.emplace_back(lexInput.substr(countindex, index));
-				if(returnedTokens.back().back() != ' '){
+				if(returnedTokens.back().back() == ' '){
 					returnedTokens.back().pop_back();
 				}
 			}
@@ -386,6 +386,11 @@ namespace comp {
 					output.emplace_back(tk);
 				}else if(tokensInput[index].back() == '('){
 					token tk(tokensInput[index],4);
+					if(index+2 < tokensInput.size() && tokensInput[index+2] == ")"){
+						tk.reserved = 0;
+					}else{
+						tk.reserved = 1;
+					}
 					output.emplace_back(tk);
 				}else if(tokensInput[index].front() == '"' || tokensInput[index].back() == '"'){
 					token tk(tokensInput[index], 9);
@@ -396,6 +401,11 @@ namespace comp {
 				}
 			}else if(tokensInput[index].back() == '('){
 				token tk(tokensInput[index],4);
+				if(index+2 < tokensInput.size() && tokensInput[index+2] == ")"){
+					tk.reserved = 0;
+				}else{
+					tk.reserved = 1;
+				}
 				output.emplace_back(tk);
 			}else if(ttype(tokensInput[index]) == 0){
 				token tk(tokensInput[index],0);
@@ -504,6 +514,19 @@ namespace comp {
 		return 0;
 	}
 
+	bool quotecount(std::string str){
+		bool instring = false;
+		for(unsigned long int x=0;x < str.size();x++){
+			if(str[x] == '"'){
+				if(x > 0 && str[x-1] != '\\'){
+					instring = !instring;
+				}else if(x == 0){
+					instring = !instring;
+				}
+			}
+		}
+		return instring;
+	} 
 
 	std::string removeWhiteSpace(std::string str){
 		bool instring = false;

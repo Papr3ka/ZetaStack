@@ -113,6 +113,7 @@ namespace bar {
 		start_time = std::chrono::steady_clock::now();
 		spos = 0;
 		dostat = true;
+		state = true;
 		return;
 	}
 
@@ -180,6 +181,7 @@ namespace bar {
 		std::cout << spacechar*(barlen*2+prec+5) << "\r";
 		std::cout.flush();
 		dostat = false;
+		state = false;
 		loadtype = 0;
 		inform_mode = "";
 		return;

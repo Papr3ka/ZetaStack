@@ -34,18 +34,18 @@ class func{
 		~func(void){}
 
 
-		std::string fname(void){
+		inline std::string fname(void){
 			return functionname;
 		}
-		std::vector<token> ret(void){
+		inline std::vector<token> ret(void){
 			return functionbody;
 		}
 
-		long int argcount(void){
+		inline long int argcount(void){
 			return argcnt;
 		}
 
-		std::vector<token> getarg(void){
+		inline std::vector<token> getarg(void){
 			return functionargs;
 		}
 
@@ -93,30 +93,44 @@ std::vector<func> nfunctions; // Callable normal functions
 // Wrapper functions
 
 // delete function
-int udef(std::string name){
+int udef(std::string name, long int argcounts){
 	unsigned long int idx = 0;
-	for(func f_id: nfunctions){
-		if(f_id.fname() == name){
-			nfunctions.erase(nfunctions.begin()+idx);
-			return 0;
+	if(argcounts != -1){
+		for(func f_id: nfunctions){
+			if(f_id.fname() == name && f_id.argcount() == argcounts){
+				nfunctions.erase(nfunctions.begin()+idx);
+				return 0;
+			}
+			idx++;
 		}
-		idx++;
+	}else{
+		unsigned long int success = 0;
+		for(func f_id: nfunctions){
+			if(f_id.fname() == name){
+				nfunctions.erase(nfunctions.begin()+idx);
+				success++;
+			}
+			idx++;
+		}
+		if(success > 0) return 0;
 	}
 	return 1;
 }
 
 void def(std::vector<token> assignTo, std::vector<token> body){ // Input must go through lexical analyzer and tokenComp
 	std::string name = assignTo.front().data;
-	assignTo.erase(assignTo.begin()); assignTo.erase(assignTo.begin());// Erase name and first bracket
+	assignTo.erase(assignTo.begin());
+	assignTo.erase(assignTo.begin());// Erase name and first bracket
 	assignTo.pop_back(); // Erase end bracket
+	udef(name, assignTo.size());
 	func obj(assignTo,name,body); // Create function object
-	nfunctions.push_back(obj);	
-
+	nfunctions.push_back(obj);
+	return;
 }
 
-bool fexists(std::string name){
+bool fexists(std::string name, signed long int argcounts){
 	for(func f_id: nfunctions){
-		if(f_id.fname() == name){
+		if(f_id.fname() == name && f_id.argcount() == argcounts){
 			return true;
 		}
 	}
@@ -127,8 +141,9 @@ bool fexists(std::string name){
 // format = funcname(, arg1, arg2, ...
 std::vector<token> call(std::vector<token> fargs, std::string name){
 	unsigned long int idx = 0;
+	signed long int argsize = fargs.size();
 	for(func f_id: nfunctions){
-		if(f_id.fname() == name){
+		if(f_id.fname() == name && f_id.argcount() == argsize ){
 			return fillvars(nfunctions.at(idx).getarg(), fargs, nfunctions.at(idx).ret());
 		}
 		idx++;
@@ -136,7 +151,6 @@ std::vector<token> call(std::vector<token> fargs, std::string name){
 	std::vector<token> nullvec;
 	return nullvec;
 }
-
 
 long int argcount(std::string name){
 	unsigned long int idx = 0;

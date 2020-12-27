@@ -344,19 +344,19 @@ namespace xmath {
 	}
 
 	std::string calculate(std::vector<token> tokens, bool showprogress){
-		if(recursionCount >= maxRecurse){
+		if(recursionCount > maxRecurse){
 			std::vector<token>().swap(tokens);
 			std::string error = "Maximum recursion depth exceeded (limit=";
-			error.append(std::to_string(recursionCount)).append(")");
+			error.append(std::to_string(maxRecurse)).append(")");
 			recursionCount = 0;
 			throw error;
 		}
 		const token first = tokens.front();
 		recursionCount++;
 		unsigned long int index = 0;
+		unsigned long int eindex = 0;
 		long int argtracker = 0;
 		long int farg_max;
-
 		/*
 		X	0 - NUM
 		-	1 - OPERATOR
@@ -366,6 +366,7 @@ namespace xmath {
 		X	5 - VARIABLE
 		-	6 - R FUNC
 		-	7 - Separator
+		-   10 - Assign
 		*/	
 		std::vector<token> argpack; // To be used in functions
 		goto forceRun; // At least run through once loop
@@ -564,26 +565,26 @@ namespace xmath {
 				break;
 			case 4:{ // Standard Function
 				std::string funcname = tokens.at(index).data;
-				if(!fexists(funcname)){
+				farg_max = tokens.at(index).reserved;
+				if(!fexists(funcname, farg_max)){
 					std::string error = "No matching function call to \"";
 					error.append(funcname).append("\"");
 					throw error;
 				}
 				tokens.erase(tokens.begin()+index);
-				index--;
-				farg_max = argcount(funcname);
+				index -= farg_max;
+				eindex = index;
 				while(index < tokens.size() && argtracker < farg_max){
 					if(tokens.at(index).type == 0){
-						argpack.insert(argpack.begin(), tokens.at(index));
-						tokens.erase(tokens.begin() + index);
-						index--;
+						argpack.emplace_back(tokens.at(eindex));
+						tokens.erase(tokens.begin() + eindex);
 						argtracker++;
 					}else{
 						break;
 					}
 				}
 				token tk(calculate(comp::fillallvars(call(argpack, funcname)), false), 0);
-				tokens.insert(tokens.begin()+index + 1,1, tk);
+				tokens.insert(tokens.begin()+eindex,1, tk);
 				std::vector<token>().swap(argpack);
 				argtracker = 0;
 				}break;
@@ -597,7 +598,7 @@ namespace xmath {
 					tk.type = 0;
 					tokens.insert(tokens.begin()+(index-1),1,tk);	
 					index -= 2;	
-					}		
+					}
 				}break;
 			case 7:{
 				tokens.erase(tokens.begin()+index);
@@ -726,7 +727,7 @@ namespace xmath {
 		recursionCount = 0;
 		if(tokens.size() <= 0){
 			return var::mostrecent();
-		}else if(first.type != 0 && first == tokens.front()){
+		}else if(first.type != 0 && first == tokens.front() && first.type != 4){
 			std::string error = "Unexpected Token";
 			throw error;
 		} 
