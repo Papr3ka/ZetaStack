@@ -88,7 +88,6 @@ namespace comp {
 			}
 		}
 		return 5;
-
 	}
 		/*
 			0 - NUM
@@ -99,6 +98,7 @@ namespace comp {
 			5 - VARIABLE
 			6 - R FUNC
 			7 - Separator
+			10 - Assigning operator
 		*/
 
 
@@ -116,7 +116,7 @@ namespace comp {
 		return false;
 	}	
 
-	unsigned int precedence(std::string op){
+	inline unsigned int precedence(std::string op){
 		if(op.back() == '('){
 			return 20;
 		}else if(op == "NEG" || op == "POS"){
@@ -151,7 +151,7 @@ namespace comp {
 	}
 
 	// true = LR, false = RL
-	bool associativity(std::string op){
+	inline bool associativity(std::string op){
 		if(op == "MUL" || 
 		   op == "DIV" || 
 		   op == "MOD" || 
@@ -178,14 +178,31 @@ namespace comp {
 	// Error Checking
 	int checkleftBrac(std::string str){
 		int count = 0;
+		bool instring = false;
 		for(unsigned long int idx = 0; idx < str.size(); idx++){
-			if(str[idx] == '(') count++;
+			if(str[idx] == '"'){
+				if(idx > 0 && str[idx-1] != '\\'){
+					instring = !instring;
+				}else if(idx == 0){
+					instring = !instring;
+				}
+			}
+			if(str[idx] == '(' && !instring) count++;
 		}
 		return count;
 	}
+
 	int checkrightBrac(std::string str){
 		int count = 0;
+		bool instring = false;
 		for(unsigned long int idx = 0; idx < str.size(); idx++){
+			if(str[idx] == '"'){
+				if(idx > 0 && str[idx-1] != '\\'){
+					instring = !instring;
+				}else if(idx == 0){
+					instring = !instring;
+				}
+			}
 			if(str[idx] == ')') count++;
 		}
 		return count;
@@ -216,23 +233,37 @@ namespace comp {
 	}
 
 	std::vector<token> shuntingYard(std::vector<token> tokens, comp_metadata meta){
+		// Main vectors
 		std::vector<token> operatorStack;
 		std::vector<token> outputQueue;
 		std::vector<token> functionStack;
+
+		// Vectors for function use
+		std::vector<unsigned long int> lockstack;
+		std::vector<signed long int> argumentcounter;
+
+		//Reserve vectors so you dont have to keep resizing (increase speed and efficiency)
 		operatorStack.reserve(meta.operators+meta.bracs);
 		outputQueue.reserve(meta.nums+meta.operators+meta.functions);
 		functionStack.reserve(meta.functions);
-		std::vector<unsigned long int> lockstack;
+
 		lockstack.reserve(meta.functions);
+		argumentcounter.reserve(meta.functions);
+
+		// function use
 		long int layer = 0;
 		long int infunction = 0;
+
+		// Token to be read
+		unsigned long int readindex = 0;
+		unsigned long int readsize = tokens.size();
 		
 		// Debug code
 		// for(token x: tokens){
 		// 	std::cout << " " << x.type << "\n";
 		// }
 
-		while(!tokens.empty()){
+		while(readindex < readsize){
 			/*
 			0 - NUM
 			1 - OPERATOR
@@ -245,16 +276,16 @@ namespace comp {
 
 			10 - Assignment operator
 			*/
-			switch(tokens.front().type){
+			switch(tokens.at(readindex).type){
 				case 0: // NUM
-					outputQueue.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					outputQueue.emplace_back(tokens.at(readindex));
+					readindex++;
 					break;
 				case 1: // OPERATOR
 				case 10: // Assignment operator
 					while(!operatorStack.empty()){
-						if(((precedence(operatorStack.back().data) > precedence(tokens.front().data) ||
-						((precedence(operatorStack.back().data) == precedence(tokens.front().data)) && associativity(tokens.front().data)))) &&
+						if(((precedence(operatorStack.back().data) > precedence(tokens.at(readindex).data) ||
+						((precedence(operatorStack.back().data) == precedence(tokens.at(readindex).data)) && associativity(tokens.at(readindex).data)))) &&
 						operatorStack.back().data != "L_BRAC"){							
 							outputQueue.emplace_back(operatorStack.back());
 							operatorStack.pop_back();
@@ -262,13 +293,13 @@ namespace comp {
 							break;
 						}
 					}
-					operatorStack.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					operatorStack.emplace_back(tokens.at(readindex));
+					readindex++;
 					break;
 				case 2:
 					layer++;
-					operatorStack.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					operatorStack.emplace_back(tokens.at(readindex));
+					readindex++;
 					break;
 				case 3:
 					while(!operatorStack.empty() && (operatorStack.back().data != "L_BRAC")){
@@ -278,32 +309,36 @@ namespace comp {
 					if(!operatorStack.empty() && operatorStack.back().data == "L_BRAC"){
 						operatorStack.pop_back();
 					}
-					tokens.erase(tokens.begin());
+					readindex++;
 					layer--;
-					if(layer == infunction && !functionStack.empty()){					
+					if(layer == infunction && !functionStack.empty()){
+						functionStack.back().reserved = argumentcounter.back();							
 						outputQueue.emplace_back(functionStack.back());
 						functionStack.pop_back();
 						lockstack.pop_back();
+						argumentcounter.pop_back();
 						infunction--;
 					}		
 					break;
 				case 4:
 					infunction++;
 					layer = infunction;
-					functionStack.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					functionStack.emplace_back(tokens.at(readindex));
+					argumentcounter.emplace_back(tokens.at(readindex).reserved);
+					readindex++;
 					lockstack.emplace_back(operatorStack.size() + 1);
 					break;
 				case 5: // Variable
-					outputQueue.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					outputQueue.emplace_back(tokens.at(readindex));
+					readindex++;
 					break;
 				case 6: // Left Function
-					outputQueue.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					outputQueue.emplace_back(tokens.at(readindex));
+					readindex++;
 					break;
 				case 7: // SEP - Dump all
-					tokens.erase(tokens.begin());
+					if(!argumentcounter.empty()) argumentcounter.back()++;
+					readindex++;
 					while(!operatorStack.empty() && operatorStack.size() > lockstack.back()){
 						if(operatorStack.back().data == "L_BRAC" || operatorStack.back().data == "R_BRAC"){
 							operatorStack.pop_back();
@@ -318,8 +353,8 @@ namespace comp {
 					}
 					break;
 				default:
-					outputQueue.emplace_back(tokens.front());
-					tokens.erase(tokens.begin());
+					outputQueue.emplace_back(tokens.at(readindex));
+					readindex++;
 					break;
 			}
 		}
@@ -330,18 +365,13 @@ namespace comp {
 			outputQueue.emplace_back(operatorStack.back());
 			operatorStack.pop_back();
 		}
-		while(!functionStack.empty()){
-			outputQueue.emplace_back(functionStack.back());
-			functionStack.pop_back();
+		for(unsigned long int store=0;store < argumentcounter.size(); store++){
+			functionStack.at(store).reserved = argumentcounter.at(store);
 		}
-		unsigned long int checkidx = 0;
-		while(checkidx < outputQueue.size()){
-			if(outputQueue[checkidx].type == 2){
-				outputQueue.erase(outputQueue.begin() + checkidx);
-			}else{
-				checkidx++;
-			}
-		}
+		if(!functionStack.empty()){
+			std::copy(functionStack.begin(), functionStack.end(),outputQueue.end());
+		}		
+
 		return outputQueue;
 	}
 

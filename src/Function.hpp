@@ -17,9 +17,9 @@ std::vector<token> fillvars(std::vector<token> argsname, std::vector<token> args
 
 void def(std::vector<token> assignTo, std::vector<token> body);
 
-int udef(std::string name);
+int udef(std::string name, long int argcounts = -1);
 
-bool fexists(std::string name);
+bool fexists(std::string name, signed long int argcounts);
 
 std::vector<token> call(std::vector<token> fargs, std::string name);
 

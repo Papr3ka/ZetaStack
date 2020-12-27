@@ -53,6 +53,7 @@ static bool do_buffer = true;
 *|  do_sighandle      | true  |
 *///---------------------------
 
+// For Displaying the unit of time when "/time" is activated
 const static std::vector<std::string> tunit{
 	" ns",
 	" µs",
@@ -65,9 +66,11 @@ const static std::vector<std::string> tunit{
 *  ⲗ 𝜁 ❯ 𝚭
 */
 
-const static std::string newline = "=== "; // ≡≡≡
-const static std::string multiline = "::: ";
+// Line that is printed in interface
+const static std::string newline = "=== "; // ≡≡≡ is what windows terminal shows, looks like a stack hence the name 𝚭Stack
+const static std::string multiline = "::: "; // When there is more of one bracket or quote
 
+// For versioning
 typedef struct{
 	int major;
 	int minor;
@@ -78,8 +81,10 @@ typedef struct{
 	int specialrev;
 }version;
 
-const version curversion = {0, 2, 1, false, -1, -1};
+// Current Version
+const version curversion = {0, 2, 2, false, -1, -1};
 
+// Version detect for compilers
 #if defined(__clang__)
 	const bool detect_comp = true;
 	const version compilerversion = {__clang_major__,
@@ -114,6 +119,7 @@ const version curversion = {0, 2, 1, false, -1, -1};
 
 std::string program_name;
 
+// Detect OS
 #ifdef _WIN32
     const std::string operatingsystem = "Windows 32-bit";
 #elif _WIN64
@@ -130,6 +136,7 @@ std::string program_name;
     const std::string operatingsystem = "";
 #endif
 
+// Print out a vector element by element
 inline static void printvec(std::vector<std::string> print){
 	std::cout << '[';
 	for(unsigned long i=0; i < print.size(); i++){
@@ -152,8 +159,11 @@ inline static void printvectoken(std::vector<token> print){
 	std::cout << ']';
 }
 
+// Flags
 bool sigint_immune_flag = false;
 
+
+// Deal with version here [type: version -> type: string]
 inline static std::string versioncomp(version ver){
 	if(ver.major == -1){
 		return "";
@@ -185,6 +195,7 @@ inline static std::string versioncomp(version ver){
 	return output;
 }
 
+// Activated when "/clock" is used. relies on sigint_immune_flag on when to exit
 inline static void showclock(void){
 	sigint_immune_flag = true;
 	std::chrono::_V2::system_clock::time_point chrono_ctp;
@@ -284,6 +295,8 @@ inline static void command(std::string com){
 		}
 	}else if(cmdargv.front() == "del"){
 		int delsuccess = 0;
+
+		// For functions, delete all no mater the argument count
 		if(cmdargv[1].back() == '('){
 			delsuccess = udef(cmdargv[1]);
 			if(delsuccess == 1){
@@ -357,7 +370,7 @@ inline static void command(std::string com){
 		 				filesize = (sizeof(writedata)*writedata.size())/8;
 		 			#endif 	
 
-			 		std::cout << "Successfully wrote to \"" << filename << "\" size: " << filesize << "b\n";
+			 		std::cout << "Successfully wrote to \"" << filename << "\" (size: " << filesize << "B)\n";
 			 		checkfile.close();				 		
 			 		return;
 			 	}else{
@@ -376,8 +389,7 @@ inline static void command(std::string com){
 			 			#else
 			 				filesize = (sizeof(writedata)*writedata.size())/8;
 			 			#endif 
-
-			 			std::cout << "Successfully wrote to \"" << filename << "\" size: " << filesize << "b\n";
+			 			std::cout << "Successfully wrote to \"" << filename << "\" (size: " << filesize << "B)\n";
 			 			checkfile.close();
 			 		}else{
 			 			checkfile.close();
@@ -432,7 +444,7 @@ inline static void arghandler(std::vector<std::string> args){
 		}
 	}
 	while(arg_index < args.size()){
-		if(args.at(arg_index) == "--version"){
+		if(args.at(arg_index) == "--version" || args.at(arg_index) == "-v"){
 			std::cout << program_name << " Version " << versioncomp(curversion) << "\n";
 			if(detect_comp){
 				std::cout << "  (Built with " << compiler << " " << versioncomp(compilerversion);
@@ -459,16 +471,26 @@ inline static void arghandler(std::vector<std::string> args){
 			do_exec = true;
 		}else if(args.at(arg_index) == "--nohandle"){
 			do_sighandle = false;
-		}else if(args.at(arg_index) == "--help"){
+		}else if(args.at(arg_index) == "--maxrecurse"){
+			if(arg_index + 1 < args.size()){
+				try{
+					xmath::setmaxrecurse(std::stoull(args.at(arg_index + 1))); // used in Execute.hpp && Execute.cpp
+				}catch(const std::exception&){
+
+				}
+			}
+			
+		}else if(args.at(arg_index) == "--help" || args.at(arg_index) == "-h"){
 			std::cout << "Usage: " << program_name << " [Options] ...\n\n"
                       << "Options:\n"
-                      << "  --version                Display version information\n"
-                      << "  --help                   Display this information\n\n"
+                      << "  -h  --help                   Display this information\n"
+                      << "  -v  --version                Display version information\n\n"
                       // Intentional Space
-                      << "  --debug                  Start with debug mode on\n"
-                      << "  --nobuffer               Disables variable buffer\n"
-                      << "  --noexec                 Start with execution disabled\n"
-                      << "  --nohandle               Disables signal handling\n";
+                      << "  --debug                      Start with debug mode on\n"
+                      << "  --nobuffer                   Disables variable buffer\n"
+                      << "  --noexec                     Start with execution disabled\n"
+                      << "  --nohandle                   Disables signal handling\n"
+                      << "  --maxrecurse <int>           Sets the maximum recursion depth\n";
 
 			run = false;
 			do_sighandle = false;
@@ -476,6 +498,11 @@ inline static void arghandler(std::vector<std::string> args){
 			return;
 		}else{
 			// Unknown argument
+			std::cout << "Ambiguous command-line option: \""<< args.at(arg_index) << "\"\n";
+			run = false;
+			do_sighandle = false;
+			do_buffer = false;
+			return;			
 		}	
 		arg_index++;
 	}
@@ -496,7 +523,7 @@ inline static std::string calcExecuter(const std::string& input){
 	int tscale;
 	double totaltime;
 
-	bar::start();
+	if(do_bar) bar::start();
 
 	std::chrono::_V2::high_resolution_clock::time_point lex_tstart;
 	std::chrono::_V2::high_resolution_clock::time_point lex_tend;
@@ -529,6 +556,8 @@ inline static std::string calcExecuter(const std::string& input){
 	}
 
 	if(s_out.size() <= 0) return "";
+
+	output.reserve(s_out.size());
 
 	bar::inform("Lexing");
 	tcomp_tstart = std::chrono::high_resolution_clock::now();
@@ -585,7 +614,6 @@ inline static std::string calcExecuter(const std::string& input){
 	}
 	
 	if(output.size() <= 0) return "";
-
 
 	if(do_exec){
 		try{
@@ -682,7 +710,7 @@ inline static void deffunction(const std::string& input){
 	int tscale;
 	double totaltime;
 
-	bar::start();
+	if(do_bar) bar::start();
 
 	std::chrono::_V2::high_resolution_clock::time_point lex_tstart;
 	std::chrono::_V2::high_resolution_clock::time_point lex_tend;
@@ -690,6 +718,8 @@ inline static void deffunction(const std::string& input){
 	std::chrono::_V2::high_resolution_clock::time_point tcomp_tend;
 	std::chrono::_V2::high_resolution_clock::time_point shyd_tstart;
 	std::chrono::_V2::high_resolution_clock::time_point shyd_tend;
+	std::chrono::_V2::high_resolution_clock::time_point decl_tstart;
+	std::chrono::_V2::high_resolution_clock::time_point decl_tend;
 
 	std::vector<std::string> partasn = comp::spliteq(input);
 	partasn.back() = comp::removeWhiteSpace(partasn.back());
@@ -764,7 +794,9 @@ inline static void deffunction(const std::string& input){
 		}
 		sepidx++;
 	}
+	decl_tstart = std::chrono::high_resolution_clock::now();
 	def(funchead, funcbody);
+	decl_tend = std::chrono::high_resolution_clock::now();
 	cch::refreshDepends(funchead.front().data);
 	cch::fulfill_depends();
 	bar::setstate(false);
@@ -775,7 +807,8 @@ inline static void deffunction(const std::string& input){
 	double lextime = std::chrono::duration<double, std::nano>(lex_tend - lex_tstart).count();
 	double tcomptime = std::chrono::duration<double, std::nano>(tcomp_tend - tcomp_tstart).count();
 	double shydtime = std::chrono::duration<double, std::nano>(shyd_tend - shyd_tstart).count();
-	totaltime = lextime+tcomptime+shydtime;
+	double decltime = std::chrono::duration<double, std::nano>(decl_tend - decl_tstart).count();
+	totaltime = lextime+tcomptime+shydtime+decltime;
 	if(totaltime < 1000){
 		tscale = 0;
 	}else if(totaltime >= 1000 && totaltime < 1000000){
@@ -784,29 +817,34 @@ inline static void deffunction(const std::string& input){
 		tcomptime /= 1000;
 		shydtime /= 1000;
 		totaltime /= 1000;
+		decltime /= 1000;
 	}else if(totaltime >= 1000000 && totaltime < 1000000000){
 		tscale = 2;
 		lextime /= 1000000;
 		tcomptime /= 1000000;
 		shydtime /= 1000000;
 		totaltime /= 1000000;
+		decltime /= 1000000;
 	}else{
 		tscale = 3;
 		lextime /= 1000000000;
 		tcomptime /= 1000000000;
 		shydtime /= 1000000000;
 		totaltime /= 1000000000;
+		decltime /= 1000000000;
 	}
 	if(measure_time){
 	std::cout << "Time variable:\n   Parse:              " << lextime << 
 				 tunit[tscale] << " \n   Lexer:              " << tcomptime  <<
 				 tunit[tscale] << " \n   RPN:                " << shydtime <<
+				 tunit[tscale] << " \n   Declare:            " << decltime <<
 				 tunit[tscale] << " \n   Total:              " << totaltime <<
 				 tunit[tscale] << " \n\n";
 	}	
 	return;
 }
 
+// Signal Handler
 inline static void sighandle(int sigtype){
 	switch(sigtype){
 		case SIGINT:
@@ -866,6 +904,8 @@ int main(int argc, char* argv[]){
 
 	//bool longline = false; // to be used late for loops
 
+	bool evenquote;
+
 	std::string input;
 	std::string bufferinput;
 	std::string output;
@@ -891,12 +931,14 @@ int main(int argc, char* argv[]){
 
 			lbcnt = comp::checkleftBrac(input);
 			rbcnt = comp::checkrightBrac(input);
-			while(lbcnt > rbcnt/* || longline*/){
+			evenquote = comp::quotecount(input);
+			while(lbcnt > rbcnt || evenquote/* || longline*/){
 				std::cout << multiline;
 				std::getline(std::cin, bufferinput);
 				input.append(bufferinput);
 				lbcnt = comp::checkleftBrac(input);
 				rbcnt = comp::checkrightBrac(input);
+				evenquote = comp::quotecount(input);
 			}
 			/*
 				-1 Error
@@ -914,7 +956,7 @@ int main(int argc, char* argv[]){
 					break;
 			}
 				
-			if(do_exec && runtype != 2 && finalOutput.size() >= 1){		
+			if(do_exec && runtype != 2 && finalOutput.size() >= 1){
 				std::cout << finalOutput << "\n";
 			}
 		}else{

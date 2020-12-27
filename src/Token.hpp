@@ -35,38 +35,38 @@ class token{
 		long int reserved = -1;
 
 		// overloaded constructors for optional parameters
-		token(){}
-		token(std::string d, int t){ 
+		inline token(){}
+		inline token(std::string d, int t){ 
 			data = d;
 			type = t;
 		}
-		token(std::string d, int t, int res){
+		inline token(std::string d, int t, int res){
 			data = d;
 			type = t;
 			reserved = res;
 		}
-		~token(){}
+		inline ~token(){}
 
 		// comparisons
-		friend bool operator != (token a, token b){
+		inline friend bool operator != (token a, token b){
 			if(a.data != b.data) return false;
 			if(a.type != b.type) return false;
 			return true;
 		}
 
-		friend bool operator == (token a, token b){
+		inline friend bool operator == (token a, token b){
 			if(a.data == b.data) return false;
 			if(a.type == b.type) return false;
 			return true;
 		}
 
 		// Required for <string> to compare token with const char []
-		friend bool operator == (token x, const char mval[]){
+		inline friend bool operator == (token x, const char mval[]){
 			if(x.data.c_str() == mval) return true;
 			return false;
 		}
 
-		std::string pass_unary(void){
+		inline std::string pass_unary(void){
 			if(reserved == -1) return data;
 			return data.substr(reserved + 1, data.size()-1);
 		}

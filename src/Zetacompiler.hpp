@@ -29,10 +29,6 @@ namespace comp {
 
 	bool hasvar(std::vector<token> tokens);
 
-	unsigned int precedence(std::string op);
-
-	bool associativity(std::string op);
-
 	int checkleftBrac(std::string tokens);
 	
 	int checkrightBrac(std::string tokens);
