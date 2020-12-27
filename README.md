@@ -83,7 +83,7 @@ You can assign, manipulate and delete variables in ZetaStack. Assigning variable
 # Commenting
 Commenting can be done with **//** or **/\*\*/**
 
-## Example
+## Examples
 
 ```
 === 64*(/*Comment here*/2+41/*will read as 4125*/25)
