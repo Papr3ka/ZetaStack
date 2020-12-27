@@ -476,10 +476,10 @@ inline static void arghandler(std::vector<std::string> args){
 				try{
 					xmath::setmaxrecurse(std::stoull(args.at(arg_index + 1))); // used in Execute.hpp && Execute.cpp
 				}catch(const std::exception&){
-
+					
 				}
 			}
-			
+			arg_index++;			
 		}else if(args.at(arg_index) == "--help" || args.at(arg_index) == "-h"){
 			std::cout << "Usage: " << program_name << " [Options] ...\n\n"
                       << "Options:\n"
