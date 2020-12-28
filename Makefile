@@ -1,9 +1,10 @@
 CXX = g++
-CXXFLAGS = -O3 -g -pipe -Wall -Wextra -Wpedantic -pthread
+CXXFLAGS = -O3 -pipe -Wall -Wextra -Wpedantic -Wshadow -Wdouble-promotion -pthread -D_FORTIFY_SOURCE=2 -march=native -finline-functions -ftree-vectorize  -frename-registers
+LDFLAGS = -flto -fpie
 LD = g++
 
 ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/Variable.o src/Cache.o src/Entropy.o src/Function.o src/Status.o
-	$(LD) -o $@ $^ $(CXXFLAGS)
+	$(LD) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 src/ZetaStack.o: src/ZetaStack.cpp src/Zetacompiler.hpp src/Preprocessor.hpp src/Execute.hpp src/Function.hpp src/Cache.hpp src/Status.hpp src/Token.hpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
