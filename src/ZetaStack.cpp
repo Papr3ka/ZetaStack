@@ -475,6 +475,7 @@ inline static void command(std::string com){
                   << "   exit                     Exits the program\n"
                   << "   export <var>             Writes a variable to text\n"
                   << "   time                     Times calculations\n"
+                  << "   globals                  Displays all defined functions and variables\n"
                   << "   ; <Command>              Executes system command\n";
 	}else{
 
