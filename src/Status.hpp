@@ -25,6 +25,8 @@ namespace bar {
 
 	void setcount(float x);
 
+	void setcount(unsigned long int x);
+
 	void updatecycle(void);
 
 	void updatepercent(void);

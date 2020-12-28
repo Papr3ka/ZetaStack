@@ -22,6 +22,17 @@ static std::string operator * (std::string str, float mul){
 	return output;
 }
 
+static std::string operator * (std::string str, long int mul){
+	if(mul < 0){
+		return str;
+	}
+	std::string output;
+	for(long int count = mul;count > 0; count--){
+		output += str;
+	}
+	return output;
+}
+
 std::string strunc(float x, short prec){
 	if(std::isnan(x)) return "0";
 	std::string out = std::to_string(x);
@@ -69,7 +80,7 @@ namespace bar {
 
 
 	bool dostat = false;
-	short prec = 5;
+	float prec = 5;
 
 	float barlen = 50;
 	float dotbarlen = barlen+17;
@@ -103,7 +114,7 @@ namespace bar {
 	void init(long int max){
 		dostat = true;	
 		rcount = 0;
-		countmax = max;
+		countmax = (float)max;
 		count = 0;
 		run_bar = true;
 		return;
@@ -144,26 +155,32 @@ namespace bar {
 		return;
 	}
 
+	// Overload
+	void setcount(unsigned long int x){
+		count = (float)x;
+		return;
+	}
+
 	// Actually update the bar
 	inline void updatepercent(void){
-		dispbar = barlen-(count/countmax)*barlen;
+		dispbar = (count/countmax)*barlen;
 		barbody = (loadchar*dispbar).append(spacechar*(barlen-dispbar));
-		percent = 100-count/countmax*100;
+		percent = count/countmax*100;
 		elapsed = std::round(std::chrono::duration<double, std::milli>(next_time - start_time).count()/100)/10;
-		std::cout << "\r|" << barbody << "| " << prec_str(elapsed) << "s | " << countmax - count << "/"<< countmax << " ["<< strunc(percent,prec) << "%] " << inform_mode <<"\r";
+		std::cout << "\r|" << barbody << "| " << prec_str(elapsed) << "s | " << count << "/"<< countmax << " ["<< strunc(percent,prec) << "%] " << inform_mode <<"\r";
 		std::cout.flush();
 		return;
 	}
 
 	inline void updatecycle(void){
 		if(direction){
-			barbody = (spacechar*(float)spos).append(right).append(spacechar*(float)(dotbarlen-(spos+right.size())));
+			barbody = (spacechar*spos).append(right).append(spacechar*(dotbarlen-(spos+right.size())));
 			elapsed = std::round(std::chrono::duration<double, std::milli>(next_time - start_time).count()/100)/10;
 			std::cout << "\r|" << barbody << "| " << prec_str(elapsed) << "s | "<< inform_mode <<"   \r";
 			std::cout.flush();
 			spos++;
 		}else{
-			barbody = (spacechar*(float)spos).append(left).append(spacechar*(float)(dotbarlen-(spos+left.size())));
+			barbody = (spacechar*spos).append(left).append(spacechar*(dotbarlen-(spos+left.size())));
 			elapsed = std::round(std::chrono::duration<double, std::milli>(next_time - start_time).count()/100)/10;
 			std::cout << "\r|" << barbody << "| " << prec_str(elapsed) << "s | "<< inform_mode << "   \r";
 			std::cout.flush();

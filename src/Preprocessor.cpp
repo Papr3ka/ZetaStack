@@ -62,11 +62,14 @@ namespace comp {
 
 	// Lexical Analysis
 	std::vector<std::string> lex(std::string lexInput){
+
 		std::vector<std::string> returnedTokens;
 		std::string dualchar;
+		std::string trichar;
 		unsigned long int loopcount = 0;
 		unsigned long int index = 0;
 		unsigned long int countindex;
+
 		while(index <= lexInput.size()){
 			if(lexInput[index] == '"'){
 				countindex = index;
@@ -116,6 +119,7 @@ namespace comp {
 						index += 2;
 						returnedTokens.emplace_back("<=");
 					}else{
+						loopcount++;
 						// error
 					}
 				}
@@ -159,14 +163,19 @@ namespace comp {
 					index++;
 					returnedTokens.emplace_back("|");
 				}else{
+					loopcount++;
 					//error
+
 				}
 				
 
 			}else if(isalpha(lexInput[index])){
 				// check if variable first
 				countindex = index;
-				while(countindex < lexInput.size() && isalpha(lexInput[countindex])){
+				while(countindex < lexInput.size() &&
+                    (isalpha(lexInput[countindex]) ||
+                     isdigit(lexInput[countindex]) ||
+                     lexInput[countindex] == '_')){
 					countindex++;
 				}
 				if(lexInput[countindex] == '('){
@@ -181,15 +190,28 @@ namespace comp {
 			}else if(isdigit(lexInput[index]) || lexInput[index] == '.'){
 				countindex = index;
 				decimal:
-					while(countindex < lexInput.size() && isdigit(lexInput[countindex])){
+					while(countindex < lexInput.size() && isxdigit(lexInput[countindex])){
 						countindex++;
 					}
 					if(lexInput[countindex] == '.'){
 						countindex++;
 						goto decimal;
-					}else if(lexInput[countindex] == 'e' || lexInput[countindex] == 'E'){
-						countindex += 2;
+					}else if(( isxdigit(lexInput[countindex]) ||
+					 lexInput[countindex] == '-' ||
+					 lexInput[countindex] == '+') &&
+					 (lexInput[countindex - 1] == 'e' ||
+					  lexInput[countindex - 1] == 'E')){
+						countindex++;
 						goto decimal;			
+					}else if(lexInput[countindex] == 'b'){
+						countindex++;
+						goto decimal;						
+					}else if(lexInput[countindex] == 'o'){
+						countindex++;
+						goto decimal;						
+					}else if(lexInput[countindex] == 'x'){
+						countindex++;
+						goto decimal;						
 					}else if(lexInput[countindex] == 'j'){
 						countindex++;
 						break;
@@ -207,52 +229,52 @@ namespace comp {
 				break; // Error
 			}
 		}
-		for(unsigned long index = 1; index < returnedTokens.size(); index++){
-			if(returnedTokens[index-1] == "**" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "**=";
-			}else if(returnedTokens[index-1] == "<<" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "<<=";
-			}else if(returnedTokens[index-1] == ">>" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = ">>=";
-			}else if(returnedTokens[index-1] == "+" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "+=";
-			}else if(returnedTokens[index-1] == "-" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "-=";
-			}else if(returnedTokens[index-1] == "*" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "*=";
-			}else if(returnedTokens[index-1] == "/" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "/=";
-			}else if(returnedTokens[index-1] == "%" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "%=";
-			}else if(returnedTokens[index-1] == "^" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "^=";
-			}else if(returnedTokens[index-1] == "=" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "==";
-			}else if(returnedTokens[index-1] == "!" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "!=";
-			}else if(returnedTokens[index-1] == ">" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = ">=";
-			}else if(returnedTokens[index-1] == "<" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "<=";
-			}else if(returnedTokens[index-1] == "|" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "|=";
-			}else if(returnedTokens[index-1] == "&" && returnedTokens[index] == "="){
-				returnedTokens.erase(returnedTokens.begin()+index-1);
-				returnedTokens.at(index-1) = "&=";
+		for(unsigned long comb_index = 1; comb_index < returnedTokens.size(); comb_index++){
+			if(returnedTokens[comb_index-1] == "**" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "**=";
+			}else if(returnedTokens[comb_index-1] == "<<" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "<<=";
+			}else if(returnedTokens[comb_index-1] == ">>" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = ">>=";
+			}else if(returnedTokens[comb_index-1] == "+" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "+=";
+			}else if(returnedTokens[comb_index-1] == "-" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "-=";
+			}else if(returnedTokens[comb_index-1] == "*" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "*=";
+			}else if(returnedTokens[comb_index-1] == "/" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "/=";
+			}else if(returnedTokens[comb_index-1] == "%" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "%=";
+			}else if(returnedTokens[comb_index-1] == "^" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "^=";
+			}else if(returnedTokens[comb_index-1] == "=" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "==";
+			}else if(returnedTokens[comb_index-1] == "!" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "!=";
+			}else if(returnedTokens[comb_index-1] == ">" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = ">=";
+			}else if(returnedTokens[comb_index-1] == "<" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "<=";
+			}else if(returnedTokens[comb_index-1] == "|" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "|=";
+			}else if(returnedTokens[comb_index-1] == "&" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "&=";
 			}else{
 				// Error
 			}
@@ -330,6 +352,9 @@ namespace comp {
 				}else if(tokensInput[index] == ">>"){
 					token tk("SHR",1);
 					output.emplace_back(tk);
+				}else if(tokensInput[index] == "<<"){
+					token tk("SHL",1);
+					output.emplace_back(tk);
 				}else if(tokensInput[index] == "=="){
 					token tk("EQL",1);
 					output.emplace_back(tk); // Equal
@@ -381,7 +406,7 @@ namespace comp {
 				}else if(tokensInput[index][0] == '.'){
 					token tk(tokensInput[index],0);
 					output.emplace_back(tk);
-				}else if(isalpha(tokensInput[index].back())){
+				}else if(tokensInput[index].back() != '(' && (isalpha(tokensInput[index].front()) || tokensInput[index].front() == '_')){
 					token tk(tokensInput[index],5);
 					output.emplace_back(tk);
 				}else if(tokensInput[index].back() == '('){
@@ -514,6 +539,8 @@ namespace comp {
 		return 0;
 	}
 
+	// Counts if there is a quote mismatch
+	// Only counts double quotes
 	bool quotecount(std::string str){
 		bool instring = false;
 		for(unsigned long int x=0;x < str.size();x++){
@@ -528,10 +555,11 @@ namespace comp {
 		return instring;
 	} 
 
+	// Removes all whitespace that 
 	std::string removeWhiteSpace(std::string str){
 		bool instring = false;
 		for(unsigned long int rindx = 0; rindx < str.size(); rindx++){
-			if(!instring && str[rindx] == ' '){
+			if(!instring && isspace(str[rindx])){
 				str.erase(str.begin()+rindx);
 			}
 			if(str[rindx] == '"'){

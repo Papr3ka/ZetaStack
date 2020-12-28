@@ -20,7 +20,7 @@ namespace xmath {
 
 	bool string_isnum(std::string str);
 
-	std::string calculate(std::vector<token> tokens, bool showprogress);
+	std::string calculate(std::vector<token> tokens, bool showprogress, unsigned long int reservecount=16);
 }
 
 #endif

@@ -216,6 +216,7 @@ namespace comp {
 					output.nums++;
 					break;
 				case 10:
+				case 9:
 				case 6:
 				case 1:
 					output.operators++;
@@ -258,11 +259,6 @@ namespace comp {
 		unsigned long int readindex = 0;
 		unsigned long int readsize = tokens.size();
 		
-		// Debug code
-		// for(token x: tokens){
-		// 	std::cout << " " << x.type << "\n";
-		// }
-
 		while(readindex < readsize){
 			/*
 			0 - NUM
@@ -273,19 +269,20 @@ namespace comp {
 			5 - VARIABLE
 			6 - R FUNC
 			7 - SEP
-
+			
+			9 - String
 			10 - Assignment operator
 			*/
-			switch(tokens.at(readindex).type){
+			switch(tokens[readindex].type){
 				case 0: // NUM
-					outputQueue.emplace_back(tokens.at(readindex));
+					outputQueue.emplace_back(tokens[readindex]);
 					readindex++;
 					break;
 				case 1: // OPERATOR
 				case 10: // Assignment operator
 					while(!operatorStack.empty()){
-						if(((precedence(operatorStack.back().data) > precedence(tokens.at(readindex).data) ||
-						((precedence(operatorStack.back().data) == precedence(tokens.at(readindex).data)) && associativity(tokens.at(readindex).data)))) &&
+						if(((precedence(operatorStack.back().data) > precedence(tokens[readindex].data) ||
+						((precedence(operatorStack.back().data) == precedence(tokens[readindex].data)) && associativity(tokens[readindex].data)))) &&
 						operatorStack.back().data != "L_BRAC"){							
 							outputQueue.emplace_back(operatorStack.back());
 							operatorStack.pop_back();
@@ -293,12 +290,12 @@ namespace comp {
 							break;
 						}
 					}
-					operatorStack.emplace_back(tokens.at(readindex));
+					operatorStack.emplace_back(tokens[readindex]);
 					readindex++;
 					break;
 				case 2:
 					layer++;
-					operatorStack.emplace_back(tokens.at(readindex));
+					operatorStack.emplace_back(tokens[readindex]);
 					readindex++;
 					break;
 				case 3:
@@ -323,17 +320,17 @@ namespace comp {
 				case 4:
 					infunction++;
 					layer = infunction;
-					functionStack.emplace_back(tokens.at(readindex));
-					argumentcounter.emplace_back(tokens.at(readindex).reserved);
+					functionStack.emplace_back(tokens[readindex]);
+					argumentcounter.emplace_back(tokens[readindex].reserved);
 					readindex++;
 					lockstack.emplace_back(operatorStack.size() + 1);
 					break;
 				case 5: // Variable
-					outputQueue.emplace_back(tokens.at(readindex));
+					outputQueue.emplace_back(tokens[readindex]);
 					readindex++;
 					break;
 				case 6: // Left Function
-					outputQueue.emplace_back(tokens.at(readindex));
+					outputQueue.emplace_back(tokens[readindex]);
 					readindex++;
 					break;
 				case 7: // SEP - Dump all
@@ -353,7 +350,7 @@ namespace comp {
 					}
 					break;
 				default:
-					outputQueue.emplace_back(tokens.at(readindex));
+					outputQueue.emplace_back(tokens[readindex]);
 					readindex++;
 					break;
 			}
@@ -366,7 +363,7 @@ namespace comp {
 			operatorStack.pop_back();
 		}
 		for(unsigned long int store=0;store < argumentcounter.size(); store++){
-			functionStack.at(store).reserved = argumentcounter.at(store);
+			functionStack[store].reserved = argumentcounter[store];
 		}
 		if(!functionStack.empty()){
 			std::copy(functionStack.begin(), functionStack.end(),outputQueue.end());
