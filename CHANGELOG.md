@@ -1,5 +1,16 @@
 # Changelog
 
+# [0.2.3](#0.2.3) - 2020-12-28
+
+### Fixed
+
+- --noexec would still leave execute on
+- Massive optimizations to RPN and execute
+
+### Added
+
+- Ability to display functions using /globals
+
 # [0.2.2](#0.2.2) - 2020-12-27
 
 ### Fixed
