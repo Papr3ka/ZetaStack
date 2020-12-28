@@ -7,9 +7,7 @@
 #include<string>
 #include<vector>
 
-#include "Function.hpp"
 #include "Token.hpp"
-#include "Zetacompiler.hpp"
 
 token lookup(token var, std::vector<token> identifiers, std::vector<token> args);
 
@@ -24,5 +22,7 @@ bool fexists(std::string name, signed long int argcounts);
 std::vector<token> call(std::vector<token> fargs, std::string name);
 
 long int argcount(std::string name);
+
+std::vector<std::string> getandassemble_all_defined_functions(void);
 
 #endif

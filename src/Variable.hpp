@@ -42,6 +42,6 @@ namespace var {
 
 }
 
-std::vector<std::string> subVec(std::vector<std::string> vec, unsigned long start, unsigned long end);
+void subVec(std::vector<std::string>& vec, unsigned long int start, unsigned long intend);
 
 #endif

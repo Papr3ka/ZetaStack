@@ -82,7 +82,7 @@ namespace cch {
 				value.insert(value.begin(),val);
 				metadata.insert(metadata.begin(), depends);
 			}else if(identifier.size() < maxlen){
-				int index = std::distance(identifier.begin(), it);
+				long int index = std::distance(identifier.begin(), it);
 				identifier.erase(identifier.begin()+index);
 				value.erase(value.begin()+index);
 				identifier.insert(identifier.begin(),iden);
@@ -134,7 +134,7 @@ namespace cch {
 			if(it == identifier.end()){
 				return "NULL";
 			}else{
-				int index = std::distance(identifier.begin(), it);
+				long int index = std::distance(identifier.begin(), it);
 				return value[index];
 			}
 		}else{

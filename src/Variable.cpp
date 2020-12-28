@@ -113,7 +113,7 @@ namespace var{
 			mostrecentiden = iden;
 			mostrecentvar = val;
 		}else{
-		  int index = std::distance(varidentifier.begin(), it);
+		  long int index = std::distance(varidentifier.begin(), it);
 		  varvalue.erase(varvalue.begin()+index);
 		  varvalue.insert(varvalue.begin()+index,1,val);
 		  mostrecentiden = varidentifier.at(index);
@@ -138,7 +138,7 @@ namespace var{
 		  		}
 	  		}
 		}else{
-		  int index = std::distance(varidentifier.begin(), it);
+		  long int index = std::distance(varidentifier.begin(), it);
 		  return varvalue[index];
 		}
 	}
@@ -201,10 +201,12 @@ namespace var{
 }
 
 // Like substr but for vectors
-std::vector<std::string> subVec(std::vector<std::string> vec, unsigned long start, unsigned long end){
+void subVec(std::vector<std::string>& vec, unsigned long int start, unsigned long intend){
 	std::vector<std::string> output;
-	for(;start < end; start++){
+	output.reserve(intend - start);
+	for(;start < intend; start++){
 		output.emplace_back(vec[start]);
 	}
-	return output;
+	vec = output;
+	return;
 }
