@@ -1,5 +1,23 @@
 # Changelog
 
+# [0.3.0](#0.3.0) - 2021-1-2
+
+### Fixed
+
+- Buffer issues
+- consistency issues
+
+### Added
+
+- Hash table for functions
+- Hash table for variables
+- 26 built-in functions
+- --bare option
+- -j option
+- Analyzer
+- Function precalculating
+
+
 # [0.2.3](#0.2.3) - 2020-12-28
 
 ### Fixed
