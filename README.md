@@ -83,6 +83,7 @@ You can assign, manipulate and delete variables in ZetaStack. Assigning variable
 **rand** - a cryptographically secure random number between 0 - 999 inclusive
 
 > Commenting
+
 Commenting can be done with **//** or **/\*\*/**
 
 ### Examples
