@@ -109,6 +109,7 @@ Commands can be accessed and used via the '/' key.
    exec                     Toggles execution
    exit                     Exits the program
    export <var>             Writes a variable to text
+   importvar <file>         Imports a variable from a file
    time                     Times calculations
    globals                  Displays all defined functions and variables
    ; <Command>              Executes system command
