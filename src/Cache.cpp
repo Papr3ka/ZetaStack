@@ -5,6 +5,7 @@
 
 #include "Cache.hpp"
 
+// Cannot use hash table because of the metadata and how ordered the cache needs to be
 namespace cch {
 
 	unsigned long int maxlen = 1024; // How big the cache can be before discarding
@@ -78,11 +79,15 @@ namespace cch {
 		if(cache_enable){
 			auto it = std::find(identifier.begin(), identifier.end(), iden);
 			if(it == identifier.end()){
+
 				identifier.insert(identifier.begin(),iden);
 				value.insert(value.begin(),val);
 				metadata.insert(metadata.begin(), depends);
+
 			}else if(identifier.size() < maxlen){
+
 				long int index = std::distance(identifier.begin(), it);
+
 				identifier.erase(identifier.begin()+index);
 				value.erase(value.begin()+index);
 				identifier.insert(identifier.begin(),iden);

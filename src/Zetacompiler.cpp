@@ -175,39 +175,6 @@ namespace comp {
 		}
 	}
 
-	// Error Checking
-	int checkleftBrac(std::string str){
-		int count = 0;
-		bool instring = false;
-		for(unsigned long int idx = 0; idx < str.size(); idx++){
-			if(str[idx] == '"'){
-				if(idx > 0 && str[idx-1] != '\\'){
-					instring = !instring;
-				}else if(idx == 0){
-					instring = !instring;
-				}
-			}
-			if(str[idx] == '(' && !instring) count++;
-		}
-		return count;
-	}
-
-	int checkrightBrac(std::string str){
-		int count = 0;
-		bool instring = false;
-		for(unsigned long int idx = 0; idx < str.size(); idx++){
-			if(str[idx] == '"'){
-				if(idx > 0 && str[idx-1] != '\\'){
-					instring = !instring;
-				}else if(idx == 0){
-					instring = !instring;
-				}
-			}
-			if(str[idx] == ')') count++;
-		}
-		return count;
-	}
-
 	comp_metadata getcompdata(std::vector<token> vecdata){
 		comp_metadata output{0,0,0,0};
 		for(token tmp: vecdata){
@@ -282,7 +249,8 @@ namespace comp {
 				case 10: // Assignment operator
 					while(!operatorStack.empty()){
 						if(((precedence(operatorStack.back().data) > precedence(tokens[readindex].data) ||
-						((precedence(operatorStack.back().data) == precedence(tokens[readindex].data)) && associativity(tokens[readindex].data)))) &&
+						((precedence(operatorStack.back().data) == precedence(tokens[readindex].data)) &&
+						associativity(tokens[readindex].data)))) &&
 						operatorStack.back().data != "L_BRAC"){							
 							outputQueue.emplace_back(operatorStack.back());
 							operatorStack.pop_back();
@@ -367,7 +335,12 @@ namespace comp {
 		}
 		if(!functionStack.empty()){
 			std::copy(functionStack.begin(), functionStack.end(),outputQueue.end());
-		}		
+		}
+		std::vector<token>().swap(tokens);
+		std::vector<token>().swap(operatorStack);
+		std::vector<token>().swap(functionStack);
+		std::vector<unsigned long int>().swap(lockstack);
+		std::vector<signed long int>().swap(argumentcounter);
 
 		return outputQueue;
 	}
@@ -381,8 +354,7 @@ namespace comp {
 						continue;
 					}
 				}
-				token tk(var::search(tokens.at(index).data, false), 0);
-				tokens.at(index) = tk;
+				tokens.at(index) = token(var::search(tokens.at(index).data, false), 0);
 			}
 		}
 		return tokens;

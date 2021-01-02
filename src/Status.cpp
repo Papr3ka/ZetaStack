@@ -71,12 +71,23 @@ namespace bar {
 
 	std::string barbody;
 	std::string inform_mode = "";
-	std::string loadchar = "≡"; // ≡, =, -, █
-	std::string spacechar = " ";
 
-	// ◀ ▶ < >
-	std::string right = "▶";
-	std::string left = "◀";
+	#ifndef NO_UNICODE_STATUS_
+		
+		std::string loadchar = "≡"; // ≡, =, -, █ |
+		std::string spacechar = " ";
+
+		// ◀ ▶ < >
+		std::string right = "▶";
+		std::string left = "◀";
+	#else
+		
+		std::string loadchar = "="; 
+		std::string spacechar = " ";
+
+		std::string right = ">";
+		std::string left = "<";		
+	#endif
 
 
 	bool dostat = false;

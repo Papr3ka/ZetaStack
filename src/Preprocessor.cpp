@@ -84,7 +84,20 @@ namespace comp {
 				if(returnedTokens.back().back() == ' '){
 					returnedTokens.back().pop_back();
 				}
-			}
+			}else if(lexInput[index] == '\''){
+				countindex = index;
+				while(index < lexInput.size()){
+					index++;
+					if(lexInput[index] == '\'' && lexInput[index - 1] != '\\'){
+						index++;
+						break;
+					}
+				}
+				returnedTokens.emplace_back(lexInput.substr(countindex, index));
+				if(returnedTokens.back().back() == ' '){
+					returnedTokens.back().pop_back();
+				}
+			}else 
 			if(ispunct(lexInput[index]) && lexInput[index] != '.' && lexInput[index] != ','){
 				if(index+1 < lexInput.size()){
 					dualchar = lexInput.substr(index,2);
@@ -156,6 +169,9 @@ namespace comp {
 				}else if(lexInput[index] == '>'){
 					index++;
 					returnedTokens.emplace_back(">");
+				}else if(lexInput[index] == '<'){
+					index++;
+					returnedTokens.emplace_back("<");
 				}else if(lexInput[index] == '&'){
 					index++;
 					returnedTokens.emplace_back("&");
@@ -175,7 +191,8 @@ namespace comp {
 				while(countindex < lexInput.size() &&
                     (isalpha(lexInput[countindex]) ||
                      isdigit(lexInput[countindex]) ||
-                     lexInput[countindex] == '_')){
+                     lexInput[countindex] == '_'   ||
+                     lexInput[countindex] == '`' )){
 					countindex++;
 				}
 				if(lexInput[countindex] == '('){
@@ -230,7 +247,10 @@ namespace comp {
 			}
 		}
 		for(unsigned long comb_index = 1; comb_index < returnedTokens.size(); comb_index++){
-			if(returnedTokens[comb_index-1] == "**" && returnedTokens[comb_index] == "="){
+			if(returnedTokens[comb_index-1] == "==" && returnedTokens[comb_index] == "="){
+				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
+				returnedTokens[comb_index-1] = "===";
+			}else if(returnedTokens[comb_index-1] == "**" && returnedTokens[comb_index] == "="){
 				returnedTokens.erase(returnedTokens.begin()+comb_index-1);
 				returnedTokens[comb_index-1] = "**=";
 			}else if(returnedTokens[comb_index-1] == "<<" && returnedTokens[comb_index] == "="){
@@ -279,6 +299,7 @@ namespace comp {
 				// Error
 			}
 		}
+		std::string().swap(lexInput);
 		return returnedTokens;
 	}
 
@@ -355,7 +376,10 @@ namespace comp {
 				}else if(tokensInput[index] == "<<"){
 					token tk("SHL",1);
 					output.emplace_back(tk);
-				}else if(tokensInput[index] == "=="){
+				}else if(tokensInput[index] == "==="){
+					token tk("TEQL",100); // Special
+					output.emplace_back(tk); // Equal
+				}else  if(tokensInput[index] == "=="){
 					token tk("EQL",1);
 					output.emplace_back(tk); // Equal
 				}else if(tokensInput[index] == "!="){
@@ -410,14 +434,22 @@ namespace comp {
 					token tk(tokensInput[index],5);
 					output.emplace_back(tk);
 				}else if(tokensInput[index].back() == '('){
+					size_t d = std::count(tokensInput[index].begin(), tokensInput[index].end(), '`');
+					tokensInput[index].erase(std::remove(tokensInput[index].begin(), tokensInput[index].end(), '`'), tokensInput[index].end());
 					token tk(tokensInput[index],4);
 					if(index+2 < tokensInput.size() && tokensInput[index+2] == ")"){
 						tk.reserved = 0;
 					}else{
 						tk.reserved = 1;
 					}
+					if(d == std::string::npos){
+						tk.special = 0;
+					}else{
+						tk.special = static_cast<long int>(d);
+					}
 					output.emplace_back(tk);
-				}else if(tokensInput[index].front() == '"' || tokensInput[index].back() == '"'){
+				}else if((tokensInput[index].front() == '"' && tokensInput[index].back() == '"') ||
+					(tokensInput[index].front() == '\'' && tokensInput[index].back() == '\'')){
 					token tk(tokensInput[index], 9);
 					output.emplace_back(tk);
 				}else{
@@ -425,17 +457,25 @@ namespace comp {
 					output.emplace_back(tk);
 				}
 			}else if(tokensInput[index].back() == '('){
-				token tk(tokensInput[index],4);
-				if(index+2 < tokensInput.size() && tokensInput[index+2] == ")"){
-					tk.reserved = 0;
-				}else{
-					tk.reserved = 1;
-				}
-				output.emplace_back(tk);
+					size_t d = std::count(tokensInput[index].begin(), tokensInput[index].end(), '`');
+					tokensInput[index].erase(std::remove(tokensInput[index].begin(), tokensInput[index].end(), '`'), tokensInput[index].end());
+					token tk(tokensInput[index],4);
+					if(index+2 < tokensInput.size() && tokensInput[index+2] == ")"){
+						tk.reserved = 0;
+					}else{
+						tk.reserved = 1;
+					}
+					if(d == std::string::npos){
+						tk.special = 0;
+					}else{
+						tk.special = static_cast<long int>(d);
+					}
+					output.emplace_back(tk);
 			}else if(ttype(tokensInput[index]) == 0){
 				token tk(tokensInput[index],0);
 				output.emplace_back(tk);			
-			}else if(tokensInput[index].front() == '"' || tokensInput[index].back() == '"'){
+			}else if((tokensInput[index].front() == '"' && tokensInput[index].back() == '"') ||
+					(tokensInput[index].front() == '\'' && tokensInput[index].back() == '\'')){
 				token tk(tokensInput[index], 9);
 				output.emplace_back(tk);
 			}else{
@@ -468,7 +508,8 @@ namespace comp {
 			if(replidx + 1 < output.size() && output.at(replidx).type == 1 &&
 			 (output.at(replidx).data == "SUB" || output.at(replidx).data == "ADD")){
 				if((output.at(replidx + 1).type == 2 || 
-					output.at(replidx + 1).type == 1 || 
+					output.at(replidx + 1).type == 1 ||
+					output.at(replidx - 1).type == 7 ||
 					output.at(replidx - 1).type == 2 || 
 					output.at(replidx - 1).type == 1) &&
 					output.at(replidx - 1).type != 0 &&
@@ -483,7 +524,8 @@ namespace comp {
 				}
 			}
 			replidx++;
-		}		
+		}
+		std::vector<std::string>().swap(tokensInput);
 		return output;
 	}
 
@@ -539,22 +581,6 @@ namespace comp {
 		return 0;
 	}
 
-	// Counts if there is a quote mismatch
-	// Only counts double quotes
-	bool quotecount(std::string str){
-		bool instring = false;
-		for(unsigned long int x=0;x < str.size();x++){
-			if(str[x] == '"'){
-				if(x > 0 && str[x-1] != '\\'){
-					instring = !instring;
-				}else if(x == 0){
-					instring = !instring;
-				}
-			}
-		}
-		return instring;
-	} 
-
 	// Removes all whitespace that 
 	std::string removeWhiteSpace(std::string str){
 		bool instring = false;
@@ -562,7 +588,7 @@ namespace comp {
 			if(!instring && isspace(str[rindx])){
 				str.erase(str.begin()+rindx);
 			}
-			if(str[rindx] == '"'){
+			if(str[rindx] == '"' || str[rindx] == '\''){
 				if(!instring){
 					instring = true;
 				}else{
@@ -580,8 +606,12 @@ namespace comp {
 	std::string stripcomment(std::string str){
 		bool take = true;
 		std::string out;
+		out.reserve(str.size());
 		for(unsigned long int idx = 0; idx < str.size(); idx++){
 			if(idx+1 < str.size()){
+				if(str[idx] == '/' && str[idx + 1] == '/'){
+					return str.substr(0, idx);
+				}
 				if(str[idx] == '/' && str[idx + 1] == '*'){
 					take = false;
 				}else if(str[idx - 1] == '*' && str[idx] == '/'){
@@ -614,6 +644,11 @@ namespace comp {
 			return 0;
 		}else{
 			long int ieqpos = static_cast<long int>(eqpos);
+			if(ieqpos + 2 < (long int)str.size()){
+				if(str[ieqpos + 1] == '=' && str[ieqpos + 2] == '='){
+					return 1; // CAS
+				}
+			}
 			if(ieqpos - 2 >= 0){
 				if(str[ieqpos - 2] == '>' || str[ieqpos - 2] == '<' || str[ieqpos - 2] == '*'){
 					return 0;

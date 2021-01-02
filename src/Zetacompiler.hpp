@@ -29,10 +29,6 @@ namespace comp {
 
 	bool hasvar(std::vector<token> tokens);
 
-	int checkleftBrac(std::string tokens);
-	
-	int checkrightBrac(std::string tokens);
-
 	comp_metadata getcompdata(std::vector<token> vecdata);
 	
 	std::vector<token> shuntingYard(std::vector<token> tokens, comp_metadata meta);
