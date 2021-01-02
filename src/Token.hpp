@@ -12,6 +12,8 @@ typedef struct{
 }token;
 */
 
+extern bool inturrupt_exit_flag;
+
 /*
 	0 - NUM
 	1 - OPERATOR
@@ -33,19 +35,29 @@ class token{
 		std::string data;
 		long int type;
 		long int reserved = -1;
+		long int special = -1;
 
 		// overloaded constructors for optional parameters
 		inline token(){}
-		inline token(std::string d, int t){ 
-			data = d;
-			type = t;
+		
+		inline token(std::string data, long int type){ 
+			this->data = data;
+			this->type = type;
 		}
-		inline token(std::string d, int t, int res){
-			data = d;
-			type = t;
-			reserved = res;
+		inline token(std::string data, long int type, long int reserved){
+			this->data = data;
+			this->type = type;	
+			this->reserved = reserved;		
 		}
-		inline ~token(){}
+		inline token(std::string data, long int type, long int reserved, long int special){
+			this->data = data;
+			this->type = type;	
+			this->reserved = reserved;
+			this->special = special;
+		}
+		inline ~token(){
+			std::string().swap(data);
+		}
 
 		// comparisons
 		inline friend bool operator != (token a, token b){
@@ -58,6 +70,11 @@ class token{
 			if(a.data == b.data) return false;
 			if(a.type == b.type) return false;
 			return true;
+		}
+
+		inline friend bool operator == (std::string a, token b){
+			if(a == b.data) return true;
+			return false;
 		}
 
 		// Required for <string> to compare token with const char []

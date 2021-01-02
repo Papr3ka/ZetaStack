@@ -20,6 +20,8 @@ namespace xmath {
 
 	bool string_isnum(std::string str);
 
+	std::vector<token> simplify(std::vector<token> tokens, std::vector<token> targets, std::string reserved="", unsigned long int reservecount=16);
+
 	std::string calculate(std::vector<token> tokens, bool showprogress, unsigned long int reservecount=16);
 }
 

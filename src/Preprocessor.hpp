@@ -20,8 +20,6 @@ namespace comp {
 	std::vector<token> tokenComp(std::vector<std::string> tokensInput);
 
 	int assigntype(std::string str);
-
-	bool quotecount(std::string str);
 	
 	std::string removeWhiteSpace(std::string str);
 

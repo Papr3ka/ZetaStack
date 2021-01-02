@@ -1,50 +1,33 @@
 #include<algorithm>
+#include<atomic>
 #include<cctype>
 #include<cstdlib>
 #include<string>
 #include<thread>
 #include<vector>
+#include<unordered_map>
 
+#include "BuiltIn.hpp"
 #include "Entropy.hpp"
 #include "Variable.hpp"
 
 namespace var{
 
-	// specials to be moved to separate file for more accurate processing
-	std::vector<std::string> specialIden{
-		"rand",
-		"pi",
-		"euler",
-		"phi",
-		"omega"
-	};
-
-	std::vector<std::string> varidentifier{
-		"pi",
-		"euler",
-		"phi",
-		"omega"
-	};
-	std::vector<std::string> varvalue{
-		"3.14159265358979",
-		"2.71828182845904",
-		"1.61803398874989",
-		"0.56714329040978"
-
-	};
-
+	std::unordered_map<std::string, std::string> variabletable;
 
 	std::string mostrecentiden;
 	std::string mostrecentvar;
 
-	unsigned long int buffermax = 4096;
+	std::atomic<unsigned long int> buffermax(4096);
+	std::atomic<unsigned long int> bufferindex(0);
+
 	bool runbuffer = true;
 
 	long prevr = rand() % 769 + 47; // for random nums
 
 	static std::vector<long int> randbuffer;
 
-	static long getrand(void){
+	static inline long getrand(void){
 		long int retval;
 		if(!randbuffer.empty()){
 			retval = randbuffer.front();
@@ -61,14 +44,10 @@ namespace var{
 	}
 
 	void setbuffermax(unsigned long int setval){
+		
+		bufferindex = 0;
 		buffermax = setval;
-		if(setval == 0){
-			std::vector<long int>().swap(randbuffer);
-		}
-		while(randbuffer.size() > buffermax){
-			randbuffer.erase(randbuffer.begin());
-		}
-		randbuffer.shrink_to_fit();
+		std::vector<long int>().swap(randbuffer);
 		return;
 	}
 
@@ -83,64 +62,53 @@ namespace var{
 
 	void joinbuffer(void){
 		runbuffer = false;
+		std::vector<long int>().swap(randbuffer);
 		return;
 	}
 
 	bool changable(std::string iden){
-		for(std::string vconst: specialIden){
-			if(vconst == iden){
-				return false;
-			}
+		if(specialIden.find(iden) == specialIden.end()){
+			return true;
+		}else{
+			return false;
 		}
-		return true;
 	}
 
 	bool exists(std::string iden){
-		for(std::string vars: varidentifier){
-			if(vars == iden){
-				return true;
-			}
+		if(variabletable.find(iden) == variabletable.end()){
+			return false;
+		}else{
+			return true;
 		}
-		return false;		
 	}
 
 	// Add variable to vector
 	void update(std::string iden, std::string val){
-		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
-		if (it == varidentifier.end()){
-		  	varidentifier.emplace_back(iden);
-			varvalue.emplace_back(val);
-			mostrecentiden = iden;
-			mostrecentvar = val;
-		}else{
-		  long int index = std::distance(varidentifier.begin(), it);
-		  varvalue.erase(varvalue.begin()+index);
-		  varvalue.insert(varvalue.begin()+index,1,val);
-		  mostrecentiden = varidentifier.at(index);
-		  mostrecentvar = val;
-		}
+		mostrecentvar = val;
+		mostrecentiden = iden;
+		variabletable[iden] = val;
+		return;
 
 	}
 
 	// Return var value if identifier is found else return NULL
 	std::string search(std::string iden, bool nothrow){
-		auto it = std::find(varidentifier.begin(), varidentifier.end(), iden);
-		if (it == varidentifier.end()){
-			if(iden == "rand"){
-				return std::to_string(getrand());
+		if(variabletable.find(iden) == variabletable.end()){
+			if(iden == "rand") return std::to_string(getrand());
+			if(specialIden.find(iden) != specialIden.end()){
+				return specialIden[iden];
+			}
+			if(nothrow){
+				return "NULL";
 			}else{
-				if(nothrow){
-					return "NULL";
-				}else{
-					std::string error = "Undefined Variable: \"";
-		  			error.append(iden).append("\"");
-		  			throw error;
-		  		}
-	  		}
+				std::string error = "Undefined Variable: \"";
+		  		error.append(iden).append("\"");
+		  		throw error;				
+			}
 		}else{
-		  long int index = std::distance(varidentifier.begin(), it);
-		  return varvalue[index];
+			return variabletable[iden];
 		}
+		
 	}
 
 	std::string	mostrecent(void){
@@ -152,33 +120,45 @@ namespace var{
 
 	// Wrapper for amount of variables
 	unsigned long int count(void){
-		return varidentifier.size();
+		return variabletable.size();
 	}
 
 	// Delete variable, return 1 if not present 0 if success
 	// 2 if cannot be deleted
 	int delvar(std::string variden){
-		for(std::string chkstr : specialIden){
-			if(variden == chkstr) return 2;
-		}
-		auto it = std::find(varidentifier.begin(), varidentifier.end(), variden);
-		if (it == varidentifier.end()){
-			return 1;
+		if(variabletable.find(variden) == variabletable.end()){
+			return 2;
 		}else{
-			int index = std::distance(varidentifier.begin(), it);
-			varidentifier.erase(varidentifier.begin()+index);
-			varvalue.erase(varvalue.begin()+index);
+			variabletable.erase(variden);
 			return 0;
 		}
 	}
 
 	// Wrapper for all names
 	std::vector<std::string> globals(void){
-		return varidentifier;
+		std::vector<std::string> output;
+		output.reserve(variabletable.size());
+		for(std::unordered_map<std::string, std::string>::iterator
+            itx = variabletable.begin();
+            itx != variabletable.end();
+            itx++){
+
+			output.emplace_back(itx->first);
+		}
+		return output;
 	}
 
 	std::vector<std::string> specials(void){
-		return specialIden;
+		std::vector<std::string> output;
+		output.reserve(specialIden.size());
+		for(std::unordered_map<std::string, std::string>::iterator
+            itx = specialIden.begin();
+            itx != specialIden.end();
+            itx++){
+
+			output.emplace_back(itx->first);
+		}
+		return output;
 	}
 
 	// Target to thread
@@ -194,6 +174,11 @@ namespace var{
 				}
 			}else{
 				std::this_thread::sleep_for(std::chrono::milliseconds(125));
+				if(!randbuffer.empty()){
+					randbuffer.erase(randbuffer.begin());
+					std::this_thread::sleep_for(std::chrono::milliseconds(250));
+				}
+				bufferindex++;
 			}
 		}
 		return;
@@ -203,7 +188,9 @@ namespace var{
 // Like substr but for vectors
 void subVec(std::vector<std::string>& vec, unsigned long int start, unsigned long intend){
 	std::vector<std::string> output;
-	output.reserve(intend - start);
+	if((long int)intend - (long int)start >= 0){
+		output.reserve(intend - start);
+	}
 	for(;start < intend; start++){
 		output.emplace_back(vec[start]);
 	}
