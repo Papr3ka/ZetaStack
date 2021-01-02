@@ -26,6 +26,9 @@ Options:
   -h  --help                   Display this information
   -v  --version                Display version information
 
+  -j <int>                     Sets the maximum thread count
+
+  --bare                       Start with absolute minimum memory usage
   --debug                      Start with debug mode on
   --nobuffer                   Disables variable buffer
   --noexec                     Start with execution disabled
@@ -37,23 +40,23 @@ Options:
 
 Function overloading is supported
 
-## Examples
+### Examples
 
-### Creating
+> Creating
 
 ```
 === f(x,y)=x/y
 === fma(a,b,c)=a+b*c
 ```
 
-### Using
+> Using
 
 ```
 === f(fma(2,4+4,6*12),2/3-2)
 === f(1,7)
 ```
 
-### Deleting
+> Deleting
 
 ```
 === /del f(
@@ -64,7 +67,7 @@ Function overloading is supported
 
 You can assign, manipulate and delete variables in ZetaStack. Assigning variables are the same as any other programming language.
 
-## Examples
+### Examples
 
 ```
 === x = 123
@@ -73,16 +76,16 @@ You can assign, manipulate and delete variables in ZetaStack. Assigning variable
 === /del var
 ```
 
-### Special Variables
+> Special Variables
 
 **ans** - the most recent answer
 
 **rand** - a cryptographically secure random number between 0 - 999 inclusive
 
-# Commenting
+> Commenting
 Commenting can be done with **//** or **/\*\*/**
 
-## Examples
+### Examples
 
 ```
 === 64*(/*Comment here*/2+41/*will read as 4125*/25)
@@ -93,7 +96,7 @@ Commenting can be done with **//** or **/\*\*/**
 
 Commands can be accessed and used via the '/' key.
 
-### Available commands
+> Available commands
 
 ```
    bar                      Toggles progress bar
