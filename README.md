@@ -112,6 +112,7 @@ Commands can be accessed and used via the '/' key.
    importvar <file>         Imports a variable from a file
    time                     Times calculations
    globals                  Displays all defined functions and variables
+   unit <unit>              Sets the unit to be used
    ; <Command>              Executes system command
 ```
 
