@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O3 -pipe -Wall -Wextra -Wpedantic -Wdouble-promotion -pthread -march=native -finline-functions -ftree-vectorize -frename-registers
+CXXFLAGS = -O3 -g -pipe -Wall -Wextra -Wpedantic -Wdouble-promotion -pthread -march=native -finline-functions -ftree-vectorize -frename-registers
 LDFLAGS = -flto -fpie
 LD = g++
 
