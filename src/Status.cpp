@@ -91,10 +91,10 @@ namespace bar {
 
 
 	bool dostat = false;
-	float prec = 5;
+	constexpr float prec = 5;
 
-	float barlen = 50;
-	float dotbarlen = barlen+17;
+	constexpr float barlen = 50;
+	constexpr float dotbarlen = barlen+17;
 
 	std::atomic<float> countmax(0);
 	std::atomic<float> dispbar(0);
@@ -241,7 +241,7 @@ namespace bar {
 						break;
 				}
 			}else{
-				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 		}
 		return;

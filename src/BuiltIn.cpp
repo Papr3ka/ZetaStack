@@ -4,6 +4,7 @@
 #include<vector>
 #include<cstdlib>
 #include<iostream>
+#include<limits>
 #include<unordered_map>
 #include<thread>
 
@@ -35,7 +36,7 @@ std::unordered_map<std::string, std::string> specialIden = {
 	buitlinfuncs[i] = { a, "b", c, {"d"}};
 	i++;
 
-a = function pointer
+a = function pointer (*)()
 b = alias
 c = arguments (-1 if unspecified)
 d = argument identifiers
@@ -43,30 +44,97 @@ d = argument identifiers
 4. In BuiltIn.hpp make sure TOTAL_BUILTIN_FUNCS is set to the number of builtin functions
 
 */
+// Base use functions
+inline long long base_factorial(long long x){
+	x = abs(x);
+	long long ans=1;
+	for(;x>0;x--){
+		ans *= x;
+	}
+	return ans;
+}
+
+constexpr double rad_deg = 57.2957795130823;
+constexpr double rad_grad = 63.6619772367581;
+
 
 // Trigonomic
 double b_sin(std::vector<token> x){
-	return sin(std::stod(x.front().data));
+	switch(angle_unit){
+		case 0:
+			return sin(std::stod(x.front().data));
+		case 1:
+			return sin(std::stod(x.front().data)/rad_grad);
+		case 2:
+			return sin(std::stod(x.front().data)/rad_deg);
+		default:
+			return sin(std::stod(x.front().data));
+	}
 }
 
 double b_cos(std::vector<token> x){
-	return cos(std::stod(x.front().data));
+	switch(angle_unit){
+		case 0:
+			return cos(std::stod(x.front().data));
+		case 1:
+			return cos(std::stod(x.front().data)/rad_grad);
+		case 2:
+			return cos(std::stod(x.front().data)/rad_deg);
+		default:
+			return cos(std::stod(x.front().data));
+	}
 }
 
 double b_tan(std::vector<token> x){
-	return tan(std::stod(x.front().data));
+	switch(angle_unit){
+		case 0:
+			return tan(std::stod(x.front().data));
+		case 1:
+			return tan(std::stod(x.front().data)/rad_grad);
+		case 2:
+			return tan(std::stod(x.front().data)/rad_deg);
+		default:
+			return tan(std::stod(x.front().data));
+	}
 }
 
 double b_asin(std::vector<token> x){
-	return asin(std::stod(x.front().data));
+	switch(angle_unit){
+		case 0:
+			return asin(std::stod(x.front().data));
+		case 1:
+			return asin(std::stod(x.front().data))*rad_grad;
+		case 2:
+			return asin(std::stod(x.front().data))*rad_deg;
+		default:
+			return asin(std::stod(x.front().data));
+	}
 }
 
 double b_acos(std::vector<token> x){
-	return acos(std::stod(x.front().data));
+	switch(angle_unit){
+		case 0:
+			return acos(std::stod(x.front().data));
+		case 1:
+			return acos(std::stod(x.front().data))*rad_grad;
+		case 2:
+			return acos(std::stod(x.front().data))*rad_deg;
+		default:
+			return acos(std::stod(x.front().data));
+	}
 }
 
 double b_atan(std::vector<token> x){
-	return atan(std::stod(x.front().data));
+	switch(angle_unit){
+		case 0:
+			return atan(std::stod(x.front().data));
+		case 1:
+			return atan(std::stod(x.front().data))*rad_grad;
+		case 2:
+			return atan(std::stod(x.front().data))*rad_deg;
+		default:
+			return atan(std::stod(x.front().data));
+	}
 }
 
 // Hyperbolic
@@ -118,6 +186,20 @@ double b_log(std::vector<token> x){
 
 ////////////////////////////////
 
+double b_sqrt(std::vector<token> x){
+	return sqrt(std::stod(x.front().data));
+}
+
+double b_cbrt(std::vector<token> x){
+	return cbrt(std::stod(x.front().data));
+}
+
+double b_root(std::vector<token> x){
+	return pow(std::stod(x.back().data), 1/std::stod(x.front().data));
+}
+
+////////////////////////////////
+
 double b_sum(std::vector<token> x){
 	double ans = 0;
 	for(token add: x){
@@ -159,17 +241,6 @@ double b_round(std::vector<token> x){
 
 ////////////////////////////////
 
-double b_max(std::vector<token> x){
-	if(x.size() == 1) return(std::stod(x.front().data));
-	double amax = 0;
-	double cur;
-	for(token tmax: x){
-		cur = std::stod(tmax.data);
-		if(cur > amax) amax = cur;
-	}
-	return amax;
-}
-
 double b_min(std::vector<token> x){
 	if(x.size() == 1) return(std::stod(x.front().data));
 	double amin = 0;
@@ -181,13 +252,24 @@ double b_min(std::vector<token> x){
 	return amin;
 }
 
+double b_max(std::vector<token> x){
+	if(x.size() == 1) return(std::stod(x.front().data));
+	double amax = 0;
+	double cur;
+	for(token tmax: x){
+		cur = std::stod(tmax.data);
+		if(cur > amax) amax = cur;
+	}
+	return amax;
+}
+
 ////////////////////////////////
 
-#define MAX_ZETA_ITER 25600000UL
+constexpr unsigned long int max_zeta_iter = 25600000;
 
 std::unordered_map<double, double> zetaTable = {
 	{0, -0.5},
-	{1, 1.7976931348623157*10e307}, // INF 
+	{1, HUGE_VAL}, // INF 
 	{2, 1.644934066848226},
 	{3, 1.202056903159594},
 	{4, 1.082323233711138},
@@ -237,8 +319,8 @@ double b_zeta(std::vector<token> x){
 	if(s <= 1){
 		 return std::riemann_zeta(s);
 	}
-	#else
-		#pragma message "values for zeta function x < 1 are erroneous. Compile with C++17 or later"
+	//#else
+		//#pragma message "values for zeta function x < 1 are erroneous. Compile with C++17 or later"
 		// Program still works perfectly fine with C++11 but values x < 1 are erroneous
 	#endif
 	std::atomic<double> *ans = new std::atomic<double>;
@@ -246,7 +328,7 @@ double b_zeta(std::vector<token> x){
 	std::vector<std::thread> workerpool;
 	workerpool.reserve(CPU_COUNT);
 	for(unsigned long int inc = 0; inc < CPU_COUNT; inc++){
-		workerpool.emplace_back(std::thread(b_zeta_worker, ans, s, inc + 1, CPU_COUNT, MAX_ZETA_ITER));
+		workerpool.emplace_back(std::thread(b_zeta_worker, ans, s, inc + 1, CPU_COUNT, max_zeta_iter));
 	}
 	for(std::thread& th: workerpool){
 		th.join();
@@ -258,4 +340,14 @@ double b_zeta(std::vector<token> x){
 
 double b_gamma(std::vector<token> x){
 	return tgamma(std::stod(x.front().data));
+}
+
+////////////////////////////////
+
+double b_erf(std::vector<token> x){
+	return erf(std::stod(x.front().data));
+}
+
+double b_factorial(std::vector<token> x){
+	return base_factorial(std::stod(x.front().data));
 }

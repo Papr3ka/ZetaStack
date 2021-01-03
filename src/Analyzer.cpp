@@ -19,10 +19,16 @@ bool checkrpn(const std::vector<token> checktokens){
 				break;
 			case 1:
 				if(checktokens[index].data == "NEG"){
+					if(simulatestack - 1 < 0) return false;
 					break;
 				}else if(checktokens[index].data == "POS"){
+					if(simulatestack - 1 < 0) return false;
+					break;
+				}else if(checktokens[index].data == "NOT"){
+					if(simulatestack - 1 < 0) return false;
 					break;
 				}else{
+					if(simulatestack - 2 < 0) return false;
 					simulatestack--;
 				}
 				break;
@@ -33,7 +39,8 @@ bool checkrpn(const std::vector<token> checktokens){
 			case 6:
 				break;
 			case 10:
-				simulatestack -= 2;
+				simulatestack--;
+				simulatestack--;
 				break;
 		}
 		if(simulatestack < 0){

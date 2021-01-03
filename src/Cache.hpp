@@ -27,6 +27,8 @@ namespace cch {
 
 	void refreshDepends(std::string change);
 
+	void refresh_trigdepends(void);
+
 	void add_depend(std::string change);
 
 	void fulfill_depends(void);

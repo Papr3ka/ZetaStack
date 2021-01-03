@@ -13,18 +13,18 @@
 
 namespace comp {
 
-	std::vector<std::string> assign{
-		"ASN",
-		"ADDASN",
-		"SUBASN",
-		"MULASN",
-		"DIVASN",
-		"MODASN",
-		"XORASN",
-		"POWASN",
-		"SHLASN",
-		"SHRASN"
-	};
+	// std::vector<std::string> assign{
+	// 	"ASN",
+	// 	"ADDASN",
+	// 	"SUBASN",
+	// 	"MULASN",
+	// 	"DIVASN",
+	// 	"MODASN",
+	// 	"XORASN",
+	// 	"POWASN",
+	// 	"SHLASN",
+	// 	"SHRASN"
+	// };
 
 	std::vector<std::string> operators{
 		"ADD",
@@ -38,6 +38,7 @@ namespace comp {
 		"SHR",
 		"FLOORDIV",
 		"OR",
+		"NOT",
 		"AND",
 		"EQL",
 		"NQL",
@@ -118,33 +119,35 @@ namespace comp {
 
 	inline unsigned int precedence(std::string op){
 		if(op.back() == '('){
-			return 20;
+			return 1500;
 		}else if(op == "NEG" || op == "POS"){
-			return 19;
+			return 1400;
+		}else if(op == "NOT"){
+			return 1300;
 		}else if(op == "POW"){
-			return 18;
+			return 1200;
 		}else if(op == "MUL" || op == "DIV" || op == "MOD" || op == "FLOORDIV"){
-			return 17;
+			return 1100;
 		}else if(op == "ADD" || op == "SUB"){
-			return 16;
+			return 1000;
 		}else if(op == "SHL" || op == "SHR"){
-			return 15;
+			return 900;
 		}else if(op == "GQL" || op == "LQL" || op == "GRT" || op == "LST"){
-			return 14;
+			return 800;
 		}else if(op == "EQL" || op == "NQL"){
-			return 13;
+			return 700;
 		}else if(op == "BITAND"){
-			return 12;
+			return 600;
 		}else if(op == "BITXOR"){
-			return 11;
+			return 500;
 		}else if(op == "BITOR"){
-			return 10;
+			return 400;
 		}else if(op == "LAND"){
-			return 3;
+			return 300;
 		}else if(op == "LOR"){
-			return 2;
+			return 200;
 		}else if(op.substr(op.size()-3,op.size()) == "ASN"){
-			return 1;
+			return 100;
 		}else{
 			return 0; // ERROR
 		}
@@ -336,6 +339,15 @@ namespace comp {
 		if(!functionStack.empty()){
 			std::copy(functionStack.begin(), functionStack.end(),outputQueue.end());
 		}
+
+		// Cleanup
+
+		tokens.clear();
+		operatorStack.clear();
+		functionStack.clear();
+		lockstack.clear();
+		argumentcounter.clear();
+
 		std::vector<token>().swap(tokens);
 		std::vector<token>().swap(operatorStack);
 		std::vector<token>().swap(functionStack);
@@ -350,11 +362,11 @@ namespace comp {
 		for(unsigned long int index=0;index < tokens.size(); index++){
 			if(tokens.at(index).type == 5){
 				if(index+1 < tokens.size()){
-					if(tokens.at(index+1).type == 10){
+					if(tokens[index+1].type == 10){
 						continue;
 					}
 				}
-				tokens.at(index) = token(var::search(tokens.at(index).data, false), 0);
+				tokens[index] = token(var::search(tokens.at(index).data, false), 0);
 			}
 		}
 		return tokens;
