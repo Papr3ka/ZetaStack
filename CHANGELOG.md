@@ -1,5 +1,21 @@
 # Changelog
 
+# [0.3.1](#0.3.1) - 2021-1-3
+
+### Fixed
+
+- Hang on exit
+- Clock
+- Better memory cleanup after long string execute
+
+### Added
+
+- Ability to change the angle unit
+- Added 2 more functions
+
+### Changed
+- ! is now NOT operator
+
 # [0.3.0](#0.3.0) - 2021-1-2
 
 ### Fixed
