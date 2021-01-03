@@ -19,6 +19,8 @@ std::vector<std::string> split(std::string str, std::string split){
         output.emplace_back(token);
     }
     output.emplace_back(str.substr(start));
+    str.clear();
+    std::string().swap(str);
     return output;
 }
 
@@ -45,20 +47,6 @@ namespace comp {
 		"="
 	};
 
-
-	/*
-		-1 Error
-		0 ASN     =
-		1 ADDASN  +=
-		2 SUBASN  -=
-		3 MULASN  *=
-		4 DIVASN  /=
-		5 MODASN  %=
-		6 XORASN  ^=
-		7 POWASN  **=
-		8 SHLASN  <<=
-		9 SHRASN  >>=
-	*/
 
 	// Lexical Analysis
 	std::vector<std::string> lex(std::string lexInput){
@@ -299,6 +287,7 @@ namespace comp {
 				// Error
 			}
 		}
+		lexInput.clear();
 		std::string().swap(lexInput);
 		return returnedTokens;
 	}
@@ -341,7 +330,7 @@ namespace comp {
 					token tk("BITXOR",1);
 					output.emplace_back(tk);
 				}else if(tokensInput[index] == "!"){
-					token tk("FACT",6);
+					token tk("NOT",1);
 					output.emplace_back(tk);
 				}else if(tokensInput[index] == "("){
 					token tk("L_BRAC",2);
@@ -525,6 +514,7 @@ namespace comp {
 			}
 			replidx++;
 		}
+		tokensInput.clear();
 		std::vector<std::string>().swap(tokensInput);
 		return output;
 	}
@@ -628,6 +618,8 @@ namespace comp {
 			}
 
 		}
+		str.clear();
+		std::string().swap(str);
 		return out;
 	}
 

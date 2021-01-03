@@ -155,6 +155,11 @@ namespace xmath {
 		return x || y;
 	}
 
+	inline double lnot(double x){
+		if(x == 0) return 1;
+		return 0;
+	}
+
 	inline double sum(std::vector<double> addends){
 		double ans = 0;
 		for(double add: addends){
@@ -944,7 +949,20 @@ namespace xmath {
 						
 						index++;
 
-					}else{
+					}else if(tokens[index].data == "NOT"){
+						if(evalstack.back().type == 1000 ||
+					       evalstack.back().type == 1 ||
+					       evalstack.back().type == 4){
+							evalstack.emplace_back(tokens[index]);
+							index++;
+							continue;
+						}
+						double x = std::stod(evalstack.back().data);
+						token tk(to_string_hprec(lnot(x)), 0);
+						evalstack.back() = tk;
+						index++;
+
+					}else {
 						//goto lblend; // Error
 					}
 				break;
@@ -1041,7 +1059,15 @@ namespace xmath {
 		}
 		for(token op: operatorsstack){
 			evalstack.emplace_back(op);
-		}	
+		}
+		operatorsstack.clear();
+		tokens.clear();
+		targets.clear();
+
+		std::vector<token>().swap(operatorsstack);
+		std::vector<token>().swap(tokens);
+		std::vector<token>().swap(targets);
+
 		return evalstack;
 	}
 
@@ -1298,6 +1324,13 @@ namespace xmath {
 					
 						index++;
 
+					}else if(tokens[index].data == "NOT"){
+						double x = std::stod(evalstack.back().data);
+						token tk(to_string_hprec(lnot(x)), 0);
+						evalstack.back() = tk;
+						index++;
+
+					// POS - no effect on NUM, ignored
 					}else{
 						goto lblend; // Error
 					}
@@ -1520,6 +1553,10 @@ namespace xmath {
 				strout.append(evalstack[sdx].data);
 				if(sdx + 1 < evalstack.size()) strout.append("\n");
 			}
+
+			tokens.clear();
+			evalstack.clear();
+
 			std::vector<token>().swap(tokens);
 			std::vector<token>().swap(evalstack);
 			return strout;

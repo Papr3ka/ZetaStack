@@ -35,7 +35,10 @@ class func{
 
 		}
 		// Deconstructor
-		~func(void){}
+		~func(void){
+			std::vector<token>().swap(functionargs);
+			std::vector<token>().swap(functionbody);
+		}
 
 
 		inline std::vector<token> ret(void){
@@ -174,6 +177,15 @@ CTRL-C + CTRL-V
 	i++;
 
 	//
+	buitlinfuncs[i] = {b_sqrt, "sqrt(", 1,{"x"}};
+	i++;
+
+	buitlinfuncs[i] = {b_cbrt, "cbrt(", 1,{"x"}};
+	i++;
+
+	buitlinfuncs[i] = {b_root, "root(",2 ,{"n", "x"}};
+	i++;
+	//
 	buitlinfuncs[i] = {b_sum, "sum(", -1, {"[n]"}};
 	i++;
 
@@ -183,20 +195,21 @@ CTRL-C + CTRL-V
 	buitlinfuncs[i] = { b_avg, "avg(", -1, {"[n]"}};
 	i++;
 
-	buitlinfuncs[i] = { b_floor, "floor(", 1, {"x"}};
+	//
+	buitlinfuncs[i] = {b_floor, "floor(", 1, {"x"}};
 	i++;
 
-	buitlinfuncs[i] = { b_ceil, "ceil(", 1, {"x"}};
+	buitlinfuncs[i] = {b_ceil, "ceil(", 1, {"x"}};
 	i++;	
 
-	buitlinfuncs[i] = { b_round, "round(", 1, {"x"}};
+	buitlinfuncs[i] = {b_round, "round(", 1, {"x"}};
 	i++;
 
 	//
-	buitlinfuncs[i] = {b_max, "max(", -1, {"[n]"}};
+	buitlinfuncs[i] = {b_min, "min(", -1, {"[n]"}};
 	i++;
 
-	buitlinfuncs[i] = {b_min, "min(", -1, {"[n]"}};
+	buitlinfuncs[i] = {b_max, "max(", -1, {"[n]"}};
 	i++;
 
 	//
@@ -204,7 +217,13 @@ CTRL-C + CTRL-V
 	i++;
 	
 	buitlinfuncs[i] = {b_gamma, "gamma(", 1, {"x"}};
+	i++;
 
+	buitlinfuncs[i] = {b_factorial, "factorial(", 1, {"x"}};
+	i++;
+
+	buitlinfuncs[i] = {b_erf, "erf(", 1, {"x"}};
+	
 	return;
 }
 

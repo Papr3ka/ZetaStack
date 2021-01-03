@@ -44,9 +44,9 @@ namespace var{
 	}
 
 	void setbuffermax(unsigned long int setval){
-		
 		bufferindex = 0;
 		buffermax = setval;
+		randbuffer.clear();
 		std::vector<long int>().swap(randbuffer);
 		return;
 	}
@@ -56,12 +56,14 @@ namespace var{
 	}
 
 	void clearbuffer(void){
+		randbuffer.clear();
 		std::vector<long int>().swap(randbuffer);
 		return;
 	}
 
 	void joinbuffer(void){
 		runbuffer = false;
+		randbuffer.clear();
 		std::vector<long int>().swap(randbuffer);
 		return;
 	}
@@ -126,10 +128,13 @@ namespace var{
 	// Delete variable, return 1 if not present 0 if success
 	// 2 if cannot be deleted
 	int delvar(std::string variden){
-		if(variabletable.find(variden) == variabletable.end()){
+		if(specialIden.find(variden) != specialIden.end()){
 			return 2;
+		}
+		if(variabletable.find(variden) == variabletable.end()){
+			return 1;
 		}else{
-			variabletable.erase(variden);
+			variabletable.erase(variabletable.find(variden));
 			return 0;
 		}
 	}
@@ -172,13 +177,16 @@ namespace var{
 					prevr = getrandnum(prevr) ^ 127;
 					randbuffer.emplace_back(prevr);
 				}
-			}else{
+			}else if(randbuffer.size() >= buffermax){
 				std::this_thread::sleep_for(std::chrono::milliseconds(125));
 				if(!randbuffer.empty()){
 					randbuffer.erase(randbuffer.begin());
-					std::this_thread::sleep_for(std::chrono::milliseconds(250));
+					std::this_thread::sleep_for(std::chrono::milliseconds(125));
+					randbuffer.shrink_to_fit();
 				}
 				bufferindex++;
+			}else{
+				std::this_thread::sleep_for(std::chrono::milliseconds(125));
 			}
 		}
 		return;

@@ -8,7 +8,8 @@
 // Cannot use hash table because of the metadata and how ordered the cache needs to be
 namespace cch {
 
-	unsigned long int maxlen = 1024; // How big the cache can be before discarding
+	// 128 entries max
+	unsigned long int maxlen = 128; // How big the cache can be before discarding
 
 	bool cache_enable = true;
 
@@ -58,6 +59,9 @@ namespace cch {
 	}
 
 	void reset(void){
+		identifier.clear();
+		value.clear();
+		metadata.clear();
 		std::vector<std::string>().swap(identifier);
 		std::vector<std::string>().swap(value);
 		std::vector< std::vector<std::string> >().swap(metadata);
@@ -117,6 +121,19 @@ namespace cch {
 			}
 			if(tempvec.size() <= 0) index++;
 		}
+		identifier.shrink_to_fit();
+		value.shrink_to_fit();
+		metadata.shrink_to_fit();
+		return;
+	}
+
+	void refresh_trigdepends(void){
+		cch::refreshDepends("sin(");
+		cch::refreshDepends("cos(");
+		cch::refreshDepends("tan(");
+		cch::refreshDepends("asin(");
+		cch::refreshDepends("acos(");
+		cch::refreshDepends("atan(");
 		return;
 	}
 
