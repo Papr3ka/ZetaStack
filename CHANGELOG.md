@@ -1,5 +1,16 @@
 # Changelog
 
+# [0.3.2](#0.3.2) - 2021-1-6
+
+### Fixed
+
+- Random loading bar appearances
+- Assigning to null function
+
+### Added
+
+- more functions
+
 # [0.3.1](#0.3.1) - 2021-1-3
 
 ### Fixed
