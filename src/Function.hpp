@@ -13,6 +13,8 @@ token lookup(token var, std::vector<token> identifiers, std::vector<token> args)
 
 std::vector<token> fillvars(std::vector<token> argsname, std::vector<token> argsvar, std::vector<token> fbody);
 
+void initcore(void);
+
 void initbuiltin(void);
 
 double callspecial(std::vector<token> fargs, std::string name);
@@ -20,6 +22,12 @@ double callspecial(std::vector<token> fargs, std::string name);
 bool f_isspecial(std::string name, long int argcounts);
 
 bool f_isnamespecial(std::string name);
+
+bool f_iscorefunc(std::string name, long int argcounts);
+
+bool f_isnamecorefunc(std::string name);
+
+token callcore(std::vector<token> fargs, std::string name);
 
 void def(std::vector<token> assignTo, std::vector<token> body);
 
