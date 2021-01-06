@@ -9,31 +9,33 @@ std::string strunc(double x, unsigned long  int prec);
 
 namespace bar {
 
-	void setstate(bool mode);
+    void setstate(bool mode);
 
-	void init(long int max);
+    void init(long int max);
 
-	void start(void);
+    void start(void);
 
-	void stop(void);
+    void stop(void);
 
-	void join(void);
+    void join(void);
 
-	void inform(std::string md);
+    void inform(std::string md);
 
-	void changemode(int m);
+    void changemode(int m);
 
-	void setcount(float x);
+    void setcount(float x);
 
-	void setcount(unsigned long int x);
+    void setcount(unsigned long int x);
 
-	void updatecycle(void);
+    void updatecycle(void);
 
-	void updatepercent(void);
+    void updatepercent(void);
 
-	void finish(void);
+    void finish(void);
 
-	void barmanager(void);
+    void printblank(void);
+
+    void barmanager(void);
 }
 
 #endif
