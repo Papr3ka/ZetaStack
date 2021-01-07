@@ -1539,7 +1539,7 @@ namespace xmath {
 
                 }break;
             }
-            if(evalstack.back().type == -1){
+            if(evalstack.back().type == -1 && evalstack.size() > 0){
                 evalstack.pop_back();
             }
         }

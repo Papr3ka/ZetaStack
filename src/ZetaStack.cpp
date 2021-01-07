@@ -72,7 +72,6 @@ const static std::array<std::string, 4> tunit{
 *  ⲗ 𝜁 ❯ 𝚭
 */
 
-
 unsigned long int CPU_COUNT = std::thread::hardware_concurrency();
 
 /*--Unit-----Value--

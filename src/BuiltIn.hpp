@@ -1,5 +1,6 @@
 #include<string>
 #include<vector>
+#include<unordered_map>
 
 #include "Token.hpp"
 
@@ -7,6 +8,8 @@
 #define BUILTIN_HPP
 
 extern unsigned long int CPU_COUNT;
+
+extern bool do_bar;
 
 /*--Unit-----Value--
 *|  RAD     | 0    |
@@ -17,12 +20,13 @@ extern unsigned long int angle_unit;
 
 // Variable ////////////////////////////////
 
-
 extern std::unordered_map<std::string, std::string> specialIden;
 
 // Function ////////////////////////////////
 
 #define TOTAL_BUILTIN_FUNCS 31 // MUST be >= or else SIGSEGV on startup
+
+#define TOTAL_BUILTIN_CORE_FUNCS 7 // MUST be >= or else SIGSEGV on startup
 
 
 // Trigonomic
@@ -106,6 +110,16 @@ double b_erf(std::vector<token> x);
 
 double b_factorial(std::vector<token> x);
 
+// CORE Function ////////////////////////////////
 
+token bc_input(std::vector<token> x);
+
+token bc_echo(std::vector<token> x);
+
+token bc_abort(std::vector<token> x);
+
+token bc_numcast(std::vector<token> x);
+
+token bc_strcast(std::vector<token> x);
 
 #endif
