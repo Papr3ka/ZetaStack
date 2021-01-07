@@ -1,39 +1,32 @@
 #ifndef CACHE_HPP
 #define CACHE_HPP
 
-#include<algorithm>
-#include<iostream>
 #include<string>
 #include<vector>
 
+extern bool do_cache;
+
 // Function Prototypes
 
+struct ansctable{
+	std::string key;
+	std::string ans;
+	ansctable(std::string k, std::string a):
+	key(k), ans(a)
+	{}
+};
+
 namespace cch {
-	std::vector<std::string> getiden(void);
 
-	std::vector<std::string> getval(void);
+	void setmaxlen(unsigned long int x);
 
-	void setstate(bool state);
+	void addentry(std::string key, std::string ans);
 
-	bool getstate(void);	
+	std::string searchentry(std::string key);
 
-	void setmaxlen(unsigned long int ml);
+	std::vector<ansctable> getentries(void);
 
-	unsigned long int getmaxlen(void);
-
-	void reset(void);
-
-	void update(std::string iden, std::string val, std::vector<std::string> depends);
-
-	void refreshDepends(std::string change);
-
-	void refresh_trigdepends(void);
-
-	void add_depend(std::string change);
-
-	void fulfill_depends(void);
-
-	std::string search(std::string iden);
+	void clearcache(void);
 
 }
 

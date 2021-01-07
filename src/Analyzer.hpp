@@ -6,14 +6,14 @@
 
 #include "Token.hpp"
 
-bool checkrpn(const std::vector<token> checktokens);
+bool checkrpn(const std::vector<token>& checktokens);
 
-bool squotecount(const std::string str);
+bool squotecount(const std::string& str);
 
-bool quotecount(const std::string str);
+bool quotecount(const std::string& str);
 
-int checkleftBrac(const std::string str);
+int checkleftBrac(const std::string& str);
 
-int checkrightBrac(const std::string str);
+int checkrightBrac(const std::string& str);
 
 #endif
