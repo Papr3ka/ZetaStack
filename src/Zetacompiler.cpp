@@ -358,7 +358,20 @@ namespace comp {
     }
 
     // tokens = compiled list of tokens, to be used at last step after recurselink
-    std::vector<token> fillallvars(std::vector<token> tokens){
+    void fillallvars(std::vector<token>& tokens){
+        for(unsigned long int index=0;index < tokens.size(); index++){
+            if(tokens.at(index).type == 5){
+                if(index+1 < tokens.size()){
+                    if(tokens[index+1].type == 10){
+                        continue;
+                    }
+                }
+                tokens[index] = token(var::search(tokens.at(index).data, false), 0);
+            }
+        }
+    }
+
+    std::vector<token> retfillallvars(std::vector<token> tokens){
         for(unsigned long int index=0;index < tokens.size(); index++){
             if(tokens.at(index).type == 5){
                 if(index+1 < tokens.size()){
@@ -371,5 +384,4 @@ namespace comp {
         }
         return tokens;
     }
-
 }

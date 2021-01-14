@@ -86,6 +86,10 @@ namespace var{
 
     // Add variable to vector
     void update(std::string iden, std::string val){
+        if(safe_mode && !exists(iden) && variabletable.size() > maxobj){
+            std::string error = "Unable to assign variable";
+            throw error;
+        }
         mostrecentvar = val;
         mostrecentiden = iden;
         variabletable[iden] = val;
@@ -182,11 +186,12 @@ namespace var{
                 if(!randbuffer.empty()){
                     randbuffer.erase(randbuffer.begin());
                     std::this_thread::sleep_for(std::chrono::milliseconds(125));
-                    randbuffer.shrink_to_fit();
+                    std::vector<long int>(randbuffer).swap(randbuffer);
                 }
                 bufferindex++;
             }else{
                 std::this_thread::sleep_for(std::chrono::milliseconds(125));
+                std::vector<long int>(randbuffer).swap(randbuffer);
             }
         }
         return;

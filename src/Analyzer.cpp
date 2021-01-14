@@ -50,7 +50,6 @@ bool checkrpn(const std::vector<token>& checktokens){
     return true;
 }
 
-
 // Counts if there is a quote mismatch
 // Only counts single quotes
 bool squotecount(const std::string& str){

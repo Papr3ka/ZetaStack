@@ -7,6 +7,9 @@
 #include<string>
 #include<vector>
 
+extern bool safe_mode;
+extern unsigned long int maxobj;
+
 // Function Prototypes
 
 namespace var {

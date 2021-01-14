@@ -33,7 +33,7 @@ std::unordered_map<std::string, std::string> specialIden = {
 2. Add prototype to BuiltIn.hpp
 3. in Function.cpp in function initbuiltin add
 
-    buitlinfuncs[i] = { a, "b", c, {"d"}};
+    buitlinfuncs[i] = { a, "b", c, {"d" ...}};
     i++;
 
 a = function pointer (*)()
@@ -52,7 +52,7 @@ bc_ - builtin core function
 */
 // Base use functions
 inline long long base_factorial(long long x){
-    x = abs(x);
+    x = std::abs(x);
     long long ans=1;
     for(;x>0;x--){
         ans *= x;

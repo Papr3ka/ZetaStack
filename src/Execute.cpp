@@ -384,16 +384,16 @@ namespace xmath {
         X - NO
         - - YES
 
-        -0 - NUM
-        -1 - OPERATOR
-        X2 - LEFT BRACKET
-        X3 - RIGHT BRACKET
-        -4 - FUNCTION 
-        -5 - VARIABLE - Tested with targets
-        -6 - R FUNC
-        X7 - Separator
-        -   9 - String
-        -   10 - Assign
+        - 0 - NUM
+        - 1 - OPERATOR
+        X 2 - LEFT BRACKET
+        X 3 - RIGHT BRACKET
+        - 4 - FUNCTION 
+        - 5 - VARIABLE - Tested with targets
+        - 6 - R FUNC
+        X 7 - Separator
+        - 9 - String
+        - 10 - Assign
 
         -   1000 - Special NULL (VAR)
         */
@@ -1010,7 +1010,7 @@ namespace xmath {
                         // Error
                     }
                 }else{
-                    tk.data = calculate(comp::fillallvars(call(argpack, funcname)), false);
+                    tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
                 }
                 
                 evalstack.emplace_back(tk);
@@ -1380,7 +1380,7 @@ namespace xmath {
                     tk = callcore(argpack, funcname);   
                 
                 }else{
-                    tk.data = calculate(comp::fillallvars(call(argpack, funcname)), false);
+                    tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
                 }
                 
                 evalstack.emplace_back(tk);
@@ -1554,29 +1554,22 @@ namespace xmath {
             // Only assigning operators take everything
             return var::mostrecent();
 
-        }/*else if(evalstack.size() != 1){
+        }
 
-            // For a successful calculation, the size of stack must be 1
-            std::string error = "Unexpected Token";
-            throw error;
+        // Success
+        std::string strout;
+        strout.append(evalstack.front().data);
+        for(unsigned long int sdx = 1; sdx < evalstack.size(); sdx++){
+            strout.append(evalstack[sdx].data);
+            if(sdx + 1 < evalstack.size()) strout.append("\n");
+        }
 
-        }else{*/
+        tokens.clear();
+        evalstack.clear();
 
-            // Success
-            std::string strout;
-            strout.append(evalstack.front().data);
-            for(unsigned long int sdx = 1; sdx < evalstack.size(); sdx++){
-                strout.append(evalstack[sdx].data);
-                if(sdx + 1 < evalstack.size()) strout.append("\n");
-            }
+        std::vector<token>().swap(tokens);
+        std::vector<token>().swap(evalstack);
 
-            tokens.clear();
-            evalstack.clear();
-
-            std::vector<token>().swap(tokens);
-            std::vector<token>().swap(evalstack);
-
-            return strout;
-        //}
+        return strout;
     }
 }
