@@ -33,7 +33,9 @@ namespace comp {
     
     std::vector<token> shuntingYard(std::vector<token> tokens, comp_metadata meta);
 
-    std::vector<token> fillallvars(std::vector<token> tokens);
+    void fillallvars(std::vector<token>& tokens);
+
+    std::vector<token> retfillallvars(std::vector<token> tokens);
 }
 
 #endif

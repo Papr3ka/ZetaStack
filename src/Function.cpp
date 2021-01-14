@@ -1,3 +1,4 @@
+#include<array>
 #include<string>
 #include<vector>
 #include<algorithm>
@@ -6,6 +7,7 @@
 #include<iomanip>
 #include<iostream>
 #include<unordered_map>
+#include<sstream>
 
 #include "BuiltIn.hpp"
 #include "Function.hpp"
@@ -50,19 +52,19 @@ class func{
 
 std::unordered_map< std::string , std::unordered_map<long int, func> > functiontable;
 
-typedef struct{
+struct sfunc{
     double(*call)(std::vector<token>);
     std::string name;
     signed long int arg;
     std::vector<std::string> argsin;
-}sfunc;
+};
 
-typedef struct{
+struct corefunc{
     token(*call)(std::vector<token>);
     std::string name;
     signed long int arg;
     std::vector<std::string> argsin;
-}corefunc;
+};
 
 
 token lookup(token var, std::vector<token> identifiers, std::vector<token> args){
@@ -113,23 +115,25 @@ std::vector<func> nfunctions; // Callable normal functions
 std::array<corefunc, TOTAL_BUILTIN_CORE_FUNCS> corefuncs;
 std::array<sfunc, TOTAL_BUILTIN_FUNCS> buitlinfuncs;
 
-void initcore(void){
+void initcore(bool safe){
     unsigned long int i = 0;
 
-    corefuncs[i] = {bc_input, "input(", 0,{""}};
-    i++;
+    if(!safe){
+        corefuncs[i] = {bc_input, "input(", 0,{""}};
+        i++;
 
-    corefuncs[i] = {bc_input, "input(", 1,{"x"}};
-    i++;
+        corefuncs[i] = {bc_input, "input(", 1,{"x"}};
+        i++;
 
-    corefuncs[i] = {bc_echo, "echo(", -1,{"[n]"}};
-    i++;
+        corefuncs[i] = {bc_echo, "echo(", -1,{"[n]"}};
+        i++;
 
-    corefuncs[i] = {bc_abort, "abort(", 0,{""}};
-    i++;
+        corefuncs[i] = {bc_abort, "abort(", 0,{""}};
+        i++;
 
-    corefuncs[i] = {bc_abort, "abort(", 1,{"EXIT_STATUS"}};
-    i++;   
+        corefuncs[i] = {bc_abort, "abort(", 1,{"EXIT_STATUS"}};
+        i++;
+    }
 
     corefuncs[i] = {bc_numcast, "ncast(", 1,{"x"}};
     i++;
@@ -140,7 +144,7 @@ void initcore(void){
 
 
 // Builtin.cpp builtin.hpp
-void initbuiltin(void){
+void initbuiltin(bool safe){
     unsigned long int i = 0; // doing it like this because it is easier to add functions
 
 /* Template
@@ -239,9 +243,11 @@ CTRL-C + CTRL-V
     buitlinfuncs[i] = {b_max, "max(", -1, {"[n]"}};
     i++;
 
-    //
-    buitlinfuncs[i] = {b_zeta, "zeta(", 1, {"s"}};
-    i++;
+    // Disable because of Computational time
+    if(!safe){
+        buitlinfuncs[i] = {b_zeta, "zeta(", 1, {"s"}};
+        i++;
+    }
     
     buitlinfuncs[i] = {b_gamma, "gamma(", 1, {"x"}};
     i++;
@@ -362,6 +368,11 @@ void def(std::vector<token> assignTo, std::vector<token> body){
     assignTo.erase(assignTo.begin());// Erase name and first bracket
     assignTo.pop_back(); // Erase end bracket
 
+    if(safe_mode && !fexists(name, assignTo.size()) && funcsCount() > maxobj){
+        std::cout << "Unable to declare function\n";
+        return;
+    }
+
     udef(name, assignTo.size());
 
     func obj(assignTo, body); // Create function object
@@ -414,6 +425,18 @@ long int argcount(std::string name){
         return agcidx->first;
     }
     return -1;
+}
+
+unsigned long int funcsCount(void){
+    unsigned long int count = 0;
+    for(std::unordered_map< std::string ,std::unordered_map<long int, func> >::iterator
+        itx = functiontable.begin();
+        itx != functiontable.end();
+        itx++){
+            count++;
+            count += itx->second.size();
+        }
+    return count;
 }
 
 std::vector<std::string> getandassemble_all_defined_functions(void){

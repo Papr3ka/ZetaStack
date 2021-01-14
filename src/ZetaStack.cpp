@@ -12,6 +12,7 @@
 #include<iostream>
 #include<ratio>
 #include<string>
+#include<sstream>
 #include<thread>
 #include<vector>
 
@@ -46,6 +47,7 @@ bool do_cache = true; // Cache - extern to Cache.hpp
 bool do_sighandle = true; // Handle signals
 bool do_buffer = true;
 bool bare = false;
+bool safe_mode = false;
 
 // Default settings
 /*--Variable------------Value--
@@ -59,6 +61,8 @@ bool bare = false;
 *|  do_buffer         | true  |
 *|  bare              | false |
 *///---------------------------
+
+unsigned long int maxobj = 128;
 
 // For Displaying the unit of time when "/time" is activated
 const static std::array<std::string, 4> tunit{
@@ -86,7 +90,7 @@ const static std::string newline = "=== "; // ≡≡≡ is what windows terminal
 const static std::string multiline = "::: "; // When there is more of one bracket or quote
 
 // For versioning
-typedef struct{
+struct version{
     int major;
     int minor;
     int rev;
@@ -94,10 +98,10 @@ typedef struct{
     bool special;
     int vertype;
     int specialrev;
-}version;
+};
 
 // Current Version
-constexpr version curversion = {0, 3, 2, false, -1, -1};
+constexpr version curversion = {0, 3, 3, false, -1, -1};
 
 // Version detect for compilers
 #if defined(__clang__)
@@ -233,7 +237,7 @@ inline static void showclock(void){
     std::chrono::system_clock::time_point chrono_ctp;
     time_t tpointnow;
     char buffer[32];
-    int time_ms; 
+    int time_ms;
     while(sigint_immune_flag){
         chrono_ctp = std::chrono::system_clock::now();
         tpointnow = std::chrono::system_clock::to_time_t(chrono_ctp);
@@ -266,7 +270,10 @@ inline static void command(const std::string& com){
     }
     std::size_t shcmd_pre = com.rfind(";");
     if(shcmd_pre != std::string::npos){
-
+        if(safe_mode){
+            std::cout << "Access Denied\n";
+            return;
+        }
         unsigned long int shcmd_pre_pos = static_cast<unsigned long int>(shcmd_pre);
         std::string metacom = com.substr(0, shcmd_pre_pos);
         std::chrono::steady_clock::time_point tstart;
@@ -292,6 +299,11 @@ inline static void command(const std::string& com){
     // index 0 is command. index > 0 is args for command or secondary command
 
     cmdargv.emplace_back(" "); // add space to make size > 1 in some cases to prevent SIGSEGV
+
+    if(safe_mode && cmdargv.front() != "del"){
+        std::cout << "Access Denied\n";
+        return;
+    }
 
     if(cmdargv.front() == "debug" || 
        cmdargv.front() == "Debug" || 
@@ -333,6 +345,9 @@ inline static void command(const std::string& com){
 
                 // Detect failstate
                 if(std::cin.fail()){
+                    if(safe_mode){
+                        exit(0);
+                    }
                     std::cin.clear();
                     std::cout << std::endl;
                     return;
@@ -554,7 +569,7 @@ inline static void command(const std::string& com){
                         // Get size of string not file
                         // size of string == size of file
                         filesize = (sizeof(writedata)*writedata.size())/8;
-                    #endif 	
+                    #endif
 
                     std::cout << "Successfully wrote to \"" << filename << "\" (size: " << filesize << "B)\n";
                     checkfile.close();				 		
@@ -566,6 +581,9 @@ inline static void command(const std::string& com){
 
                     // Detect failstate
                     if(std::cin.fail()){
+                        if(safe_mode){
+                            exit(0);
+                        }
                         std::cin.clear();
                         std::cout << std::endl;
                         return;
@@ -784,7 +802,11 @@ inline static void arghandler(std::vector<std::string> args){
                 }catch(const std::exception&){
                     // error
                 }
-            }	
+            }
+        }else if(currentarg == "--safe"){
+            safe_mode = true;
+            do_buffer = false;
+            do_buffer = false;
         }else if(currentarg == "--help" || args.at(arg_index) == "-h"){
             std::cout << "Usage: " << program_name << " [Options] ...\n\n"
                       << "Options:\n"
@@ -798,7 +820,8 @@ inline static void arghandler(std::vector<std::string> args){
                       << "  --nobuffer                   Disables variable buffer\n"
                       << "  --noexec                     Start with execution disabled\n"
                       << "  --nohandle                   Disables signal handling\n"
-                      << "  --maxrecurse <int>           Sets the maximum recursion depth\n"; // Not good idea to increase
+                      << "  --maxrecurse <int>           Sets the maximum recursion depth\n" // Not good idea to increase
+                      << "  --safe                       Disables Commands and select functions\n";
             exit(0);
         }else{
             // Unknown argument
@@ -864,7 +887,7 @@ inline static void filerun(std::string name, bool quitOnExit){
     for(std::vector<token> &tline: tokendata){
         rpn_metadata = comp::getcompdata(tline);
         tline =  comp::shuntingYard(tline, rpn_metadata);
-        tline =  comp::fillallvars(tline);
+        comp::fillallvars(tline);
         output = xmath::calculate(tline, do_bar, rpn_metadata.nums);
         if(debug_mode){
             bar::setstate(false);
@@ -882,11 +905,6 @@ inline static void filerun(std::string name, bool quitOnExit){
     return;
 
 }
-
-
-
-
-
 
 /*-Interpreting process order-----------------------------------------------Resposible Files--------------------
 *|  1. Parser "2*(14+12)" -> [2,*,(,14,+,12,)]                          |  Preprocessor.hpp / Preprocessor.cpp |
@@ -977,6 +995,7 @@ inline static std::string evaluate(std::string input){
 
     if(cch::searchentry(input) != ""){
         bar::setstate(false);
+        std::string cfinalOut = cch::searchentry(input);
         if(do_bar){
             bar::stop();
             bar::finish(); // print out <CR> and whitespace         
@@ -984,14 +1003,15 @@ inline static std::string evaluate(std::string input){
         if(debug_mode){
             std::cout << "Cache Hit\n\n";
         }
-        return cch::searchentry(input);
+        var::update("ans",cfinalOut);
+        return cfinalOut;
     }
     
     try{
         
         bar::inform("Filling Variables");
         varfill_tstart = std::chrono::high_resolution_clock::now();
-        output = comp::fillallvars(output); // Zetacompiler.hpp
+        comp::fillallvars(output); // Zetacompiler.hpp
         varfill_tend = std::chrono::high_resolution_clock::now();
 
     }catch(const std::string& error){
@@ -1174,7 +1194,7 @@ inline static std::string evaluate(std::string input){
 }
 
 
-// Define a function
+// Define and Declare a function
 inline static void deffunction(std::string input){
     unsigned long int tscale;
     double totaltime;
@@ -1547,8 +1567,8 @@ int main(int argc, char* argv[]){
     std::string finalOutput;
 
     // Function.cpp
-    initcore();
-    if(!bare) initbuiltin(); 
+    initcore(safe_mode);
+    if(!bare) initbuiltin(safe_mode); 
 
     mainloopstart:
     while(run){
@@ -1560,6 +1580,9 @@ int main(int argc, char* argv[]){
 
         // Check if CTRL+Z or CIN is in fail state and clear it
         if(std::cin.fail()){
+            if(safe_mode){
+                goto mainloopfinish;
+            }  
             std::cin.clear();
             std::cout << std::endl;
             goto mainloopstart;
@@ -1590,6 +1613,9 @@ int main(int argc, char* argv[]){
 
                 // Check if CTRL+Z or CIN is in fail state and clear it
                 if(std::cin.fail() || !sigcont_flag){
+                    if(safe_mode){
+                        goto mainloopfinish;
+                    }
                     std::cin.clear();
                     std::cout << std::endl;
                     goto mainloopstart;
@@ -1640,6 +1666,7 @@ int main(int argc, char* argv[]){
             command(input);
         }
     }
+    mainloopfinish:
     // Final Cleanup
     bar::join();
     bar::stop();
