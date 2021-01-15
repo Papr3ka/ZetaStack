@@ -34,6 +34,7 @@ Options:
   --noexec                     Start with execution disabled
   --nohandle                   Disables signal handling
   --maxrecurse <int>           Sets the maximum recursion depth
+  --safe                       Disables Commands and select functions
  ```
 
 # Functions
