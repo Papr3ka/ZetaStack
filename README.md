@@ -121,4 +121,6 @@ Commands can be accessed and used via the '/' key.
 
 # License
 
+<img src="misc/gplv3-or-later.svg">
+
 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
