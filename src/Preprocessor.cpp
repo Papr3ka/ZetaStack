@@ -63,9 +63,9 @@ namespace comp {
             if(lexInput[index] == '"'){
                 countindex = index;
                 while(index < lexInput.size()){
-                    index++;
+                    ++index;
                     if(lexInput[index] == '"' && lexInput[index - 1] != '\\'){
-                        index++;
+                        ++index;
                         break;
                     }
                 }
@@ -77,9 +77,9 @@ namespace comp {
             if(lexInput[index] == '\''){
                 countindex = index;
                 while(index < lexInput.size()){
-                    index++;
+                    ++index;
                     if(lexInput[index] == '\'' && lexInput[index - 1] != '\\'){
-                        index++;
+                        ++index;
                         break;
                     }
                     
@@ -125,46 +125,46 @@ namespace comp {
                     }
                 }
                 if(lexInput[index] == '+'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("+");
                 }else if(lexInput[index] == '-'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("-");
                 }else if(lexInput[index] == '*'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("*");
                 }else if(lexInput[index] == '/'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("/");
                 }else if(lexInput[index] == '%'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("%");
                 }else if(lexInput[index] == '^'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("^");
                 }else if(lexInput[index] == '!'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("!");
                 }else if(lexInput[index] == '('){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("(");
                 }else if(lexInput[index] == ')'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back(")");
                 }else if(lexInput[index] == '='){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("=");
                 }else if(lexInput[index] == '>'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back(">");
                 }else if(lexInput[index] == '<'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("<");
                 }else if(lexInput[index] == '&'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("&");
                 }else if(lexInput[index] == '|'){
-                    index++;
+                    ++index;
                     returnedTokens.emplace_back("|");
                 }
                 
@@ -177,7 +177,7 @@ namespace comp {
                      isdigit(lexInput[countindex]) ||
                      lexInput[countindex] == '_'   ||
                      lexInput[countindex] == '`' )){
-                    countindex++;
+                    ++countindex;
                 }
                 if(lexInput[countindex] == '('){
                     // if functions call
@@ -192,38 +192,38 @@ namespace comp {
                 countindex = index;
                 decimal:
                     while(countindex < lexInput.size() && isxdigit(lexInput[countindex])){
-                        countindex++;
+                        ++countindex;
                     }
                     if(lexInput[countindex] == '.'){
-                        countindex++;
+                        ++countindex;
                         goto decimal;
                     }else if(( isxdigit(lexInput[countindex]) ||
                      lexInput[countindex] == '-' ||
                      lexInput[countindex] == '+') &&
                      (lexInput[countindex - 1] == 'e' ||
                       lexInput[countindex - 1] == 'E')){
-                        countindex++;
+                        ++countindex;
                         goto decimal;
                     }else if(lexInput[countindex] == 'b'){
-                        countindex++;
+                        ++countindex;
                         goto decimal;
                     }else if(lexInput[countindex] == 'o'){
-                        countindex++;
+                        ++countindex;
                         goto decimal;
                     }else if(lexInput[countindex] == 'x'){
-                        countindex++;
+                        ++countindex;
                         goto decimal;
                     }else if(lexInput[countindex] == 'j'){
-                        countindex++;
+                        ++countindex;
                         break;
                     }
                 returnedTokens.emplace_back(lexInput.substr(index,countindex-index));
                 index += countindex-index;
             }else if(lexInput[index] == ','){
                 returnedTokens.emplace_back(","); // default sep
-                index++;
+                ++index;
             }else{
-                index++;
+                ++index;
             }
             loopcount++;
             if(loopcount >= 2*lexInput.size()){

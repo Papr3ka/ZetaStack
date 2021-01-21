@@ -16,4 +16,6 @@ int checkleftBrac(const std::string& str);
 
 int checkrightBrac(const std::string& str);
 
+bool bracketOrder(const std::vector<token>& tokens);
+
 #endif

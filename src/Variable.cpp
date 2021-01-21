@@ -4,8 +4,8 @@
 #include<cstdlib>
 #include<string>
 #include<thread>
-#include<vector>
 #include<unordered_map>
+#include<vector>
 
 #include "BuiltIn.hpp"
 #include "Entropy.hpp"
@@ -85,7 +85,7 @@ namespace var{
     }
 
     // Add variable to vector
-    void update(std::string iden, std::string val){
+    void update(std::string iden, const std::string& val){
         if(safe_mode && !exists(iden) && variabletable.size() > maxobj){
             std::string error = "Unable to assign variable";
             throw error;
@@ -143,6 +143,12 @@ namespace var{
         }
     }
 
+    void delAll(void){
+        variabletable.clear();
+        std::unordered_map<std::string, std::string>().swap(variabletable);
+        return;
+    }
+
     // Wrapper for all names
     std::vector<std::string> globals(void){
         std::vector<std::string> output;
@@ -150,7 +156,7 @@ namespace var{
         for(std::unordered_map<std::string, std::string>::iterator
             itx = variabletable.begin();
             itx != variabletable.end();
-            itx++){
+            ++itx){
 
             output.emplace_back(itx->first);
         }
@@ -163,7 +169,7 @@ namespace var{
         for(std::unordered_map<std::string, std::string>::iterator
             itx = specialIden.begin();
             itx != specialIden.end();
-            itx++){
+            ++itx){
 
             output.emplace_back(itx->first);
         }

@@ -1,19 +1,18 @@
-#include<array>
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
 #include<iomanip>
 #include<iostream>
-#include<unordered_map>
+#include<new>
 #include<sstream>
+#include<string>
+#include<unordered_map>
+#include<vector>
 
 #include "BuiltIn.hpp"
 #include "Function.hpp"
 #include "Zetacompiler.hpp"
 #include "Token.hpp"
-
 
 class func{
     private:
@@ -111,11 +110,22 @@ std::vector<token> fillvars(std::vector<token> argsname,
 
 std::vector<func> nfunctions; // Callable normal functions
 
-// Macro defined in Builtin.hpp
-std::array<corefunc, TOTAL_BUILTIN_CORE_FUNCS> corefuncs;
-std::array<sfunc, TOTAL_BUILTIN_FUNCS> buitlinfuncs;
+unsigned long int filled_core = 0;
+unsigned long int filled_builtin = 0;
+
+corefunc* corefuncs = 0;
+sfunc* builtinfuncs = 0;
+
 
 void initcore(bool safe){
+
+    // Macro defined in Builtin.hpp
+    corefuncs = new corefunc[TOTAL_BUILTIN_CORE_FUNCS];
+
+    if(!corefuncs){
+        throw std::bad_alloc();
+    }
+
     unsigned long int i = 0;
 
     if(!safe){
@@ -139,145 +149,169 @@ void initcore(bool safe){
     i++;
 
     corefuncs[i] = {bc_strcast, "scast(", 1,{"x"}};
+    i++;
+
+    filled_core = i;
     return;
 }
 
 
 // Builtin.cpp builtin.hpp
 void initbuiltin(bool safe){
+
+    // Macro defined in Builtin.hpp
+    builtinfuncs = new sfunc[TOTAL_BUILTIN_FUNCS];
+
+    if(!builtinfuncs){
+        throw std::bad_alloc();
+    }
+
     unsigned long int i = 0; // doing it like this because it is easier to add functions
 
 /* Template
 
-    buitlinfuncs[i] = { , "", ,{ }};
+    builtinfuncs[i] = { , "", ,{ }};
     i++;
 
 CTRL-C + CTRL-V
 */
 
     // Trigonomic
-    buitlinfuncs[i] = {b_sin, "sin(", 1, {"x"}};
+    builtinfuncs[i] = {b_sin, "sin(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_cos, "cos(", 1, {"x"}};
+    builtinfuncs[i] = {b_cos, "cos(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_tan, "tan(", 1, {"x"}};
+    builtinfuncs[i] = {b_tan, "tan(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_asin, "asin(", 1, {"x"}};
+    builtinfuncs[i] = {b_asin, "asin(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_acos, "acos(", 1, {"x"}};
+    builtinfuncs[i] = {b_acos, "acos(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_atan, "atan(", 1, {"x"}};
+    builtinfuncs[i] = {b_atan, "atan(", 1, {"x"}};
     i++;
 
     // Hyperbolic
-    buitlinfuncs[i] = {b_sinh, "sinh(", 1, {"x"}};
+    builtinfuncs[i] = {b_sinh, "sinh(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_cosh, "cosh(", 1, {"x"}};
+    builtinfuncs[i] = {b_cosh, "cosh(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_tanh, "tanh(", 1, {"x"}};
+    builtinfuncs[i] = {b_tanh, "tanh(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_asinh, "asinh(", 1, {"x"}};
+    builtinfuncs[i] = {b_asinh, "asinh(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_acosh, "acosh(", 1, {"x"}};
+    builtinfuncs[i] = {b_acosh, "acosh(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_atanh, "atanh(", 1, {"x"}};
+    builtinfuncs[i] = {b_atanh, "atanh(", 1, {"x"}};
     i++;
 
     // Exponential
-    buitlinfuncs[i] = {b_exp, "exp(", 1, {"x"}};
+    builtinfuncs[i] = {b_exp, "exp(", 1, {"x"}};
     i++;
 
     // Logarithmic
-    buitlinfuncs[i] = {b_ln, "ln(", 1, {"x"}};
+    builtinfuncs[i] = {b_ln, "ln(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_log10, "log(", 1, {"x"}};
+    builtinfuncs[i] = {b_log10, "log(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_log, "log(", 2, {"b", "x"}};
+    builtinfuncs[i] = {b_log, "log(", 2, {"b", "x"}};
     i++;
 
     //
-    buitlinfuncs[i] = {b_sqrt, "sqrt(", 1,{"x"}};
+    builtinfuncs[i] = {b_sqrt, "sqrt(", 1,{"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_cbrt, "cbrt(", 1,{"x"}};
+    builtinfuncs[i] = {b_cbrt, "cbrt(", 1,{"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_root, "root(",2 ,{"n", "x"}};
+    builtinfuncs[i] = {b_root, "root(",2 ,{"n", "x"}};
     i++;
     //
-    buitlinfuncs[i] = {b_sum, "sum(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_sum, "sum(", -1, {"[n]"}};
     i++;
 
-    buitlinfuncs[i] = {b_prod, "prod(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_prod, "prod(", -1, {"[n]"}};
     i++;	
 
-    buitlinfuncs[i] = { b_avg, "avg(", -1, {"[n]"}};
+    builtinfuncs[i] = { b_avg, "avg(", -1, {"[n]"}};
     i++;
 
     //
-    buitlinfuncs[i] = {b_floor, "floor(", 1, {"x"}};
+    builtinfuncs[i] = {b_floor, "floor(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_ceil, "ceil(", 1, {"x"}};
+    builtinfuncs[i] = {b_ceil, "ceil(", 1, {"x"}};
     i++;	
 
-    buitlinfuncs[i] = {b_round, "round(", 1, {"x"}};
+    builtinfuncs[i] = {b_round, "round(", 1, {"x"}};
     i++;
 
     //
-    buitlinfuncs[i] = {b_min, "min(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_min, "min(", -1, {"[n]"}};
     i++;
 
-    buitlinfuncs[i] = {b_max, "max(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_max, "max(", -1, {"[n]"}};
     i++;
 
     // Disable because of Computational time
     if(!safe){
-        buitlinfuncs[i] = {b_zeta, "zeta(", 1, {"s"}};
+        builtinfuncs[i] = {b_zeta, "zeta(", 1, {"s"}};
         i++;
     }
     
-    buitlinfuncs[i] = {b_gamma, "gamma(", 1, {"x"}};
+    builtinfuncs[i] = {b_gamma, "gamma(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_factorial, "factorial(", 1, {"x"}};
+    builtinfuncs[i] = {b_factorial, "factorial(", 1, {"x"}};
     i++;
 
-    buitlinfuncs[i] = {b_erf, "erf(", 1, {"x"}};
+    builtinfuncs[i] = {b_erf, "erf(", 1, {"x"}};
+    i++;
     
+    filled_builtin = i;
+
+    return;
+}
+
+void free_core(void){
+    delete[] corefuncs;
+    return;
+}
+
+void free_builtin(void){
+    delete[] builtinfuncs;
     return;
 }
 
 double callspecial(std::vector<token> fargs, std::string name){
     unsigned long int index = 0;
     long int argcounts = (long int)fargs.size();
-    for(sfunc testfunc: buitlinfuncs){
-        if(testfunc.name == name &&
-          (testfunc.arg == -1 || testfunc.arg == argcounts)){
-            return buitlinfuncs[index].call(fargs);
+    for(unsigned long int idx = 0; idx < filled_builtin; ++idx){
+        if(builtinfuncs[idx].name == name &&
+          (builtinfuncs[idx].arg == -1 || builtinfuncs[idx].arg == argcounts)){
+            return builtinfuncs[index].call(fargs);
         }else{
-            index++;
+            ++index;
         }
     }
     throw 1; // Error
 }
 
 bool f_isspecial(std::string name, long int argcounts){
-    for(sfunc testfunc: buitlinfuncs){
-        if(testfunc.name == name){
-            if(testfunc.arg == -1 || testfunc.arg == argcounts){
+    for(unsigned long int idx = 0; idx < filled_builtin; ++idx){
+        if(builtinfuncs[idx].name == name){
+            if(builtinfuncs[idx].arg == -1 || builtinfuncs[idx].arg == argcounts){
                 return true;
             }
         }
@@ -286,8 +320,8 @@ bool f_isspecial(std::string name, long int argcounts){
 }
 
 bool f_isnamespecial(std::string name){
-    for(sfunc testfunc: buitlinfuncs){
-        if(testfunc.name == name){
+    for(unsigned long int idx = 0; idx < filled_builtin; ++idx){
+        if(builtinfuncs[idx].name == name){
             return true;
         }
     }
@@ -295,9 +329,9 @@ bool f_isnamespecial(std::string name){
 }
 
 bool f_iscorefunc(std::string name, long int argcounts){
-    for(corefunc testfunc: corefuncs){
-        if(testfunc.name == name){
-            if(testfunc.arg == -1 || testfunc.arg == argcounts){
+    for(unsigned long int idx = 0; idx < filled_core; ++idx){
+        if(corefuncs[idx].name == name){
+            if(corefuncs[idx].arg == -1 || corefuncs[idx].arg == argcounts){
                 return true;
             }
         }
@@ -307,8 +341,8 @@ bool f_iscorefunc(std::string name, long int argcounts){
 
 
 bool f_isnamecorefunc(std::string name){
-    for(corefunc testfunc: corefuncs){
-        if(testfunc.name == name){
+    for(unsigned long int idx = 0; idx < filled_core; ++idx){
+        if(corefuncs[idx].name == name){
             return true;
         }
     }
@@ -316,32 +350,47 @@ bool f_isnamecorefunc(std::string name){
 }
 
 token callcore(std::vector<token> fargs, std::string name){
-    unsigned long int index = 0;
     long int argcounts = (long int)fargs.size();
-    for(corefunc testfunc: corefuncs){
-        if(testfunc.name == name &&
-          (testfunc.arg == -1 || testfunc.arg == argcounts)){
-            return corefuncs[index].call(fargs);
-        }else{
-            index++;
+    for(unsigned long int idx = 0; idx < filled_core; ++idx){
+        if(corefuncs[idx].name == name &&
+          (corefuncs[idx].arg == -1 || corefuncs[idx].arg == argcounts)){
+            return corefuncs[idx].call(fargs);
         }
     }	
 	throw 1; // Error
 }
 
 
-// Wrapper functions
+void delAll(void){
+    functiontable.clear();
+    std::unordered_map< std::string , std::unordered_map<long int, func> >().swap(functiontable);
+    return;
+}
 
-// delete function
+
 // Args name = name of function, argcounts = amount of arguments -1 if unspecified 
+// 0 = Success, 1 = function not found, 2 = function found but no matching argument, 3 = Unable to delete
+// delete function
 int udef(std::string name, long int argcounts){
-    if(f_isnamespecial(name) || f_isnamecorefunc(name)) return 2;
+    if(f_isnamespecial(name) || f_isnamecorefunc(name)) return 3;
     if(functiontable.find(name) == functiontable.end()){
         return 1;
     }
     if(argcounts != -1){
-        functiontable[name].erase(argcounts);
-        return 0;
+        std::unordered_map< std::string , std::unordered_map<long int, func> >::iterator iter = functiontable.find(name);
+        if(iter != functiontable.end()){
+            std::unordered_map<long int, func>::iterator argIterator = iter->second.find(argcounts);
+            if(argIterator != iter->second.end()){
+                iter->second.erase(argIterator);
+                if(iter->second.size() <= 0){
+                    functiontable.erase(iter);
+                }
+                return 0;
+            }
+        }
+        return 2;
+        
+        
     }else{
         std::unordered_map< std::string , std::unordered_map<long int, func> >::iterator iter = functiontable.find(name);
         if(iter != functiontable.end()){
@@ -350,6 +399,7 @@ int udef(std::string name, long int argcounts){
         return 0;
     }
 }
+
 
 
 /* Define function
@@ -364,6 +414,12 @@ void def(std::vector<token> assignTo, std::vector<token> body){
         error.append(name).append("\"");
         throw error;
     }
+
+    // remember that it is unsigned
+    if(assignTo.size() - 3 > assignTo.size() || name == ""){
+        throw std::string("Unexpected Token");
+    }
+
     assignTo.erase(assignTo.begin());
     assignTo.erase(assignTo.begin());// Erase name and first bracket
     assignTo.pop_back(); // Erase end bracket
@@ -420,7 +476,7 @@ static inline std::string to_string_hprecd(double x){
 // Returns argument count of first occurence of function name
 long int argcount(std::string name){
     std::unordered_map<long int, func> &temp = functiontable[name];
-    for(std::unordered_map<long int, func>::iterator agcidx= temp.begin();
+    for(std::unordered_map<long int, func>::iterator agcidx = temp.begin();
         agcidx != temp.end(); agcidx++){
         return agcidx->first;
     }
@@ -480,12 +536,12 @@ std::vector<std::string> getandassemble_all_builtin_functions(void){
     std::string tempstring;
     tempstring.reserve(TOTAL_BUILTIN_FUNCS);
     unsigned long int index = 0;
-    for(sfunc temp: buitlinfuncs){
-        tempstring = temp.name;
+    for(unsigned long int idx = 0; idx < filled_builtin; ++idx){
+        tempstring = builtinfuncs[idx].name;
         if(tempstring != ""){
-            for(index = 0; index < temp.argsin.size(); index++){
-                tempstring.append(temp.argsin[index]);
-                if(index + 1 < temp.argsin.size()){
+            for(index = 0; index < builtinfuncs[idx].argsin.size(); index++){
+                tempstring.append(builtinfuncs[idx].argsin[index]);
+                if(index + 1 < builtinfuncs[idx].argsin.size()){
                     tempstring.append(", ");
                 }
             }

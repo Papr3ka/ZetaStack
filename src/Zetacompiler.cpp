@@ -1,15 +1,13 @@
-#include<string>
-#include<vector>
 #include<algorithm>
 #include<cctype>
 #include<cstdlib>
+#include<string>
+#include<vector>
 
-#include<iostream>
-
-#include "Zetacompiler.hpp"
 #include "Function.hpp"
-#include "Variable.hpp"
 #include "Token.hpp"
+#include "Variable.hpp"
+#include "Zetacompiler.hpp"
 
 namespace comp {
 
@@ -102,14 +100,13 @@ namespace comp {
             10 - Assigning operator
         */
 
-
     token getop(unsigned long idx){
         token tk(operators.at(idx), 1);
         return tk;
     }
 
     bool hasvar(std::vector<token> tokens){
-        for(unsigned long int index = 0; index < tokens.size(); index++){
+        for(unsigned long int index = 0; index < tokens.size(); ++index){
             if(tokens[index].type == 5){
                 return true;
             }
@@ -155,7 +152,7 @@ namespace comp {
 
     // true = LR, false = RL
     inline bool associativity(std::string op){
-        if(op == "MUL" || 
+        if(op == "MUL" ||
            op == "DIV" || 
            op == "MOD" || 
            op == "FLOORDIV" ||
@@ -246,7 +243,7 @@ namespace comp {
             switch(tokens[readindex].type){
                 case 0: // NUM
                     outputQueue.emplace_back(tokens[readindex]);
-                    readindex++;
+                    ++readindex;
                     break;
                 case 1: // OPERATOR
                 case 10: // Assignment operator
@@ -262,12 +259,12 @@ namespace comp {
                         }
                     }
                     operatorStack.emplace_back(tokens[readindex]);
-                    readindex++;
+                    ++readindex;
                     break;
                 case 2:
-                    layer++;
+                    ++layer;
                     operatorStack.emplace_back(tokens[readindex]);
-                    readindex++;
+                    ++readindex;
                     break;
                 case 3:
                     while(!operatorStack.empty() && (operatorStack.back().data != "L_BRAC")){
@@ -277,36 +274,36 @@ namespace comp {
                     if(!operatorStack.empty() && operatorStack.back().data == "L_BRAC"){
                         operatorStack.pop_back();
                     }
-                    readindex++;
-                    layer--;
+                    ++readindex;
+                    --layer;
                     if(layer == infunction && !functionStack.empty()){
                         functionStack.back().reserved = argumentcounter.back();							
                         outputQueue.emplace_back(functionStack.back());
                         functionStack.pop_back();
                         lockstack.pop_back();
                         argumentcounter.pop_back();
-                        infunction--;
+                        --infunction;
                     }		
                     break;
                 case 4:
-                    infunction++;
+                    ++infunction;
                     layer = infunction;
                     functionStack.emplace_back(tokens[readindex]);
                     argumentcounter.emplace_back(tokens[readindex].reserved);
-                    readindex++;
+                    ++readindex;
                     lockstack.emplace_back(operatorStack.size() + 1);
                     break;
                 case 5: // Variable
                     outputQueue.emplace_back(tokens[readindex]);
-                    readindex++;
+                    ++readindex;
                     break;
                 case 6: // Left Function
                     outputQueue.emplace_back(tokens[readindex]);
-                    readindex++;
+                    ++readindex;
                     break;
                 case 7: // SEP - Dump all
-                    if(!argumentcounter.empty()) argumentcounter.back()++;
-                    readindex++;
+                    if(!argumentcounter.empty()) ++argumentcounter.back();
+                    ++readindex;
                     while(!operatorStack.empty() && operatorStack.size() > lockstack.back()){
                         if(operatorStack.back().data == "L_BRAC" || operatorStack.back().data == "R_BRAC"){
                             operatorStack.pop_back();
@@ -322,7 +319,7 @@ namespace comp {
                     break;
                 default:
                     outputQueue.emplace_back(tokens[readindex]);
-                    readindex++;
+                    ++readindex;
                     break;
             }
         }
@@ -359,7 +356,7 @@ namespace comp {
 
     // tokens = compiled list of tokens, to be used at last step after recurselink
     void fillallvars(std::vector<token>& tokens){
-        for(unsigned long int index=0;index < tokens.size(); index++){
+        for(unsigned long int index=0;index < tokens.size(); ++index){
             if(tokens.at(index).type == 5){
                 if(index+1 < tokens.size()){
                     if(tokens[index+1].type == 10){
@@ -372,7 +369,7 @@ namespace comp {
     }
 
     std::vector<token> retfillallvars(std::vector<token> tokens){
-        for(unsigned long int index=0;index < tokens.size(); index++){
+        for(unsigned long int index=0;index < tokens.size(); ++index){
             if(tokens.at(index).type == 5){
                 if(index+1 < tokens.size()){
                     if(tokens[index+1].type == 10){
