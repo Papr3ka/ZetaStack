@@ -1,6 +1,6 @@
 #include<string>
-#include<vector>
 #include<unordered_map>
+#include<vector>
 
 #include "Token.hpp"
 
@@ -16,7 +16,7 @@ extern bool do_bar;
 *|  GRAD    | 1    |
 *|  DEG     | 2    |
 *///----------------
-extern unsigned long int angle_unit;
+extern unsigned char angle_unit;
 
 // Variable ////////////////////////////////
 

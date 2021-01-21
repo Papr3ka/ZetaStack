@@ -1,3 +1,5 @@
+
+#include<algorithm>
 #include<array>
 #include<cmath>
 #include<cstdlib>
@@ -7,6 +9,7 @@
 #include<sstream>
 #include<string>
 #include<vector>
+#include<unordered_map>
 
 #include "Cache.hpp"
 #include "Execute.hpp"
@@ -30,7 +33,6 @@ namespace xmath {
         return maxRecurse;
     }
 
-
     inline std::string to_string_hprec(double x){
         std::ostringstream doublestring;
         doublestring << std::setprecision(std::numeric_limits<double>::digits10) << x;
@@ -47,6 +49,14 @@ namespace xmath {
         std::ostringstream llstring;
         llstring << std::setprecision(std::numeric_limits<long long>::digits10) << x;
         return llstring.str();
+    }
+
+    inline std::string to_string_hprec(bool x){
+        if(x){
+            return "1";
+        }else{
+            return "0";
+        }
     }
 
     inline bool string_isnum(std::string str){
@@ -73,139 +83,240 @@ namespace xmath {
         return x;
     }
 
-
     // Placeholder functions for Arbitrary math
-    inline double add(double x, double y){
-        return x+y;
-    }
-
-    inline double sub(double x, double y){
-        return x-y;
-    }
-
-    inline double mul(double x, double y){
-        return x*y;
-    }
-
-    inline double divide(double x, double y){
-        return x/y;
-    }
-
-    inline double mod(double x, double y){
-        return fmod(x,y);
-    }
-
-    inline double power(double x, double y){
-        return pow(x, y);
-    }
-
-    inline long long bitexclusiveOr(long long x, long long y){
-        return x ^ y;
-    }
-
-    inline long long shl(long long x, long long y){
-        return x << y;
-    }
-
-    inline long long shr(long long x, long long y){
-        return x >> y;
-    }
-
-    inline double eql(double x, double y){
-        if(x == y) return 1;
-        return 0;
-    }
-
-    inline double nql(double x, double y){
-        if(x != y) return 1;
-        return 0;
-    }
-
-    inline double gql(double x, double y){
-        if(x >= y) return 1;
-        return 0;
-    }
-
-    inline double lql(double x, double y){
-        if(x <= y) return 1;
-        return 0;
-    }
-
-    inline double grt(double x, double y){
-        if(x > y) return 1;
-        return 0;
-    }
-
-    inline double lst(double x, double y){
-        if(x < y) return 1;
-        return 0;
-    }
-
-    inline double neg(double x){
-        return x*-1;
-    }
-
-    inline long long bitwor(long long x, long long y){
-        return x | y;
-    }
-
-    inline long long bitwand(long long x, long long y){
-        return x & y;
-    }
-
-    inline double land(double x, double y){
-        return x && y;
-    }
-
-    inline double lor(double x, double y){
-        return x || y;
-    }
-
-    inline double lnot(double x){
-        if(x == 0) return 1;
-        return 0;
-    }
-
-    inline double sum(std::vector<double> addends){
-        double ans = 0;
-        for(double add: addends){
-            ans += add;
+    inline void add(std::vector<token>& evalstack){
+        if(evalstack.back().type == 0){
+            double y = std::stod(evalstack.back().data);
+            evalstack.pop_back();
+            double x = std::stod(evalstack.back().data);
+            evalstack.back() = token(to_string_hprec(x+y), 0);
+        }else{
+            std::string y = evalstack.back().data;
+            evalstack.pop_back();
+            std::string x = evalstack.back().data;
+            evalstack.back() = token(x.append(y), 9);
         }
-        return ans;
+        return;
     }
 
-    inline double prod(std::vector<double> multiplicands){
-        double ans = 1;
-        for(double factor: multiplicands){
-            ans *= factor;
+    inline void sub(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x - y), 0);
+        return;
+    }
+
+    inline void mul(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x * y), 0);
+        return;
+    }
+
+    inline void divide(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x / y), 0);
+        return;
+    }
+
+    inline void mod(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(fmod(x, y)), 0);
+        return;
+    }
+
+    inline void power(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(pow(x, y)), 0);
+        return;
+    }
+
+    inline void bitexclusiveOr(std::vector<token>& evalstack){
+        long long y = std::stoll(evalstack.back().data);
+        evalstack.pop_back();
+        long long x = std::stoll(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x ^ y), 0);
+        return;
+    }
+
+    inline void shl(std::vector<token>& evalstack){
+        long long y = std::stoll(evalstack.back().data);
+        evalstack.pop_back();
+        long long x = std::stoll(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x << y), 0);
+        return;
+    }
+
+    inline void shr(std::vector<token>& evalstack){
+        long long y = std::stoll(evalstack.back().data);
+        evalstack.pop_back();
+        long long x = std::stoll(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x >> y), 0);
+        return;
+    }
+
+    inline void eql(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x == y), 0);
+        return;
+    }
+
+    inline void nql(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x != y), 0);
+        return;
+    }
+
+    inline void gql(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x >= y), 0);
+        return;
+    }
+
+    inline void lql(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x <= y), 0);
+        return;
+    }
+
+    inline void grt(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x > y), 0);
+        return;
+    }
+
+    inline void lst(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x < y), 0);
+        return;
+    }
+
+    inline void neg(std::vector<token>& evalstack){
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(-x), 0);
+        return;
+    }
+
+    inline void bitwor(std::vector<token>& evalstack){
+        long long y = std::stoll(evalstack.back().data);
+        evalstack.pop_back();
+        long long x = std::stoll(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x | y), 0);
+        return;
+    }
+
+    inline void bitwand(std::vector<token>& evalstack){
+        long long y = std::stoll(evalstack.back().data);
+        evalstack.pop_back();
+        long long x = std::stoll(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x & y), 0);
+        return;
+    }
+
+    inline void land(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x && y), 0);
+        return;
+    }
+
+    inline void lor(std::vector<token>& evalstack){
+        double y = std::stod(evalstack.back().data);
+        evalstack.pop_back();
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(x || y), 0);
+        return;
+    }
+
+    inline void lnot(std::vector<token>& evalstack){
+        double x = std::stod(evalstack.back().data);
+        evalstack.back() = token(to_string_hprec(!x), 0);
+        return;
+    }
+
+    inline void asn(std::vector<token>& evalstack){
+        token val = evalstack.back();
+        evalstack.pop_back();
+
+        if(val.type == 9){
+            std::string iden = evalstack.back().data;
+            evalstack.pop_back();
+            if(var::changable(iden)){
+                var::update(iden, val.data);
+                return;
+            }else{
+                std::string error = "Variable \"";
+                error.append(iden).append("\" is read-only");
+                throw error;
+            }   
+        }else{
+            std::string iden = evalstack.back().data;
+            evalstack.pop_back();
+            if(var::changable(iden)){
+                var::update(iden, to_string_hprec(std::stod(val.data)));
+                return;
+            }else{
+                std::string error = "Variable \"";
+                error.append(iden).append("\" is read-only");
+                throw error;
+            }
         }
-        return ans;
+
     }
 
-    inline long long factorial(long long x){
-        long long ans=1;
-        for(;x>0;x--){
-            ans *= x;
+    inline void addasn(std::vector<token>& evalstack){
+        token val = evalstack.back();
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
+        if(!var::changable(iden)){
+            std::string error = "Variable \"";
+            error.append(iden).append("\" is read-only");
+            throw error;
         }
-        return ans;
+        if(val.type == 9){
+            var::update(iden,
+                var::search(iden).append(val.data)
+            );
+        }else{
+            var::update(iden, to_string_hprec(
+                std::stod(var::search(iden)) + std::stod(val.data)
+            ));
+            return;  
+        }
+        
     }
 
-    /*// Assign OPS
-    0 ASN     =
-    1 ADDASN  +=
-    2 SUBASN  -=
-    3 MULASN  *=
-    4 DIVASN  /=
-    5 MODASN  %=
-    6 XORASN  ^=
-    7 POWASN  **=
-    8 SHLASN  <<=
-    9 SHRASN  >>=
-    */
-
-    inline void sasn(std::string iden, std::string val){
+    inline void subasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden, val);
+            var::update(iden, to_string_hprec(
+                std::stod(var::search(iden)) - std::stod(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -214,9 +325,15 @@ namespace xmath {
         }
     }
 
-    inline void asn(std::string iden, double val){
+    inline void mulasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(val));
+            var::update(iden, to_string_hprec(
+                std::stod(var::search(iden)) * std::stod(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -225,9 +342,15 @@ namespace xmath {
         }
     }
 
-    inline void addasn(std::string iden, double val){
+    inline void divasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(add(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                std::stod(var::search(iden)) / std::stod(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -236,9 +359,15 @@ namespace xmath {
         }
     }
 
-    inline void subasn(std::string iden, double val){
+    inline void modasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(sub(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                fmod(std::stod(var::search(iden)), std::stod(val))
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -247,9 +376,15 @@ namespace xmath {
         }
     }
 
-    inline void mulasn(std::string iden, double val){
+    inline void exclusiveOrasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(mul(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                std::stoll(var::search(iden)) ^ std::stoll(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -258,9 +393,15 @@ namespace xmath {
         }
     }
 
-    inline void divasn(std::string iden, double val){
+    inline void powasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(divide(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                pow(std::stod(var::search(iden)), std::stod(val))
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -269,9 +410,15 @@ namespace xmath {
         }
     }
 
-    inline void modasn(std::string iden, double val){
+    inline void shlasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(mod(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                 std::stoll(var::search(iden)) << std::stoll(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -280,9 +427,15 @@ namespace xmath {
         }
     }
 
-    inline void exclusiveOrasn(std::string iden, long long val){
+    inline void shrasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(bitexclusiveOr(std::stoll(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                 std::stoll(var::search(iden)) >> std::stoll(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -291,9 +444,15 @@ namespace xmath {
         }
     }
 
-    inline void powasn(std::string iden, double val){
+    inline void bitexclusiveOrasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();        
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(pow(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                 std::stoll(var::search(iden)) ^ std::stoll(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -302,9 +461,16 @@ namespace xmath {
         }
     }
 
-    inline void shlasn(std::string iden, double val){
+
+    inline void bitorasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();        
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(shl(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                 std::stoll(var::search(iden)) | std::stoll(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -313,9 +479,15 @@ namespace xmath {
         }
     }
 
-    inline void shrasn(std::string iden, double val){
+    inline void bitandasn(std::vector<token>& evalstack){
+        std::string val = evalstack.back().data;
+        evalstack.pop_back();        
+        std::string iden = evalstack.back().data;
+        evalstack.pop_back();
         if(var::changable(iden)){
-            var::update(iden,to_string_hprec(shr(std::stod(var::search(iden)), val)));
+            var::update(iden, to_string_hprec(
+                 std::stoll(var::search(iden)) & std::stoll(val)
+            ));
             return;
         }else{
             std::string error = "Variable \"";
@@ -324,38 +496,46 @@ namespace xmath {
         }
     }
 
-    inline void bitexclusiveOrasn(std::string iden, double val){
-        if(var::changable(iden)){
-            var::update(iden,to_string_hprec(bitexclusiveOr(std::stoll(var::search(iden)), val)));
-            return;
-        }else{
-            std::string error = "Variable \"";
-            error.append(iden).append("\" is read-only");
-            throw error;
-        }
-    }
+    std::unordered_map<std::string, void(*)(std::vector<token>&)> ExecOperators = {
+        {"ADD", add},
+        {"SUB", sub},
+        {"MUL", mul},
+        {"DIV", divide},
+        {"MOD", mod},
+        {"POW", power},
+        {"XOR", bitexclusiveOr},
+        {"SHL", shl},
+        {"SHR", shr},
+        {"EQL", eql},
+        {"NQL", nql},
+        {"GQL", gql},
+        {"LQL", lql},
+        {"GRT", grt},
+        {"LST", lst},
+        {"NEG", neg},
+        {"POS", [](std::vector<token>&)->void{return;}},
+        {"BITOR", bitwor},
+        {"BITAND", bitwand},
+        {"BITXOR", bitexclusiveOr},
+        {"LAND", land},
+        {"LOR", lor},
+        {"NOT", lnot},
+        {"ASN", asn},
+        {"SUBASN", subasn},
+        {"ADDASN", addasn},
+        {"MULASN", mulasn},
+        {"DIVASN", divasn},
+        {"MODASN", modasn},
+        {"POWASN", powasn},
+        {"SHLASN", shlasn},
+        {"SHRASN", shrasn},
+        {"BITXORASN", exclusiveOrasn},
+        {"BITORASN", bitorasn},
+        {"BITANDASN", bitandasn}
 
-    inline void bitorasn(std::string iden, double val){
-        if(var::changable(iden)){
-            var::update(iden,to_string_hprec(bitwor(std::stoll(var::search(iden)), val)));
-            return;
-        }else{
-            std::string error = "Variable \"";
-            error.append(iden).append("\" is read-only");
-            throw error;
-        }
-    }
+    };
 
-    inline void bitandasn(std::string iden, double val){
-        if(var::changable(iden)){
-            var::update(iden,to_string_hprec(bitwand(std::stoll(var::search(iden)), val)));
-            return;
-        }else{
-            std::string error = "Variable \"";
-            error.append(iden).append("\" is read-only");
-            throw error;
-        }
-    }
+
 
     std::vector<token> simplify(std::vector<token> tokens, std::vector<token> targets, std::string freserved, unsigned long int reservecount){
         if(recursionCount > maxRecurse){
@@ -365,7 +545,7 @@ namespace xmath {
             recursionCount = 0;
             throw error;
         }
-        recursionCount++;
+        ++recursionCount;
 
         bool dumpfunction = false;
 
@@ -417,7 +597,7 @@ namespace xmath {
                         if(test.data == tokens[index].data){
                             token nubr(test.data, 1000);
                             evalstack.emplace_back(nubr);
-                            index++;
+                            ++index;
                             break;
                         }
                     }
@@ -425,545 +605,46 @@ namespace xmath {
                 case 9:
                 case 0:
                     evalstack.emplace_back(tokens[index]);
-                    index++;
+                    ++index;
                     break;
 
                 case 1:
-                    if(tokens[index].data == "ADD"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        if(evalstack.back().type == 0){
-                            double y = std::stod(evalstack.back().data);
-                            evalstack.pop_back();
-                            double x = std::stod(evalstack.back().data);
-                            token tk(to_string_hprec(add(x, y)), 0);
-                            evalstack.back() = tk;
-                        }else{
-                            std::string y = evalstack.back().data;
-                            evalstack.pop_back();
-                            std::string x = evalstack.back().data;
-                            token tk(addstr(x, y), 9);
-                            evalstack.back() = tk;
-                        }
-                        index++;
-                    }else if(tokens[index].data == "SUB"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(sub(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "MUL"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(mul(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "DIV"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(divide(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "MOD"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(mod(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "POW"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(power(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "BITXOR"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk(to_string_hprec(bitexclusiveOr(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "BITOR"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk(to_string_hprec(bitwor(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "BITAND"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk(to_string_hprec(bitwand(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LAND"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(land(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LOR"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(lor(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "SHL"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(shl(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "SHR"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(shr(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-            // comparisons
-                    }else if(tokens[index].data == "EQL"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(eql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "NQL"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(nql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "GQL"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(gql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LQL"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(lql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "GRT"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(grt(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LST"){
-                        if(evalstack.end()[-2].type == 1000 ||
-                           evalstack.back().type == 1000 ||
-                           evalstack.end()[-2].type == 1 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.end()[-2].type == 4 ||
-                           evalstack.back().type == 4){
-                            if(evalstack.back().type == 1000 ||
-                               evalstack.back().type == 1 ||
-                               evalstack.back().type == 4){
-                                token tk(evalstack.back().data,1000);
-                            }else{
-                                token tk(evalstack.end()[-2].data,1000);
-                            }
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(lst(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "NEG"){
-                        if(evalstack.back().type == 1000 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.back().type == 4){
-                            evalstack.emplace_back(tokens[index]);
-                            index++;
-                            continue;
-                        }
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(neg(x)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    // POS - no effect on NUM, ignored
-                    }else if(tokens[index].data == "POS"){
-                        
-                        index++;
-
+                    if(tokens[index].data == "POS"){
+                        ++index;
+                        continue;
                     }else if(tokens[index].data == "NOT"){
                         if(evalstack.back().type == 1000 ||
                            evalstack.back().type == 1 ||
                            evalstack.back().type == 4){
                             evalstack.emplace_back(tokens[index]);
-                            index++;
+                            ++index;
                             continue;
                         }
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(lnot(x)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else {
-                        //goto lblend; // Error
+                        lnot(evalstack);
+                        ++index;
+                        continue;
                     }
+                    if(evalstack.end()[-2].type == 1000 ||
+                        evalstack.back().type == 1000 ||
+                        evalstack.end()[-2].type == 1 ||
+                        evalstack.back().type == 1 ||
+                        evalstack.end()[-2].type == 4 ||
+                        evalstack.back().type == 4){
+                        if(evalstack.back().type == 1000 ||
+                            evalstack.back().type == 1 ||
+                            evalstack.back().type == 4){
+                            token tk(evalstack.back().data,1000);
+                        }else{
+                            token tk(evalstack.end()[-2].data,1000);
+                        }
+                        evalstack.emplace_back(tokens[index]);
+                        ++index;
+                        continue;
+                    }
+                    ExecOperators[tokens[index].data](evalstack);
+                    ++index;
+
+
                 break;
 
             // Standard Function
@@ -995,7 +676,7 @@ namespace xmath {
                 if(dumpfunction || (funcname == freserved && farg_max == 0) || f_iscorefunc(funcname, farg_max)){
                     dumpfunction = false;
                     evalstack.emplace_back(tokens[index]);
-                    index++;
+                    ++index;
                     continue;
                 }
         
@@ -1017,37 +698,21 @@ namespace xmath {
                 
                 std::vector<token>().swap(argpack);
                 argtracker = 0;
-                index++;
+                ++index;
                 }break;
-
-            case 6:{ // Right Function && single arg
-                if(tokens[index].data == "FACT"){
-                    if(evalstack.back().type == 1000) goto lblend;
-                    double x = std::stod(evalstack.back().data);
-                    token tk;
-                    tk.data = to_string_hprec(factorial((long long)x));
-                    tk.type = 0;
-                    evalstack.back() = tk;
-                    index++;
-
-                    }
-                }break;
-
             // SEP is ignored (Should not be here)
             case 7:{
-                index++;
+                ++index;
             }break;
 
             default:{
 
                 // Always increment index
-                index++;
+                ++index;
 
                 }break;
             }
         }
-
-        lblend:
 
         // Once functions finishes, recursionCount is reset
         recursionCount = 0;
@@ -1070,6 +735,7 @@ namespace xmath {
         return evalstack;
     }
 
+
     std::string calculate(std::vector<token> tokens, bool showprogress, unsigned long int reservecount){
         if(recursionCount > maxRecurse){
             std::vector<token>().swap(tokens);
@@ -1078,7 +744,7 @@ namespace xmath {
             recursionCount = 0;
             throw error;
         }
-        recursionCount++;
+        ++recursionCount;
 
         std::vector<token> evalstack;
         evalstack.reserve(reservecount);
@@ -1093,16 +759,16 @@ namespace xmath {
         bool varout = true;
 
         /*// Accepted token types
-        -0 - NUM
-        -1 - OPERATOR
-        X2 - LEFT BRACKET
-        X3 - RIGHT BRACKET
-        -4 - FUNCTION
-        -5 - VARIABLE
-        -6 - R FUNC
-        X7 - Separator
-        -   9 - String
-        -   10 - Assign
+        - 0 - NUM
+        - 1 - OPERATOR
+        X 2 - LEFT BRACKET
+        X 3 - RIGHT BRACKET
+        - 4 - FUNCTION
+        - 5 - VARIABLE
+        - 6 - R FUNC
+        X 7 - Separator
+        - 9 - String
+        - 10 - Assign
         */
 
         std::vector<token> argpack; // To be used in functions
@@ -1111,440 +777,86 @@ namespace xmath {
         goto forceRun; // At least run through loop once no matter the condition
         while(index < stopsize){
             forceRun:
+
             if(showprogress) bar::setcount(index);
             if(!inturrupt_exit_flag) throw std::string("");
+
             switch(tokens[index].type){
+
                 // Accept NUM && String, VARIABLE should not be at this stage, will cause error
                 case 9:
                 case 5: // Variable accepted anyways
                 case 0:
                     evalstack.emplace_back(tokens[index]);
-                    index++;
+                    ++index;
                     break;
 
                 case 1:
-                    if(tokens[index].data == "ADD"){
-                        if(evalstack.back().type == 0){
-                            double y = std::stod(evalstack.back().data);
+                case 10:
+                    ExecOperators[tokens[index].data](evalstack);
+                    ++index;
+                    break;
+
+                // Standard Function
+                // Function Overloading is supported
+                case 4:{ 
+                    std::string funcname = tokens[index].data;
+                    farg_max = tokens[index].reserved;
+                    if(!(fexists(funcname, farg_max) || f_isspecial(funcname, farg_max) || f_iscorefunc(funcname, farg_max))){
+                        std::string error = "No matching function call to \"";
+                        error.append(funcname).append("\"");
+                        throw error;
+                    }
+
+                    while(!evalstack.empty() && argtracker < farg_max){
+                        if(evalstack.back().type == 0 || evalstack.back().type == 9){
+                            argpack.emplace_back(evalstack.back());
                             evalstack.pop_back();
-                            double x = std::stod(evalstack.back().data);
-                            token tk(to_string_hprec(add(x, y)), 0);
-                            evalstack.back() = tk;
+                            argtracker++;
                         }else{
-                            std::string y = evalstack.back().data;
-                            evalstack.pop_back();
-                            std::string x = evalstack.back().data;
-                            token tk(addstr(x, y), 9);
-                            evalstack.back() = tk;
+                            break;
                         }
-                        index++;
-
-                    }else if(tokens[index].data == "SUB"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(sub(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "MUL"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(mul(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "DIV"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(divide(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "MOD"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(mod(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "POW"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(power(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "BITXOR"){
-                    
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk(to_string_hprec(bitexclusiveOr(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "BITOR"){
-                    
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk(to_string_hprec(bitwor(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "BITAND"){
-                    
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk(to_string_hprec(bitwand(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LAND"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(land(x, y)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LOR"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(lor(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "SHL"){
-                    
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(shl(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "SHR"){
-                    
-                        long long y = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        long long x = std::stoll(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(shr(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-            // comparisons
-                    }else if(tokens[index].data == "EQL"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(eql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "NQL"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(nql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "GQL"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(gql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LQL"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(lql(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "GRT"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(grt(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "LST"){
-                    
-                        double y = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        double x = std::stod(evalstack.back().data);
-                        token tk;
-                        tk.data = to_string_hprec(lst(x, y));
-                        tk.type = 0;
-                        evalstack.back() = tk;
-                        index++;
-
-                    }else if(tokens[index].data == "NEG"){
-                    
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(neg(x)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    // POS - no effect on NUM, ignored
-                    }else if(tokens[index].data == "POS"){
-                    
-                        index++;
-
-                    }else if(tokens[index].data == "NOT"){
-                        double x = std::stod(evalstack.back().data);
-                        token tk(to_string_hprec(lnot(x)), 0);
-                        evalstack.back() = tk;
-                        index++;
-
-                    // POS - no effect on NUM, ignored
-                    }else{
-                        goto lblend; // Error
                     }
-                break;
 
-            // Standard Function
-            // Can handle Variadic Functions
-            // Function Overloading is supported
-            case 4:{ 
-                std::string funcname = tokens[index].data;
-                farg_max = tokens[index].reserved;
-                if(!(fexists(funcname, farg_max) || f_isspecial(funcname, farg_max) || f_iscorefunc(funcname, farg_max))){
-                    std::string error = "No matching function call to \"";
-                    error.append(funcname).append("\"");
-                    throw error;
-                }
-
-                while(!evalstack.empty() && argtracker < farg_max){
-                    if(evalstack.back().type == 0 || evalstack.back().type == 9){
-                        argpack.emplace_back(evalstack.back());
-                        evalstack.pop_back();
-                        argtracker++;
-                    }else{
-                        break;
-                    }
-                }
-
-                std::reverse(argpack.begin(),argpack.end());
-                token tk;
-                tk.type = 0;
-                if(f_isspecial(funcname, farg_max)){
-                    try{
-                        tk.data = to_string_hprec(callspecial(argpack, funcname));
-                    }catch(const int& e){
-                        // Error
-                    }
-                }else if(f_iscorefunc(funcname, farg_max)){
-                    varout = false;
-                    tk = callcore(argpack, funcname);   
-                
-                }else{
-                    tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
-                }
-                
-                evalstack.emplace_back(tk);
-
-                std::vector<token>().swap(argpack);
-                argtracker = 0;
-                index++;
-                }break;
-
-            case 6:{ // Right Function && single arg
-                if(tokens[index].data == "FACT"){
-                    double x = std::stod(evalstack.back().data);
+                    std::reverse(argpack.begin(),argpack.end());
                     token tk;
-                    tk.data = to_string_hprec(factorial((long long)x));
                     tk.type = 0;
-                    evalstack.back() = tk;
-                    index++;
-
-                    }
-                }break;
-
-            // SEP is ignored (Should not be here)
-            case 7:{
-                index++;
-            }break;
-
-            case 10:{
-                    if(tokens[index].data == "ASN"){
-
-                        if(evalstack.back().type == 9){
-
-                            std::string strval = evalstack.back().data;
-                            evalstack.pop_back();
-                            std::string idenx = evalstack.back().data;
-                            evalstack.pop_back();
-                            sasn(idenx, strval);
-                            index++;
-
-                        }else{
-
-                            double x = std::stod(evalstack.back().data);
-                            evalstack.pop_back();
-                            std::string idenx = evalstack.back().data;
-                            evalstack.pop_back();
-                            asn(idenx, x);
-                            index++;
-
+                    if(f_isspecial(funcname, farg_max)){
+                        try{
+                            tk.data = to_string_hprec(callspecial(argpack, funcname));
+                        }catch(const int& e){
+                            // Error
                         }
-                    }else if(tokens[index].data == "ADDASN"){
+                    }else if(f_iscorefunc(funcname, farg_max)){
+                        varout = false;
+                        tk = callcore(argpack, funcname);   
                     
-                        double x = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        addasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "SUBASN"){
-                    
-                        double x = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        subasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "MULASN"){
-                    
-                        double x = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        mulasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "DIVASN"){
-                    
-                        double x = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        divasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "MODASN"){
-                    
-                        double x = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        modasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "BITXORASN"){
-                    
-                        long long x = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        bitexclusiveOrasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "BITORASN"){
-                    
-                        long long x = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        bitorasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "BITANDASN"){
-                    
-                        long long x = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        bitandasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "POWASN"){
-                    
-                        double x = std::stod(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        powasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "SHLASN"){
-                    
-                        long long x = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        shlasn(idenx, x);
-                        index++;
-
-                    }else if(tokens[index].data == "SHRASN"){
-                    
-                        long long x = std::stoll(evalstack.back().data);
-                        evalstack.pop_back();
-                        std::string idenx = evalstack.back().data;
-                        evalstack.pop_back();
-                        shrasn(idenx, x);
-                        index++;
-
                     }else{
-                        goto lblend;
+                        tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
                     }
-                }break;
-            default:{
+                    
+                    evalstack.emplace_back(tk);
 
-                // Always increment index
-                index++;
+                    std::vector<token>().swap(argpack);
+                    argtracker = 0;
+                    ++index;
+                    }break;
 
+                // SEP is ignored (Should not be here)
+                case 7:{
+                    ++index;
                 }break;
+                default:{
+
+                    // Always increment index
+                    ++index;
+
+                    }break;
             }
             if(evalstack.back().type == -1 && evalstack.size() > 0){
                 evalstack.pop_back();
             }
         }
-
-        lblend:
 
         // Once functions finishes, recursionCount is reset
         recursionCount = 0;

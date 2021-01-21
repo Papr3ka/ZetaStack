@@ -22,7 +22,7 @@ long urandom(long seed){
 
     for(long cnt = 0;
         cnt < (tepoch % 8191+65521) * seed %131071;
-        cnt++){
+        ++cnt){
 
         wait = x*x-x;
 

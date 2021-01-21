@@ -31,6 +31,7 @@ extern bool inturrupt_exit_flag;
 
 class token{
     private:
+    protected:
     public:
 
         std::string data;

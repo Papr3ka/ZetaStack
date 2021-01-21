@@ -1,9 +1,6 @@
 #ifndef PREPROCESSOR_HPP
 #define PREPROCESSOR_HPP
 
-#include<algorithm>
-#include<cctype>
-#include<cstdlib>
 #include<string>
 #include<vector>
 

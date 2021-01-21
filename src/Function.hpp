@@ -1,9 +1,6 @@
 #ifndef FUNCTION_HPP
 #define FUNCTION_HPP
 
-#include<algorithm>
-#include<cctype>
-#include<cstdlib>
 #include<string>
 #include<vector>
 
@@ -16,9 +13,17 @@ token lookup(token var, std::vector<token> identifiers, std::vector<token> args)
 
 std::vector<token> fillvars(std::vector<token> argsname, std::vector<token> argsvar, std::vector<token> fbody);
 
+extern unsigned long int filled_core;
+
+extern unsigned long int filled_builtin;
+
 void initcore(bool safe);
 
 void initbuiltin(bool safe);
+
+void free_core(void);
+
+void free_builtin(void);
 
 double callspecial(std::vector<token> fargs, std::string name);
 
@@ -31,6 +36,8 @@ bool f_iscorefunc(std::string name, long int argcounts);
 bool f_isnamecorefunc(std::string name);
 
 token callcore(std::vector<token> fargs, std::string name);
+
+void delAll(void);
 
 void def(std::vector<token> assignTo, std::vector<token> body);
 

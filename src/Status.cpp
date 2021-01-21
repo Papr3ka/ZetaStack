@@ -72,22 +72,22 @@ namespace bar {
     std::string barbody;
     std::string inform_mode = "";
 
-    #ifdef UNICODE_STATUS_
+    // #ifdef UNICODE_STATUS_
         
-        std::string loadchar = "≡"; // ≡, =, -, █ |
-        std::string spacechar = " ";
+    //     std::string loadchar = "≡"; // ≡, =, -, █ |
+    //     std::string spacechar = " ";
 
-        // ◀ ▶ < >
-        std::string right = "▶";
-        std::string left = "◀";
-    #else
+    //     // ◀ ▶ < >
+    //     std::string right = "▶";
+    //     std::string left = "◀";
+    // #else
         
         std::string loadchar = "="; 
         std::string spacechar = " ";
 
         std::string right = ">";
         std::string left = "<";		
-    #endif
+    //#endif
 
 
     bool dostat = false;
@@ -206,6 +206,7 @@ namespace bar {
     }
 
     void finish(void){
+        std::cout.flush();
         std::cout << spacechar*(barlen*2+prec+5) << "\r";
         std::cout.flush();
         dostat = false;
@@ -216,6 +217,7 @@ namespace bar {
     }
 
     void printblank(void){
+        std::cout.flush();
         std::cerr << spacechar*(barlen*2+prec+5) << "\r";
         return;   
     }

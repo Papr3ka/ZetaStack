@@ -1,9 +1,6 @@
 #ifndef ZETACOMPILER_HPP
 #define ZETACOMPILER_HPP
 
-#include<algorithm>
-#include<cctype>
-#include<cstdlib>
 #include<string>
 #include<vector>
 

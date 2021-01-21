@@ -10,12 +10,12 @@ bool checkrpn(const std::vector<token>& checktokens){
 
     // Must be Signed int
     signed long long int simulatestack = 0;
-    for(unsigned long int index = 0; index < checktokens.size(); index++){
+    for(unsigned long int index = 0; index < checktokens.size(); ++index){
         switch(checktokens[index].type){
             case 9:
             case 5:
             case 0:
-                simulatestack++;
+                ++simulatestack;
                 break;
             case 1:
                 if(checktokens[index].data == "NEG"){
@@ -34,13 +34,13 @@ bool checkrpn(const std::vector<token>& checktokens){
                 break;
             case 4:
                 simulatestack -= (signed long long int)checktokens[index].reserved;
-                simulatestack++;
+                ++simulatestack;
                 break;
             case 6:
                 break;
             case 10:
-                simulatestack--;
-                simulatestack--;
+                --simulatestack;
+                --simulatestack;
                 break;
         }
         if(simulatestack < 0){
@@ -129,5 +129,15 @@ int checkrightBrac(const std::string& str){
         if(str[idx] == ')') count++;
     }
     return count;
+}
+
+bool bracketOrder(const std::vector<token>& tokens){
+    long long int layer = 0;
+    for(token tk: tokens){
+        if(tk.type == 2) ++layer;
+        if(tk.type == 3) --layer;
+        if(layer < 0) return false;
+    }
+    return true;
 }
 

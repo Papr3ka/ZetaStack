@@ -1,9 +1,6 @@
 #ifndef VARIABLE_HPP
 #define VARIABLE_HPP
 
-#include<algorithm>
-#include<cctype>
-#include<cstdlib>
 #include<string>
 #include<vector>
 
@@ -27,7 +24,7 @@ namespace var {
 
     bool exists(std::string iden);
 
-    void update(std::string iden, std::string val);
+    void update(std::string iden, const std::string& val);
     
     std::string search(std::string iden, bool nothrow=false);
 
@@ -36,6 +33,8 @@ namespace var {
     unsigned long int count(void);
 
     int delvar(std::string variden);
+
+    void delAll(void);
 
     std::vector<std::string> globals(void);
 
