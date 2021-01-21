@@ -23,18 +23,20 @@ An advanced command-line calculator
 Usage: ZetaStack [Options] ...
 
 Options:
-  -h  --help                   Display this information
-  -v  --version                Display version information
+  -h,  --help                  Display this information
+  -v,  --version               Display version information
 
+  -c <str>                     Evaluates a string
   -j <int>                     Sets the maximum thread count
+  --maxrecurse <int>           Sets the maximum recursion depth
 
   --bare                       Start with absolute minimum memory usage
   --debug                      Start with debug mode on
   --nobuffer                   Disables variable buffer
   --noexec                     Start with execution disabled
   --nohandle                   Disables signal handling
-  --maxrecurse <int>           Sets the maximum recursion depth
   --safe                       Disables Commands and select functions
+  --time                       Times calculations
  ```
 
 # Functions
