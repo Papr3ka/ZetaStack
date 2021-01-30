@@ -28,7 +28,7 @@ Options:
 
   -c <str>                     Evaluates a string
   -j <int>                     Sets the maximum thread count
-  --max-recurse <int>           Sets the maximum recursion depth
+  --max-recurse <int>          Sets the maximum recursion depth
 
   --bare                       Start with absolute minimum memory usage
   --debug                      Start with debug mode on
