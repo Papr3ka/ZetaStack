@@ -1,3 +1,21 @@
+/* Evaluate an array of tokens 
+ *
+ * Copyright (c) 2020-2021 Benjamin Yao.
+ * 
+ * This file is part of ZetaStack.
+ * 
+ * ZetaStack is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * ZetaStack is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include<algorithm>
 #include<array>
@@ -15,27 +33,17 @@
 #include "Execute.hpp"
 #include "Function.hpp"
 #include "Status.hpp"
-#include "Token.hpp"
 #include "Variable.hpp"
+#include "ZetaStack.hpp"
 #include "Zetacompiler.hpp"
 
 namespace xmath {
 
-    long long int maxRecurse = 1280; // Dont touch this unless your platform has bigger stack size
     long long int recursionCount = 0;
-
-    void setmaxrecurse(long long maxR){
-        maxRecurse = maxR;
-        return;
-    }
-
-    long long getmaxrecurse(void){
-        return maxRecurse;
-    }
 
     inline std::string to_string_hprec(double x){
         std::ostringstream doublestring;
-        doublestring << std::setprecision(std::numeric_limits<double>::digits10) << x;
+        doublestring << std::setprecision(16) << x;
         return doublestring.str();
     }
 
@@ -78,23 +86,18 @@ namespace xmath {
         }
     }
 
-    inline std::string addstr(std::string x, std::string y){
-    x.append(y);
-        return x;
-    }
-
     // Placeholder functions for Arbitrary math
     inline void add(std::vector<token>& evalstack){
-        if(evalstack.back().type == 0){
+        if(evalstack.back().type == tok::num){
             double y = std::stod(evalstack.back().data);
             evalstack.pop_back();
             double x = std::stod(evalstack.back().data);
-            evalstack.back() = token(to_string_hprec(x+y), 0);
+            evalstack.back() = token(to_string_hprec(x+y), tok::num);
         }else{
             std::string y = evalstack.back().data;
             evalstack.pop_back();
             std::string x = evalstack.back().data;
-            evalstack.back() = token(x.append(y), 9);
+            evalstack.back() = token(x.append(y), tok::str);
         }
         return;
     }
@@ -103,7 +106,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x - y), 0);
+        evalstack.back() = token(to_string_hprec(x - y), tok::num);
         return;
     }
 
@@ -111,7 +114,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x * y), 0);
+        evalstack.back() = token(to_string_hprec(x * y), tok::num);
         return;
     }
 
@@ -119,7 +122,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x / y), 0);
+        evalstack.back() = token(to_string_hprec(x / y), tok::num);
         return;
     }
 
@@ -127,7 +130,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(fmod(x, y)), 0);
+        evalstack.back() = token(to_string_hprec(fmod(x, y)), tok::num);
         return;
     }
 
@@ -135,7 +138,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(pow(x, y)), 0);
+        evalstack.back() = token(to_string_hprec(pow(x, y)), tok::num);
         return;
     }
 
@@ -143,7 +146,7 @@ namespace xmath {
         long long y = std::stoll(evalstack.back().data);
         evalstack.pop_back();
         long long x = std::stoll(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x ^ y), 0);
+        evalstack.back() = token(to_string_hprec(x ^ y), tok::num);
         return;
     }
 
@@ -151,7 +154,7 @@ namespace xmath {
         long long y = std::stoll(evalstack.back().data);
         evalstack.pop_back();
         long long x = std::stoll(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x << y), 0);
+        evalstack.back() = token(to_string_hprec(x << y), tok::num);
         return;
     }
 
@@ -159,7 +162,7 @@ namespace xmath {
         long long y = std::stoll(evalstack.back().data);
         evalstack.pop_back();
         long long x = std::stoll(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x >> y), 0);
+        evalstack.back() = token(to_string_hprec(x >> y), tok::num);
         return;
     }
 
@@ -167,7 +170,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x == y), 0);
+        evalstack.back() = token(to_string_hprec(x == y), tok::num);
         return;
     }
 
@@ -175,7 +178,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x != y), 0);
+        evalstack.back() = token(to_string_hprec(x != y), tok::num);
         return;
     }
 
@@ -183,7 +186,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x >= y), 0);
+        evalstack.back() = token(to_string_hprec(x >= y), tok::num);
         return;
     }
 
@@ -191,7 +194,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x <= y), 0);
+        evalstack.back() = token(to_string_hprec(x <= y), tok::num);
         return;
     }
 
@@ -199,7 +202,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x > y), 0);
+        evalstack.back() = token(to_string_hprec(x > y), tok::num);
         return;
     }
 
@@ -207,13 +210,13 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x < y), 0);
+        evalstack.back() = token(to_string_hprec(x < y), tok::num);
         return;
     }
 
     inline void neg(std::vector<token>& evalstack){
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(-x), 0);
+        evalstack.back() = token(to_string_hprec(-x), tok::num);
         return;
     }
 
@@ -221,7 +224,7 @@ namespace xmath {
         long long y = std::stoll(evalstack.back().data);
         evalstack.pop_back();
         long long x = std::stoll(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x | y), 0);
+        evalstack.back() = token(to_string_hprec(x | y), tok::num);
         return;
     }
 
@@ -229,7 +232,7 @@ namespace xmath {
         long long y = std::stoll(evalstack.back().data);
         evalstack.pop_back();
         long long x = std::stoll(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x & y), 0);
+        evalstack.back() = token(to_string_hprec(x & y), tok::num);
         return;
     }
 
@@ -237,7 +240,7 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x && y), 0);
+        evalstack.back() = token(to_string_hprec(x && y), tok::num);
         return;
     }
 
@@ -245,13 +248,13 @@ namespace xmath {
         double y = std::stod(evalstack.back().data);
         evalstack.pop_back();
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(x || y), 0);
+        evalstack.back() = token(to_string_hprec(x || y), tok::num);
         return;
     }
 
     inline void lnot(std::vector<token>& evalstack){
         double x = std::stod(evalstack.back().data);
-        evalstack.back() = token(to_string_hprec(!x), 0);
+        evalstack.back() = token(to_string_hprec(!x), tok::num);
         return;
     }
 
@@ -535,6 +538,42 @@ namespace xmath {
 
     };
 
+    std::unordered_map<std::string, const token> assignment_remap = {
+        {"ADDASN", token("ADD", 1)},
+        {"SUBASN", token("SUB", 1)},
+        {"MULASN", token("MUL", 1)},
+        {"DIVASN", token("DIV", 1)},
+        {"MODASN", token("MOD", 1)},
+        {"POWASN", token("POW", 1)},
+        {"XORASN", token("XOR", 1)},
+        {"SHLASN", token("SHL", 1)},
+        {"SHRASN", token("SHR", 1)},
+        {"BITXORASN", token("XOR", 1)},
+        {"BITORASN", token("OR", 1)},
+        {"BITANDASN", token("AND", 1)}
+    };
+
+    // true == success, false == fail
+    inline bool remap_asn(token& x){
+        if(assignment_remap.find(x.data) == assignment_remap.end()){
+            return false;
+        }else{
+            x = assignment_remap[x.data];
+        }
+        return true;
+    }
+
+    token apply(default_modifier mod, token val){
+        if(mod.asn_type.data == "ASN") return mod.rvalue;
+        if(mod.asn_type.data.empty()) return val;
+        if(!remap_asn(mod.asn_type)) return token();
+        std::vector<token> evalstack = {
+            val,
+            mod.rvalue
+        };
+        ExecOperators[mod.asn_type.data](evalstack);
+        return evalstack.front();
+    }
 
 
     std::vector<token> simplify(std::vector<token> tokens, std::vector<token> targets, std::string freserved, unsigned long int reservecount){
@@ -581,8 +620,6 @@ namespace xmath {
         std::vector<token> argpack; // To be used in functions
         std::vector<token> dtemp;
 
-        std::vector<token> operatorsstack;
-
         goto forceRun; // At least run through loop once no matter the condition
         while(index < stopsize){
             forceRun:
@@ -591,8 +628,7 @@ namespace xmath {
             switch(tokens[index].type){
 
                 // Accept NUM && String
-                
-                case 5:
+                case tok::var:
                     for(token test: targets){
                         if(test.data == tokens[index].data){
                             token nubr(test.data, 1000);
@@ -602,20 +638,20 @@ namespace xmath {
                         }
                     }
                     break;
-                case 9:
-                case 0:
+                case tok::str:
+                case tok::num:
                     evalstack.emplace_back(tokens[index]);
                     ++index;
                     break;
 
-                case 1:
+                case tok::op:
                     if(tokens[index].data == "POS"){
                         ++index;
                         continue;
                     }else if(tokens[index].data == "NOT"){
                         if(evalstack.back().type == 1000 ||
-                           evalstack.back().type == 1 ||
-                           evalstack.back().type == 4){
+                           evalstack.back().type == tok::op ||
+                           evalstack.back().type == tok::func){
                             evalstack.emplace_back(tokens[index]);
                             ++index;
                             continue;
@@ -626,13 +662,13 @@ namespace xmath {
                     }
                     if(evalstack.end()[-2].type == 1000 ||
                         evalstack.back().type == 1000 ||
-                        evalstack.end()[-2].type == 1 ||
-                        evalstack.back().type == 1 ||
-                        evalstack.end()[-2].type == 4 ||
-                        evalstack.back().type == 4){
+                        evalstack.end()[-2].type == tok::op ||
+                        evalstack.back().type == tok::op ||
+                        evalstack.end()[-2].type == tok::func ||
+                        evalstack.back().type == tok::func){
                         if(evalstack.back().type == 1000 ||
-                            evalstack.back().type == 1 ||
-                            evalstack.back().type == 4){
+                            evalstack.back().type == tok::op ||
+                            evalstack.back().type == tok::func){
                             token tk(evalstack.back().data,1000);
                         }else{
                             token tk(evalstack.end()[-2].data,1000);
@@ -650,7 +686,7 @@ namespace xmath {
             // Standard Function
             // Can handle Variadic Functions
             // Function Overloading is supported
-            case 4:{
+            case tok::func:{
                 std::string funcname = tokens[index].data;
                 farg_max = tokens[index].reserved;
                 if(!(fexists(funcname, farg_max) || funcname == freserved || f_isspecial(funcname, farg_max) || f_iscorefunc(funcname, farg_max))){
@@ -661,9 +697,9 @@ namespace xmath {
 
                 while(!evalstack.empty() && argtracker < farg_max){
                     if(evalstack.back().type == 1000 ||
-                       evalstack.back().type == 1 ||
-                        evalstack.back().type == 4) dumpfunction = true;
-                    if(evalstack.back().type == 0){
+                       evalstack.back().type == tok::op ||
+                        evalstack.back().type == tok::func) dumpfunction = true;
+                    if(evalstack.back().type == tok::num){
                         argpack.emplace_back(evalstack.back());
                         evalstack.pop_back();
                         argtracker++;
@@ -683,7 +719,7 @@ namespace xmath {
                 std::reverse(argpack.begin(),argpack.end());
 
                 token tk;
-                tk.type = 0;
+                tk.type = tok::num;
                 if(f_isspecial(funcname, farg_max)){
                     try{
                         tk.data = to_string_hprec(callspecial(argpack, funcname));
@@ -691,7 +727,17 @@ namespace xmath {
                         // Error
                     }
                 }else{
-                    tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
+                    try{
+                        tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
+                    }catch(const std::string& err){
+                        evalstack.clear();
+                        tokens.clear();
+                        argpack.clear();
+                        std::vector<token>().swap(evalstack);
+                        std::vector<token>().swap(tokens);
+                        std::vector<token>().swap(argpack);
+                        throw err;
+                    }               
                 }
                 
                 evalstack.emplace_back(tk);
@@ -701,7 +747,7 @@ namespace xmath {
                 ++index;
                 }break;
             // SEP is ignored (Should not be here)
-            case 7:{
+            case tok::sep:{
                 ++index;
             }break;
 
@@ -716,21 +762,19 @@ namespace xmath {
 
         // Once functions finishes, recursionCount is reset
         recursionCount = 0;
-        for(unsigned long int replaceidx = 0; replaceidx < evalstack.size(); replaceidx++){
+        for(unsigned long int replaceidx = 0; replaceidx < evalstack.size(); ++replaceidx){
             if(evalstack[replaceidx].type == 1000){
-                evalstack[replaceidx].type = 5;
+                evalstack[replaceidx].type = tok::var;
             }
         }
-        for(token op: operatorsstack){
-            evalstack.emplace_back(op);
-        }
-        operatorsstack.clear();
+
         tokens.clear();
         targets.clear();
+        evalstack.clear();
 
-        std::vector<token>().swap(operatorsstack);
         std::vector<token>().swap(tokens);
         std::vector<token>().swap(targets);
+        std::vector<token>().swap(evalstack);
 
         return evalstack;
     }
@@ -738,6 +782,7 @@ namespace xmath {
 
     std::string calculate(std::vector<token> tokens, bool showprogress, unsigned long int reservecount){
         if(recursionCount > maxRecurse){
+            tokens.clear();
             std::vector<token>().swap(tokens);
             std::string error = "Maximum recursion depth exceeded (limit=";
             error.append(std::to_string(maxRecurse)).append(")");
@@ -784,35 +829,42 @@ namespace xmath {
             switch(tokens[index].type){
 
                 // Accept NUM && String, VARIABLE should not be at this stage, will cause error
-                case 9:
-                case 5: // Variable accepted anyways
-                case 0:
+                case tok::hold:
+                case tok::str:
+                case tok::var: // Variable accepted anyways
+                case tok::num:
                     evalstack.emplace_back(tokens[index]);
                     ++index;
                     break;
 
-                case 1:
-                case 10:
+                case tok::op:
+                case tok::asn:
                     ExecOperators[tokens[index].data](evalstack);
                     ++index;
                     break;
 
                 // Standard Function
                 // Function Overloading is supported
-                case 4:{ 
+                case tok::func:{ 
                     std::string funcname = tokens[index].data;
                     farg_max = tokens[index].reserved;
-                    if(!(fexists(funcname, farg_max) || f_isspecial(funcname, farg_max) || f_iscorefunc(funcname, farg_max))){
+
+                    if(!(fexists(funcname, farg_max) ||
+                     f_isspecial(funcname, farg_max) ||
+                     f_iscorefunc(funcname, farg_max))){
+
                         std::string error = "No matching function call to \"";
                         error.append(funcname).append("\"");
                         throw error;
                     }
 
                     while(!evalstack.empty() && argtracker < farg_max){
-                        if(evalstack.back().type == 0 || evalstack.back().type == 9){
+                        if(evalstack.back().type == tok::num ||
+                           evalstack.back().type == tok::str ||
+                           evalstack.back().type == tok::hold){
                             argpack.emplace_back(evalstack.back());
                             evalstack.pop_back();
-                            argtracker++;
+                            ++argtracker;
                         }else{
                             break;
                         }
@@ -820,11 +872,11 @@ namespace xmath {
 
                     std::reverse(argpack.begin(),argpack.end());
                     token tk;
-                    tk.type = 0;
+                    tk.type = tok::num;
                     if(f_isspecial(funcname, farg_max)){
                         try{
                             tk.data = to_string_hprec(callspecial(argpack, funcname));
-                        }catch(const int& e){
+                        }catch(const int){
                             // Error
                         }
                     }else if(f_iscorefunc(funcname, farg_max)){
@@ -832,10 +884,20 @@ namespace xmath {
                         tk = callcore(argpack, funcname);   
                     
                     }else{
-                        tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
+                        try{
+                            tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
+                        }catch(const std::string& err){
+                            evalstack.clear();
+                            tokens.clear();
+                            argpack.clear();
+                            std::vector<token>().swap(evalstack);
+                            std::vector<token>().swap(tokens);
+                            std::vector<token>().swap(argpack);
+                            throw err;
+                        }
                     }
                     
-                    evalstack.emplace_back(tk);
+                    if(tk.type != tok::tvoid) evalstack.emplace_back(tk);
 
                     std::vector<token>().swap(argpack);
                     argtracker = 0;
@@ -843,7 +905,7 @@ namespace xmath {
                     }break;
 
                 // SEP is ignored (Should not be here)
-                case 7:{
+                case tok::sep:{
                     ++index;
                 }break;
                 default:{
@@ -853,7 +915,7 @@ namespace xmath {
 
                     }break;
             }
-            if(evalstack.back().type == -1 && evalstack.size() > 0){
+            if(evalstack.back().type == tok::tvoid && evalstack.size() > 0){
                 evalstack.pop_back();
             }
         }
@@ -872,8 +934,11 @@ namespace xmath {
         std::string strout;
         strout.append(evalstack.front().data);
         for(unsigned long int sdx = 1; sdx < evalstack.size(); sdx++){
-            strout.append(evalstack[sdx].data);
-            if(sdx + 1 < evalstack.size()) strout.append("\n");
+            if(evalstack[sdx].type == tok::num ||
+               evalstack[sdx].type == tok::str){
+                strout.append(evalstack[sdx].data);
+                if(sdx + 1 < evalstack.size()) strout.append("\n");
+            }
         }
 
         tokens.clear();
@@ -884,4 +949,178 @@ namespace xmath {
 
         return strout;
     }
+
+    std::unordered_map<std::string, default_modifier> func_lvalue_deduction(std::vector<token> tokens){
+        if(recursionCount > maxRecurse){
+            tokens.clear();
+            std::vector<token>().swap(tokens);
+            std::string error = "Maximum recursion depth exceeded (limit=";
+            error.append(std::to_string(maxRecurse)).append(")");
+            recursionCount = 0;
+            throw error;
+        }
+        ++recursionCount;
+
+        std::vector<token> evalstack;
+        if(!tokens.empty() && tokens.front().type == tok::func){
+            tokens.erase(tokens.begin());
+        }
+        if(!tokens.empty() && tokens.front().type == tok::lbrac){
+            tokens.erase(tokens.begin());
+        }
+        if(!tokens.empty() && tokens.back().type == tok::rbrac){
+            tokens.pop_back();
+        }
+
+        if(tokens.empty()) return std::unordered_map<std::string, default_modifier>();
+
+        std::unordered_map<std::string, default_modifier> lvalue_map;
+
+        unsigned long int index = 0;
+        unsigned long int stopsize = tokens.size();
+
+        long int argtracker = 0;
+        long int farg_max;
+
+        /*// Accepted token types
+        - 0 - NUM
+        - 1 - OPERATOR
+        X 2 - LEFT BRACKET
+        X 3 - RIGHT BRACKET
+        - 4 - FUNCTION
+        - 5 - VARIABLE
+        - 6 - R FUNC
+        X 7 - Separator
+        - 9 - String
+        - 10 - Assign
+        */
+
+        std::vector<token> argpack; // To be used in functions
+        std::vector<token> dtemp;
+
+        goto forceRun; // At least run through loop once no matter the condition
+        while(index < stopsize){
+            forceRun:
+
+            if(!inturrupt_exit_flag) throw std::string("");
+
+            switch(tokens[index].type){
+
+                // Accept NUM && String, VARIABLE should not be at this stage, will cause error
+                case tok::hold:
+                case tok::str:
+                case tok::var: // Variable accepted anyways
+                case tok::num:
+                    evalstack.emplace_back(tokens[index]);
+                    ++index;
+                    break;
+
+                case tok::op:
+                    ExecOperators[tokens[index].data](evalstack);
+                    ++index;
+                    break;
+
+                // Standard Function
+                // Function Overloading is supported
+                case tok::func:{ 
+                    std::string funcname = tokens[index].data;
+                    farg_max = tokens[index].reserved;
+                    if(!(fexists(funcname, farg_max) ||
+                     f_isspecial(funcname, farg_max) ||
+                     f_iscorefunc(funcname, farg_max))){
+
+                        std::string error = "No matching function call to \"";
+                        error.append(funcname).append("\"");
+                        throw error;
+                    }
+
+                    while(!evalstack.empty() && argtracker < farg_max){
+                        if(evalstack.back().type == tok::num ||
+                           evalstack.back().type == tok::str ||
+                           evalstack.back().type == tok::hold){
+                            argpack.emplace_back(evalstack.back());
+                            evalstack.pop_back();
+                            argtracker++;
+                        }else{
+                            break;
+                        }
+                    }
+
+                    std::reverse(argpack.begin(),argpack.end());
+                    token tk;
+                    tk.type = 0;
+                    if(f_isspecial(funcname, farg_max)){
+                        try{
+                            tk.data = to_string_hprec(callspecial(argpack, funcname));
+                        }catch(const int){
+                            // Error
+                        }
+                    }else if(f_iscorefunc(funcname, farg_max)){
+                        tk = callcore(argpack, funcname);   
+                    
+                    }else{
+                        try{
+                            tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
+                        }catch(const std::string& err){
+                            evalstack.clear();
+                            tokens.clear();
+                            argpack.clear();
+                            std::vector<token>().swap(evalstack);
+                            std::vector<token>().swap(tokens);
+                            std::vector<token>().swap(argpack);
+                            throw err;
+                        }
+                    }
+                    
+                    if(tk.type != tok::tvoid) evalstack.emplace_back(tk);
+
+                    std::vector<token>().swap(argpack);
+                    argtracker = 0;
+                    ++index;
+                    }break;
+
+                // SEP is ignored
+                case 7:{
+                    if(evalstack.back().type == tok::var){
+                        lvalue_map[evalstack.back().data] = default_modifier();
+                    }
+                    evalstack.clear(); // clear
+                    ++index;
+                }break;
+                default:{
+
+                    // Always increment index
+                    ++index;
+
+                    }break;
+                case tok::asn:
+                    token rvalue = evalstack.back();
+                    evalstack.pop_back();
+                    token lvalue = evalstack.back();
+                    evalstack.pop_back();
+                    lvalue_map[lvalue.data] = default_modifier(tokens[index], rvalue);
+                    ++index;
+
+            }
+
+            if(evalstack.back().type == tok::tvoid && evalstack.size() > 0){
+                evalstack.pop_back();
+            }
+        }
+
+        // Once functions finishes, recursionCount is reset
+        recursionCount = 0;
+        
+        evalstack.clear();
+        tokens.clear();
+        argpack.clear();
+        std::vector<token>().swap(evalstack);
+        std::vector<token>().swap(tokens);
+        std::vector<token>().swap(argpack);
+
+        return lvalue_map;
+    }
+
+
+
 }

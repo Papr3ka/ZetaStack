@@ -1,15 +1,33 @@
+/* BuiltIn.cpp header
+ *
+ * Copyright (c) 2020-2021 Benjamin Yao.
+ * 
+ * This file is part of ZetaStack.
+ * 
+ * ZetaStack is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * ZetaStack is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include<string>
 #include<unordered_map>
 #include<vector>
 
-#include "Token.hpp"
+#include "Execute.hpp"
+#include "ZetaStack.hpp"
 
 #ifndef BUILTIN_HPP
 #define BUILTIN_HPP
 
 extern unsigned long int CPU_COUNT;
-
-extern bool do_bar;
 
 /*--Unit-----Value--
 *|  RAD     | 0    |
@@ -24,9 +42,9 @@ extern std::unordered_map<std::string, std::string> specialIden;
 
 // Function ////////////////////////////////
 
-#define TOTAL_BUILTIN_FUNCS 31 // MUST be >= or else SIGSEGV on startup
+constexpr int TOTAL_BUILTIN_FUNCS = 32; // MUST be >= or else SIGSEGV on startup
 
-#define TOTAL_BUILTIN_CORE_FUNCS 7 // MUST be >= or else SIGSEGV on startup
+constexpr int TOTAL_BUILTIN_CORE_FUNCS = 7; // MUST be >= or else SIGSEGV on startup
 
 
 // Trigonomic
@@ -97,6 +115,8 @@ double b_floor(std::vector<token> x);
 double b_ceil(std::vector<token> x);
 
 double b_round(std::vector<token> x);
+
+double b_abs(std::vector<token> x);
 
 ////////////////////////////////
 

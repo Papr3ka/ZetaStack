@@ -1,8 +1,28 @@
+/* Syntax analysis and token order Checking.
+ *
+ * Copyright (c) 2020-2021 Benjamin Yao.
+ * 
+ * This file is part of ZetaStack.
+ * 
+ * ZetaStack is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * ZetaStack is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include<string>
 #include<vector>
 
 #include "Analyzer.hpp"
-#include "Token.hpp"
+#include "Function.hpp"
+#include "ZetaStack.hpp"
 
 // Check if there is an unexpected token
 // true = Pass, false = Fail
@@ -12,12 +32,13 @@ bool checkrpn(const std::vector<token>& checktokens){
     signed long long int simulatestack = 0;
     for(unsigned long int index = 0; index < checktokens.size(); ++index){
         switch(checktokens[index].type){
-            case 9:
-            case 5:
-            case 0:
+            case tok::hold:
+            case tok::str:
+            case tok::var:
+            case tok::num:
                 ++simulatestack;
                 break;
-            case 1:
+            case tok::op:
                 if(checktokens[index].data == "NEG"){
                     if(simulatestack - 1 < 0) return false;
                     break;
@@ -32,13 +53,13 @@ bool checkrpn(const std::vector<token>& checktokens){
                     simulatestack--;
                 }
                 break;
-            case 4:
+            case tok::func:
                 simulatestack -= (signed long long int)checktokens[index].reserved;
-                ++simulatestack;
+                if(returns(checktokens[index].data, checktokens[index].reserved)) ++simulatestack;
                 break;
             case 6:
                 break;
-            case 10:
+            case tok::asn:
                 --simulatestack;
                 --simulatestack;
                 break;
@@ -131,11 +152,12 @@ int checkrightBrac(const std::string& str){
     return count;
 }
 
+
 bool bracketOrder(const std::vector<token>& tokens){
     long long int layer = 0;
-    for(token tk: tokens){
-        if(tk.type == 2) ++layer;
-        if(tk.type == 3) --layer;
+    for(const token& tk: tokens){
+        if(tk.type == tok::lbrac) ++layer;
+        if(tk.type == tok::rbrac) --layer;
         if(layer < 0) return false;
     }
     return true;
