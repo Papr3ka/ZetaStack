@@ -691,7 +691,7 @@ inline static void arghandler(std::vector<std::string> args){
     std::transform(program_name.begin(), 
                    program_name.end(),
                    program_name.begin(),
-                   [](unsigned char c) -> unsigned char {if(isalpha(c)){return c;}return ::tolower(c);});
+                   [](unsigned char c) -> unsigned char {return ::tolower(c);});
     // I know its over engineered
     if(!program_name.empty()){
         std::size_t lfound = program_name.find("z");
