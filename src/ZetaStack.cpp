@@ -1426,8 +1426,6 @@ inline static void deffunction(std::string input){
         }
     }
     
-
-
     if(f_isspecial(splitvec.front.front().data, splitvec.front.size() - 3) ||
        f_iscorefunc(splitvec.front.front().data, splitvec.front.size() - 3)){
         bar::setstate(false);
@@ -1494,7 +1492,7 @@ inline static void deffunction(std::string input){
     }
 
     analyze_tstart = std::chrono::high_resolution_clock::now();
-    if(!checkrpn(splitvec.back) && !checkrpn(splitvec.front)){
+    if(!(checkrpn(splitvec.back) && checkrpn(splitvec.front))){
 
         bar::setstate(false);
         if(do_bar){

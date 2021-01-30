@@ -62,6 +62,10 @@ bool checkrpn(const std::vector<token>& checktokens){
             case tok::asn:
                 --simulatestack;
                 --simulatestack;
+                if(simulatestack < 0) return false;
+                break;
+            default:
+                ++index;
                 break;
         }
         if(simulatestack < 0){
