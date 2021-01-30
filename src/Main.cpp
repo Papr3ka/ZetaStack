@@ -1,5 +1,5 @@
-/*  Syntax analysis header.
- *
+/* Main entry point.
+ * 
  * Copyright (c) 2020-2021 Benjamin Yao.
  * 
  * This file is part of ZetaStack.
@@ -17,24 +17,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ANALYZER_HPP
-#define ANALYZER_HPP
-
-#include<string>
-#include<vector>
-
 #include "ZetaStack.hpp"
 
-bool checkrpn(const std::vector<token>& checktokens);
+int envbit;
 
-bool squotecount(const std::string& str);
+int main(int argc, char** argv){
 
-bool quotecount(const std::string& str);
+    envbit = sizeof(void*);
 
-int checkleftBrac(const std::string& str);
+    setenvironment();
 
-int checkrightBrac(const std::string& str);
+    ///////////////////////////////
 
-bool bracketOrder(const std::vector<token>& tokens);
+    return toplev_main(argc, argv);
 
-#endif
+    ///////////////////////////////
+}

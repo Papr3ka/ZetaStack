@@ -1,6 +1,26 @@
+/* Interface for creating, modifying and reading variables
+ * 
+ * Copyright (c) 2020-2021 Benjamin Yao.
+ * 
+ * This file is part of ZetaStack.
+ * 
+ * ZetaStack is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * ZetaStack is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include<algorithm>
 #include<atomic>
 #include<cctype>
+#include<cstdint>
 #include<cstdlib>
 #include<string>
 #include<thread>
@@ -18,17 +38,17 @@ namespace var{
     std::string mostrecentiden;
     std::string mostrecentvar;
 
-    std::atomic<unsigned long int> buffermax(4096);
     std::atomic<unsigned long int> bufferindex(0);
+    std::atomic<unsigned long int> buffermax(1024);
 
     bool runbuffer = true;
 
-    long prevr = rand() % 769 + 47; // for random nums
+    uint32_t prevr = rand() % 769 + 47; // for random nums
 
-    static std::vector<long int> randbuffer;
+    static std::vector<uint32_t> randbuffer;
 
-    static inline long getrand(void){
-        long int retval;
+    static inline uint32_t getrand(void){
+        uint32_t retval;
         if(!randbuffer.empty()){
             retval = randbuffer.front();
             randbuffer.erase(randbuffer.begin());
@@ -47,7 +67,7 @@ namespace var{
         bufferindex = 0;
         buffermax = setval;
         randbuffer.clear();
-        std::vector<long int>().swap(randbuffer);
+        std::vector<uint32_t>().swap(randbuffer);
         return;
     }
 
@@ -57,14 +77,14 @@ namespace var{
 
     void clearbuffer(void){
         randbuffer.clear();
-        std::vector<long int>().swap(randbuffer);
+        std::vector<uint32_t>().swap(randbuffer);
         return;
     }
 
     void joinbuffer(void){
         runbuffer = false;
         randbuffer.clear();
-        std::vector<long int>().swap(randbuffer);
+        std::vector<uint32_t>().swap(randbuffer);
         return;
     }
 
@@ -84,8 +104,20 @@ namespace var{
         }
     }
 
+    static inline bool validname(const std::string& str){
+        for(char x: str){
+            if(ispunct(x) && x != '_'){
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Add variable to vector
     void update(std::string iden, const std::string& val){
+        if(iden.empty() || !validname(iden)){
+            throw std::string("Invalid variable name");
+        }
         if(safe_mode && !exists(iden) && variabletable.size() > maxobj){
             std::string error = "Unable to assign variable";
             throw error;
@@ -192,12 +224,12 @@ namespace var{
                 if(!randbuffer.empty()){
                     randbuffer.erase(randbuffer.begin());
                     std::this_thread::sleep_for(std::chrono::milliseconds(125));
-                    std::vector<long int>(randbuffer).swap(randbuffer);
+                    std::vector<uint32_t>(randbuffer).swap(randbuffer);
                 }
                 bufferindex++;
             }else{
                 std::this_thread::sleep_for(std::chrono::milliseconds(125));
-                std::vector<long int>(randbuffer).swap(randbuffer);
+                std::vector<uint32_t>(randbuffer).swap(randbuffer);
             }
         }
         return;

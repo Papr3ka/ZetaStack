@@ -1,5 +1,20 @@
 # Changelog
 
+# [0.3.5](#0.3.5) - 2021-1-29
+
+### Added
+
+- Function default variables
+
+### Changed
+
+- optimized string conversion
+- Preprocessor can now add multiplication to numbers with others
+
+### Fixed
+
+- Multiple cases where input string could crash program
+
 # [0.3.4](#0.3.4) - 2021-1-21
 
 ### Added

@@ -1,11 +1,14 @@
-/* 
+/* The top level of the program
+ * 
  * Copyright (c) 2020-2021 Benjamin Yao.
  * 
- * This program is free software: you can redistribute it and/or modify  
+ * This file is part of ZetaStack.
+ * 
+ * ZetaStack is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
  * the Free Software Foundation, version 3.
  *
- * This program is distributed in the hope that it will be useful, but 
+ * ZetaStack is distributed in the hope that it will be useful, but 
  * WITHOUT ANY WARRANTY; without even the implied warranty of 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
  * General Public License for more details.
@@ -26,6 +29,7 @@
 #include<sstream>
 #include<string>
 #include<thread>
+#include<unordered_map>
 #include<vector>
 
 #if __cplusplus >= 201703L
@@ -46,166 +50,74 @@
 #include "Function.hpp"
 #include "Preprocessor.hpp"
 #include "Status.hpp"
-#include "Token.hpp"
+#include "ZetaStack.hpp"
 #include "Zetacompiler.hpp"
 
 // Global Settings
-bool run = true;
-bool debug_mode = false; // Debugging 
-bool measure_time = false; // Measuring time
-bool do_exec = true; // Execute
-bool do_bar = true; // Loading bar - extern to Builtin
-bool do_cache = true; // Cache - extern to Cache.hpp
-bool do_sighandle = true; // Handle signals
-bool do_buffer = true;
+bool run = true;            // Enable/Disables main loop
+bool debug_mode = false;    // Debugging 
+bool measure_time = false;  // Measuring time
+bool do_exec = true;        // Execute
+bool do_bar = true;         // Loading bar - extern to Builtin
+bool do_cache = true;       // Cache - extern to Cache.hpp
+bool do_sighandle = true;   // Handle signals
+bool do_buffer = true;      // 
 bool bare = false;
 bool safe_mode = false;
 bool evaluate_once = false;
 
 // Default settings
-/*--Variable------------Value--
-*|  run               | true  |
-*|  debug_mode        | false |
-*|  measure_time      | false |
-*|  do_exec           | true  |
-*|  do_bar            | true  |
-*|  do_cache          | true  |
-*|  do_sighandle      | true  |
-*|  do_buffer         | true  |
-*|  bare              | false |
-*|  safe_mode         | false |
-*|  evaluate_once     | false |
-*///---------------------------
+/*---Variable------------Value--
+ *|  run               | true  |
+ *|  debug_mode        | false |
+ *|  measure_time      | false |
+ *|  do_exec           | true  |
+ *|  do_bar            | true  |
+ *|  do_cache          | true  |
+ *|  do_sighandle      | true  |
+ *|  do_buffer         | true  |
+ *|  bare              | false |
+ *|  safe_mode         | false |
+ *|  evaluate_once     | false |
+ *///---------------------------
 
-unsigned long int maxobj = 128; // Limit to max functions and variables
+/*---Unit-----Value--
+ *|  RAD     | 0    |
+ *|  GRAD    | 1    |
+ *|  DEG     | 2    |
+ *///----------------
+unsigned char angle_unit = 0;
+
+// Flags
+bool inturrupt_exit_flag = false;
+bool sigint_immune_flag = false;
+bool sigcont_flag = false;
+
+unsigned long int CPU_COUNT = std::thread::hardware_concurrency();
+
+unsigned long int maxobj; // Limit to max functions and variables
+
+long long int maxRecurse;
+
+
+// Line that is printed in interface
+static const constexpr char* newline = "=== "; // ≡≡≡ is what windows terminal shows, looks like a stack hence the name 𝚭Stack
+static const constexpr char* multiline = "::: "; // When there is more of one bracket or quote
+
+/* Symbols
+ *  ⲗ 𝜁 ❯ 𝚭
+ */
 
 // For Displaying the unit of time when "/time" is activated
-const static std::array<std::string, 4> tunit{
+static const std::array<std::string, 4> tunit{
     " ns",
     " µs",
     " ms",
     " s"
 }; // len 4
 
-/* Symbols
-*  ⲗ 𝜁 ❯ 𝚭
-*/
-
-unsigned long int CPU_COUNT = std::thread::hardware_concurrency();
-
-/*--Unit-----Value--
-*|  RAD     | 0    |
-*|  GRAD    | 1    |
-*|  DEG     | 2    |
-*///----------------
-unsigned char angle_unit = 0;
-
-// Line that is printed in interface
-const static std::string newline = "=== "; // ≡≡≡ is what windows terminal shows, looks like a stack hence the name 𝚭Stack
-const static std::string multiline = "::: "; // When there is more of one bracket or quote
-
-// For versioning
-struct version{
-    int major;
-    int minor;
-    int rev;
-
-    bool special;
-    int vertype;
-    int specialrev;
-};
-
 // Current Version
-constexpr version curversion = {0, 3, 4, false, -1, -1};
-
-// Version detect for compilers
-#ifndef PRIVATE_BUILD
-    #if defined(__clang__)
-        const bool detect_comp = true;
-        constexpr version compilerversion = {__clang_major__,
-                                            __clang_minor__,
-                                            __clang_patchlevel__,
-                                            false,
-                                            -1,
-                                            -1};
-        const std::string compiler = "Clang";
-    #elif defined(__IBMCPP__)
-        const bool detect_comp = true;
-        const std::string compiler = "XLC";
-        constexpr version compilerversion = {-1,-1,-1, false, -1, -1};        
-    #elif defined(__INTEL_COMPILER) || defined(__ICL)
-        const bool detect_comp = true;
-        const std::string compiler = "ICC";
-        constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
-    #elif defined(__GNUC__) || defined(__GNUG__)
-        const bool detect_comp = true;
-        constexpr version compilerversion = {__GNUC__,
-                                            __GNUC_MINOR__,
-                                            __GNUC_PATCHLEVEL__,
-                                            false,
-                                            -1,
-                                            -1};
-        const std::string compiler = "GCC";
-    #elif defined(_MSC_VER)
-        const bool detect_comp = true;
-        const std::string compiler = "MSVC";
-        constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
-    #elif defined(__CUDACC__)
-        const bool detect_comp = true;
-        const std::string compiler = "NVCC";
-        constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
-    #elif defined(__PGIC__)
-        const bool detect_comp = true;
-        const std::string compiler = "PGC";
-        constexpr version compilerversion = {__PGIC__,
-                                             __PGIC_MINOR__ ,
-                                             __PGIC_PATCHLEVEL__,
-                                             false,
-                                             -1,
-                                             -1};
-    #else
-        const bool detect_comp = false;
-        constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
-        const std::string compiler = "Unknown";
-    #endif
-    // Detect OS
-    #if defined(_WIN16) || defined(_WIN32) || \
-        defined(__WIN32__) || defined(_WIN64) || \
-        defined(_WIN32_WCE) || defined(__TOS_WIN__) || \
-        defined(__WINDOWS__)
-        const std::string operatingsystem = "Windows";
-    #elif defined(_AIX) || defined(__TOS_AIX__)
-        const std::string operatingsystem = "AIX";
-    #elif defined(__APPLE__) || defined(__MACH__)
-        const std::string operatingsystem = "Mac OSX";
-    #elif defined(__linux__)
-        const std::string operatingsystem = "Linux";
-    #elif defined(__FreeBSD__) 
-        const std::string operatingsystem = "FreeBSD";
-    #elif defined(__NetBSD__)
-        const std::string operatingsystem = "NetBSD";
-    #elif defined(__OpenBSD__)
-        const std::string operatingsystem = "OpenBSD";
-    #elif defined(__DragonFly__)
-        const std::string operatingsystem = "DragonFly";
-    #elif defined(__CYGWIN__)
-        const std::string operatingsystem = "Cygwin";
-    #elif defined(sun) || defined(__sun)
-        const std::string operatingsystem = "Solaris";    
-    #elif defined(__unix) || defined(__unix__)
-        const std::string operatingsystem = "Unix";
-    #else
-        const std::string operatingsystem = "";
-    #endif
-#else
-    #undef __DATE__
-    #undef __TIME__
-    const bool detect_comp = false;
-    const std::string compiler = "";
-    constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
-    const std::string operatingsystem = "";
-#endif
-
+const constexpr version curversion = {0, 3, 5, false, -1, -1};
 
 std::string program_name;
 std::string pass_eval;
@@ -217,7 +129,7 @@ inline static void printvec(std::vector<std::string> print){
         if(i >= 1){
             std::cout << ", ";
         }
-        std::cout << print.at(i);
+        std::cout << print[i];
     }
     std::cout << ']';
 }
@@ -225,22 +137,20 @@ inline static void printvec(std::vector<std::string> print){
 inline static void printvectoken(std::vector<token> print){
     std::cout << '[';
     for(unsigned long i=0; i < print.size(); ++i){
-        if(i >= 1){
-            std::cout << ", ";
+        if(print[i].type != tok::hold &&
+           print[i].type != tok::tvoid){
+            if(i >= 1){
+                std::cout << ", ";
+            }
+            std::cout << print[i].data; // .data
         }
-        std::cout << print.at(i).data; // .data
     }
     std::cout << ']';
 }
 
-// Flags
-bool inturrupt_exit_flag = false;
-bool sigint_immune_flag = false;
-bool sigcont_flag = false;
-
 // Deal with version here [type: version -> type: string]
 // Example 0.0.0-a.0
-inline static std::string versioncomp(version ver){
+inline static std::string versioncomp(const version& ver){
     if(ver.major == -1){
         return "";
     }
@@ -489,9 +399,10 @@ inline static void command(const std::string& com){
             delsuccess = var::delvar(cmdargv[1]);
             if(delsuccess == 1){
                 std::cout << "Undefined variable: \"" << cmdargv[1] << "\"\n";
-            }else if(delsuccess == 3){
+            }else if(delsuccess == 2){
                 std::cout << "Variable \"" << cmdargv[1] << "\" cannot be deleted\n";
             }
+            // Sucess if delsuccess == 0
         }
     }else if(cmdargv.front() == "globals"){
     
@@ -591,7 +502,9 @@ inline static void command(const std::string& com){
                     std::stod(importbuffer.str());
                     var::update(vartoname, importbuffer.str());
                 }catch(const std::invalid_argument&){
-                    std::cout << "Invalid file format\n";
+                    std::cerr << "Invalid file format\n";
+                }catch(const std::string& err){
+                    std::cerr << err << "\n";
                 }
                 
             }else{
@@ -775,6 +688,23 @@ inline static void arghandler(std::vector<std::string> args){
             program_name = args.front().substr(static_cast<int>(brfound) + 1,args.front().size());
         }
     }
+    std::transform(program_name.begin(), 
+                   program_name.end(),
+                   program_name.begin(),
+                   [](unsigned char c) -> unsigned char {if(isalpha(c)){return c;}return ::tolower(c);});
+    // I know its over engineered
+    if(!program_name.empty()){
+        std::size_t lfound = program_name.find("z");
+        if(lfound != std::string::npos){
+            program_name[static_cast<unsigned long int>(lfound)] =
+            ::toupper(program_name[static_cast<unsigned long int>(lfound)]);
+        }
+        lfound = program_name.find("s");
+        if(lfound != std::string::npos){
+            program_name[static_cast<unsigned long int>(lfound)] =
+            ::toupper(program_name[static_cast<unsigned long int>(lfound)]);
+        }
+    }
 
     std::string currentarg;
     std::string peekarg;
@@ -844,14 +774,16 @@ inline static void arghandler(std::vector<std::string> args){
                     if(versioncomp(compilerversion) != ""){
                         std::cout << " " << versioncomp(compilerversion);
                     }
-                     
+
+
+                    // Could be undef 
                     #if defined(__DATE__) && defined(__TIME__)
                         std::cout << ", " << __DATE__ << ", " << __TIME__ << ")";
                     #else
                         std::cout << ")";
                     #endif
 
-                    if(operatingsystem != ""){
+                    if(sizeof(operatingsystem)){
                         std::cout << " on " << operatingsystem << "\n";
                     }else{
                         std::cout << "\n";
@@ -877,7 +809,7 @@ inline static void arghandler(std::vector<std::string> args){
             }else{
                 try{
                     arg_index++;
-                    CPU_COUNT = std::stoul(args.at(arg_index));
+                    CPU_COUNT = std::stoul(args[arg_index]);
                 }catch(const std::exception&){
                     // error
                 }	
@@ -910,7 +842,7 @@ inline static void arghandler(std::vector<std::string> args){
             do_cache = false;
             cch::setmaxlen(0);
             var::setbuffermax(0);
-            xmath::setmaxrecurse(512);
+            maxRecurse = 512;
 
         }else if(currentarg == "--debug"){
             debug_mode = true;
@@ -924,13 +856,13 @@ inline static void arghandler(std::vector<std::string> args){
         }else if(currentarg == "--nohandle"){
             do_sighandle = false;
 
-        }else if(currentarg == "--maxrecurse"){
+        }else if(currentarg == "--max-recurse"){
             if(argnum != -1){
-                xmath::setmaxrecurse((unsigned long long int)argnum); // used in Execute.hpp && Execute.cpp
+                maxRecurse = (unsigned long long int)argnum; // used in Execute.hpp && Execute.cpp
             }else{
                 try{
                     arg_index++;
-                    xmath::setmaxrecurse(std::stoull(args.at(arg_index)));		
+                    maxRecurse = std::stoull(args[arg_index]);
                 }catch(const std::exception&){
                     // error
                 }
@@ -939,9 +871,10 @@ inline static void arghandler(std::vector<std::string> args){
             safe_mode = true;
             do_buffer = false;
             do_buffer = false;
+
         }else if(currentarg == "--time"){
             measure_time = true;
-        }else if(currentarg == "--help" || args.at(arg_index) == "-h"){
+        }else if(currentarg == "--help" || args[arg_index] == "-h"){
             std::cout << "Usage: " << program_name << " [Options] ...\n\n"
                       << "Options:\n"
                       << "  -h,  --help                  Display this information\n"
@@ -949,7 +882,7 @@ inline static void arghandler(std::vector<std::string> args){
                       // Intentional Space
                       << "  -c <str>                     Evaluates a string\n"
                       << "  -j <int>                     Sets the maximum thread count\n"
-                      << "  --maxrecurse <int>           Sets the maximum recursion depth\n\n" // Not good idea to increase
+                      << "  --max-recurse <int>           Sets the maximum recursion depth\n\n" // Not good idea to increase
                       // Intentional Space
                       << "  --bare                       Start with absolute minimum memory usage\n"
                       << "  --debug                      Start with debug mode on\n"
@@ -961,7 +894,7 @@ inline static void arghandler(std::vector<std::string> args){
             exit(0);
         }else{
             // Unknown argument
-            std::cout << "Ambiguous command-line option: \""<< currentarg << "\"\n";
+            std::cout << "Unknown command-line option: \""<< currentarg << "\"\n";
             exit(1);
         }
         ++arg_index;
@@ -995,8 +928,6 @@ inline static void filerun(std::string name, bool quitOnExit){
 
     std::vector< std::vector<std::string> > parsedata;
     std::vector< std::vector<token> > tokendata;
-
-    // Need to check for comments and function declarations
 
     std::vector<std::string> lineparsedata;
     lineparsedata.reserve(16);
@@ -1044,21 +975,22 @@ inline static void filerun(std::string name, bool quitOnExit){
 
 }
 
-/*-Interpreting process order-----------------------------------------------Resposible Files--------------------
-*|  1. Parser "2*(14+12)" -> [2,*,(,14,+,12,)]                          |  Preprocessor.hpp / Preprocessor.cpp |
-*|  2. Lexer [2,MUL,L_BRAC,14,ADD,12,R_BRAC]                            |  Preprocessor.hpp / Preprocessor.cpp |
-*|  3. RPN [2, 14, 12, ADD, MUL]                                        |  Zetacompiler.hpp / Zetacompiler.cpp |
-*|  4. Execute                                                          |  Execute.hpp / Execute.cpp           |
-*///------------------------------------------------------------------------------------------------------------
+/*--Interpreting process order-----------------------------------------------Resposible Files--------------------
+ *|  1. Parser "2*(14+12)" -> [2,*,(,14,+,12,)]                          |  Preprocessor.hpp / Preprocessor.cpp |
+ *|  2. Lexer [2,MUL,L_BRAC,14,ADD,12,R_BRAC]                            |  Preprocessor.hpp / Preprocessor.cpp |
+ *|  3. RPN [2, 14, 12, ADD, MUL]                                        |  Zetacompiler.hpp / Zetacompiler.cpp |
+ *|  4. Analyzer                                                         |  Analyzer.cpp / Analyzer.hpp         |
+ *|  5. Execute                                                          |  Execute.hpp / Execute.cpp           |
+ *///------------------------------------------------------------------------------------------------------------
 
 /* Note: When returning from 
+ *
+ *   std::string evaluate(const std::string&) 
+ *  void deffunction(const std::string&)
+ *
+ *Always call bar::setstate(false)
+ */
 
-    std::string evaluate(const std::string&) 
-    void deffunction(const std::string&)
-
-Always call bar::setstate(false)
-
-*/
 // Directly executing statements
 inline static std::string evaluate(std::string input){
     unsigned long int tscale;
@@ -1070,6 +1002,7 @@ inline static std::string evaluate(std::string input){
 
     inturrupt_exit_flag = true;
 
+    // Measure time taken
     std::chrono::high_resolution_clock::time_point
         lex_tstart,
         lex_tend,
@@ -1157,7 +1090,11 @@ inline static std::string evaluate(std::string input){
         if(debug_mode){
             std::cout << "Cache Hit\n\n";
         }
-        var::update("ans", cfinalOut);
+        try{
+            var::update("ans", cfinalOut);
+        }catch(const std::string& err){
+            std::cerr << err << "\n";
+        }
         return cfinalOut;
     }
     
@@ -1351,7 +1288,11 @@ inline static std::string evaluate(std::string input){
                  tunit[tscale] << " \n   Total:              " << totaltime <<
                  tunit[tscale] << " \n\n";
     }
-    var::update("ans",finalOutput);
+    try{
+        var::update("ans",finalOutput);
+    }catch(const std::string& err){
+        std::cerr << err << "\n";
+    }
     if(usecache) cch::addentry(input, finalOutput);
     return finalOutput;
 }
@@ -1382,10 +1323,9 @@ inline static void deffunction(std::string input){
         decl_tstart,
         decl_tend;
 
-    std::vector<std::string> partasn = comp::spliteq(input);
-    partasn.back() = comp::removeWhiteSpace(partasn.back());
+    input = comp::removeWhiteSpace(input);
 
-    if(partasn.back().size() <= 0){
+    if(input.size() <= 0){
         bar::setstate(false);
         if(do_bar){
             bar::stop();
@@ -1397,29 +1337,20 @@ inline static void deffunction(std::string input){
 
     bar::inform("Parsing");
     lex_tstart = std::chrono::high_resolution_clock::now();
-    std::vector<std::string> sfunchead = comp::lex(partasn.front());
-    std::vector<std::string> sfuncbody = comp::lex(partasn.back());
+    std::vector<std::string> unsplitfunc= comp::lex(input);
     lex_tend = std::chrono::high_resolution_clock::now();
 
     if(debug_mode){
         bar::setstate(false);
         std::cout << "Parser:             [";
-        for(std::string x: sfunchead){
+        for(std::string x: unsplitfunc){
             std::cout << x << ", ";
-        }
-        std::cout << "=, ";
-        for(unsigned long int x = 0; x < sfuncbody.size(); ++x){
-
-            std::cout << sfuncbody[x];
-            if(x + 1 < sfuncbody.size()){
-                std::cout << ", ";
-            }
         }
         std::cout << "]\n";
         bar::setstate(true);
     }
 
-    if(sfunchead.size() <= 0){
+    if(unsplitfunc.size() <= 0){
         bar::setstate(false);
         if(do_bar){
             bar::stop();
@@ -1431,18 +1362,15 @@ inline static void deffunction(std::string input){
 
     bar::inform("Lexing");
     tcomp_tstart = std::chrono::high_resolution_clock::now();
-    std::vector<token> funchead = comp::tokenComp(sfunchead);
-    std::vector<token> funcbody = comp::tokenComp(sfuncbody);
+    std::vector<token> tokenfunc = comp::tokenComp(unsplitfunc);
     tcomp_tend = std::chrono::high_resolution_clock::now();
 
     // Free up memory
-    sfunchead.clear();
-    sfuncbody.clear();
-    std::vector<std::string>().swap(sfunchead);
-    std::vector<std::string>().swap(sfuncbody);
+    unsplitfunc.clear();
+    std::vector<std::string>().swap(unsplitfunc);
 
     banalyze_tstart = std::chrono::high_resolution_clock::now();
-    if(!bracketOrder(funchead) || !bracketOrder(funcbody)){
+    if(!bracketOrder(tokenfunc)){
         bar::setstate(false);
         if(do_bar){
             bar::stop();
@@ -1451,64 +1379,101 @@ inline static void deffunction(std::string input){
         std::cout << "Bracket mismatch\n";
         return;
     }
+    dipart< std::vector<token> > splitvec = comp::spliteq(tokenfunc);
     banalyze_tend = std::chrono::high_resolution_clock::now();
 
     std::vector<token> variables;
-    variables.reserve(funchead.size());
+    variables.reserve(splitvec.front.size());
 
     if(debug_mode){
         bar::setstate(false);
         std::cout << "Lexer:              [";
-        for(token x: funchead){
-            std::cout << x.data << ", ";
-        }
-        std::cout << "=, ";
-        for(unsigned long int x = 0; x < funcbody.size(); ++x){
+        for(token x: splitvec.front){
 
-            std::cout << funcbody[x].data;
-            if(x + 1 < funcbody.size()){
-                std::cout << ", ";
+            if(x.type != tok::hold &&
+               x.type != tok::tvoid)
+                std::cout << x.data << ", ";
+
+        }
+        if(!splitvec.back.empty()) std::cout << tokenfunc[splitvec.front.size()].data << ", ";
+        for(unsigned long int x = 0; x < splitvec.back.size(); ++x){
+            
+            if(splitvec.back[x].type != tok::hold &&
+               splitvec.back[x].type != tok::tvoid){
+                std::cout << splitvec.back[x].data;
+                if(x + 1 < splitvec.back.size()){
+                    std::cout << ", ";
+                }
             }
         }
         std::cout << "]\n";
         bar::setstate(true);
     }
 
-    for(token chkvar: funcbody){
-        if(chkvar.type == 5){
-            variables.emplace_back(chkvar);
+    for(unsigned long int idx = 0; idx < splitvec.front.size(); ++idx){
+        if(splitvec.front[idx].type == 5 && idx + 1 < splitvec.front.size()){
+            if(splitvec.front[idx + 1].type == tok::asn ||
+               splitvec.front[idx + 1].type == tok::sep ||
+               splitvec.front[idx + 1].type == tok::rbrac){
+                variables.emplace_back(splitvec.front[idx]);
+            }
+        }else{
+            if(splitvec.front[idx].type == 5 &&
+               idx + 1 > splitvec.front.size()){
+                variables.emplace_back(splitvec.front[idx]);
+            }
+            
         }
     }
     
-
-    if(f_isspecial(funchead.front().data, funchead.size() - 3) ||
-       f_iscorefunc(funchead.front().data, funchead.size() - 3)){
+    if(f_isspecial(splitvec.front.front().data, splitvec.front.size() - 3) ||
+       f_iscorefunc(splitvec.front.front().data, splitvec.front.size() - 3)){
         bar::setstate(false);
         if(do_bar){
             bar::stop();
             bar::finish(); // print out <CR> and whitespace			
         }
 
-        std::cout << "Cannot redeclare function \"" << funchead.front().data << "\"\n";
+        std::cout << "Cannot redeclare function \"" << splitvec.front.front().data << "\"\n";
         return;
     }
 
     bar::inform("RPN");
 
-    comp_metadata rpn_metadata = comp::getcompdata(funcbody);
+    std::string function_name = splitvec.front.front().data;
+    if(!splitvec.front.empty() && splitvec.front.front().type == tok::func) splitvec.front.erase(splitvec.front.begin());
+    if(!splitvec.front.empty() && splitvec.front.front().type == tok::lbrac) splitvec.front.erase(splitvec.front.begin());
+    if(!splitvec.front.empty() && 
+       splitvec.front.back().type == tok::rbrac){
+        splitvec.front.pop_back();
+    }
+
+
+    comp_metadata rpn_metadata = comp::getcompdata(splitvec.back);
+    comp_metadata front_rpn_metadata = comp::getcompdata(splitvec.front);
 
     shyd_tstart = std::chrono::high_resolution_clock::now();
-    funcbody = comp::shuntingYard(funcbody, rpn_metadata);
+    splitvec.back = comp::shuntingYard(splitvec.back, rpn_metadata);
+    splitvec.front = comp::shuntingYard(splitvec.front, front_rpn_metadata);
     shyd_tend = std::chrono::high_resolution_clock::now();
 
     if(debug_mode){
         bar::setstate(false);
 
         std::cout << "RPN:                [";
-        for(unsigned long int x = 0; x < funcbody.size(); ++x){
-            std::cout << funcbody[x].data;
-            if(x + 1 < funcbody.size()){
-                std::cout << ", ";
+        std::cout << function_name << ", ";
+        for(unsigned long int x = 0; x < splitvec.front.size(); ++x){
+            if(splitvec.front[x].type != tok::hold &&
+               splitvec.front[x].type != tok::tvoid) std::cout << splitvec.front[x].data << ", ";
+        }
+        if(!splitvec.back.empty()) std::cout << "= ,";
+        for(unsigned long int x = 0; x < splitvec.back.size(); ++x){
+            if(splitvec.back[x].type != tok::hold &&
+               splitvec.back[x].type != tok::tvoid){
+                std::cout << splitvec.back[x].data;
+                if(x + 1 < splitvec.back.size()){
+                    std::cout << ", ";
+                }
             }
         }
 
@@ -1516,17 +1481,18 @@ inline static void deffunction(std::string input){
         std::cout << std::endl;
         bar::setstate(true);
     }
-    unsigned long int sepidx = 0;
-    while(sepidx < funchead.size()){
-        if(funchead.at(sepidx).type == 7){
-            funchead.erase(funchead.begin()+sepidx);
-            --sepidx;
+    if(splitvec.back.size() <= 0){
+        bar::setstate(false);
+        if(do_bar){
+            bar::stop();
+            bar::finish(); // print out <CR> and whitespace			
         }
-        ++sepidx;
+        std::cout << "Unexpected Token\n";
+        return;        
     }
 
     analyze_tstart = std::chrono::high_resolution_clock::now();
-    if(!checkrpn(funcbody)){
+    if(!(checkrpn(splitvec.back) && checkrpn(splitvec.front))){
 
         bar::setstate(false);
         if(do_bar){
@@ -1536,13 +1502,13 @@ inline static void deffunction(std::string input){
         std::cout << "Unexpected Token\n";
         return;
     }
+    
     analyze_tend = std::chrono::high_resolution_clock::now();
 
     try{
 
         decl_tstart = std::chrono::high_resolution_clock::now();
-        funcbody = xmath::simplify(funcbody, variables, funchead.front().data);
-        def(funchead, funcbody);
+        def(function_name, variables, splitvec.back, xmath::func_lvalue_deduction(splitvec.front));
         decl_tend = std::chrono::high_resolution_clock::now();
 
 
@@ -1550,12 +1516,12 @@ inline static void deffunction(std::string input){
 
         bar::setstate(false);
 
-        funchead.clear();
-        funcbody.clear();
+        splitvec.front.clear();
+        splitvec.back.clear();
         variables.clear();
 
-        std::vector<token>().swap(funchead);
-        std::vector<token>().swap(funcbody);
+        std::vector<token>().swap(splitvec.front);
+        std::vector<token>().swap(splitvec.back);
         std::vector<token>().swap(variables);
 
         xmath::resetsstreamsettings();
@@ -1572,12 +1538,12 @@ inline static void deffunction(std::string input){
         return;
     }
 
-    funchead.clear();
-    funcbody.clear();
+    splitvec.front.clear();
+    splitvec.back.clear();
     variables.clear();
 
-    std::vector<token>().swap(funchead);
-    std::vector<token>().swap(funcbody);
+    std::vector<token>().swap(splitvec.front);
+    std::vector<token>().swap(splitvec.back);
     std::vector<token>().swap(variables);
 
     xmath::resetsstreamsettings();
@@ -1674,6 +1640,7 @@ inline static void sighandle(int sigtype){
                 std::cerr << "\nSignal (" << sigtype << ")\n";
                 exit(130);
             }
+
         // case SIGFPE:
         // 	return;
 
@@ -1700,6 +1667,7 @@ inline static void sighandle(int sigtype){
         case SIGWINCH:
             return;
 #endif
+
         default:
             bar::setstate(false);
             if(do_bar){
@@ -1718,8 +1686,19 @@ inline static void sighandle(int sigtype){
     }
 }
 
-// Main entry point
-int main(int argc, char* argv[]){
+void setenvironment(){
+    if(envbit){
+        maxRecurse = (envbit << 7) + (envbit << 6);
+        maxobj = (envbit << 5) + (envbit << 4);
+    }else{
+        maxRecurse = 256;
+        maxobj = 96;
+    }
+    return;
+}
+
+// Main entry point called by Main.cpp
+int toplev_main(int argc, char** argv){
 
     std::vector<std::string> str_argv(argv, argv+argc);
     arghandler(str_argv);
@@ -1729,7 +1708,7 @@ int main(int argc, char* argv[]){
 
     // Handle every signal
     if(do_sighandle){
-        for(int signal = 1; signal <= 64; ++signal){
+        for(int signal = 1; signal <= 32; ++signal){
             std::signal(signal, sighandle);
         }
     }
@@ -1772,7 +1751,7 @@ int main(int argc, char* argv[]){
     std::string finalOutput;
 
     // Initialize Function.cpp
-    // Catch bad allowcation
+    // Catch bad allocation
     try{
         initcore(safe_mode);
     }catch(const std::bad_alloc&){
