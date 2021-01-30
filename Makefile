@@ -1,42 +1,54 @@
+# Compiler settings - Can be customized.
 CXX = g++
-CXXFLAGS = -O3 -pipe -Wall -Wextra -Wpedantic -Wdouble-promotion -pthread -march=native -finline-functions -ftree-vectorize -frename-registers
-LDFLAGS = -flto
+CXXFLAGS = -O3 -Wall -Wextra -Wpedantic -pthread -frename-registers -march=native -flto
+LDFLAGS = 
 LD = g++
 
-all: ZetaStack.exe
+# g++ release flags
+# -O3 -Wall -Wextra -Wpedantic -pthread -frename-registers -march=native -flto
 
-ZetaStack.exe: src/ZetaStack.o src/Zetacompiler.o src/Execute.o src/Preprocessor.o src/Variable.o src/Cache.o src/Entropy.o src/Function.o src/Status.o src/Analyzer.o src/BuiltIn.o
-	$(LD) -o $@ $^ $(CXXFLAGS) -Wl,$(LDFLAGS)
+# g++ devel/debug flags
+# -Og -g3 -Wall -Wextra -Wpedantic -pthread
 
-src/ZetaStack.o: src/ZetaStack.cpp src/Zetacompiler.hpp src/Preprocessor.hpp src/Execute.hpp src/Function.hpp src/Cache.hpp src/Status.hpp src/Token.hpp src/Analyzer.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+APPNAME = ZetaStack.exe
 
-src/Variable.o: src/Variable.cpp src/Variable.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+all: $(APPNAME)
 
-src/Zetacompiler.o: src/Zetacompiler.cpp src/Zetacompiler.hpp src/Token.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+$(APPNAME): Analyzer.o Builtin.o Cache.o Entropy.o Execute.o Function.o Main.o Preprocessor.o Status.o Variable.o Zetacompiler.o ZetaStack.o
+	$(LD) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-src/Preprocessor.o: src/Preprocessor.cpp src/Preprocessor.hpp src/Token.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Analyzer.o: src/Analyzer.cpp src/Analyzer.hpp src/ZetaStack.hpp src/Function.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/Execute.o: src/Execute.cpp src/Execute.hpp src/Token.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Builtin.o: src/Builtin.cpp src/Builtin.hpp src/ZetaStack.hpp src/Execute.hpp src/Status.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/Cache.o: src/Cache.cpp src/Cache.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Cache.o: src/Cache.cpp src/Cache.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/Entropy.o: src/Entropy.cpp src/Entropy.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Entropy.o: src/Entropy.cpp src/Entropy.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/Function.o: src/Function.cpp src/Function.hpp src/Token.hpp src/BuiltIn.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Execute.o: src/Execute.cpp src/Execute.hpp src/ZetaStack.hpp src/Cache.hpp src/Function.hpp src/Variable.hpp src/Zetacompiler.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/Status.o: src/Status.cpp src/Status.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Function.o: src/Function.cpp src/Function.hpp src/ZetaStack.hpp src/Builtin.hpp src/Execute.hpp src/Zetacompiler.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/Analyzer.o: src/Analyzer.cpp src/Analyzer.hpp src/Token.hpp 
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Main.o: src/Main.cpp src/ZetaStack.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-src/BuiltIn.o: src/BuiltIn.cpp src/BuiltIn.hpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+Preprocessor.o: src/Preprocessor.cpp src/Preprocessor.hpp src/ZetaStack.hpp src/Zetacompiler.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+Status.o: src/Status.cpp src/Status.hpp src/ZetaStack.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+Variable.o: src/Variable.cpp src/Variable.hpp src/ZetaStack.hpp src/Builtin.hpp src/Entropy.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+Zetacompiler.o: src/Zetacompiler.cpp src/Zetacompiler.hpp src/ZetaStack.hpp src/Function.hpp src/Variable.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+ZetaStack.o: src/ZetaStack.cpp src/ZetaStack.hpp src/Analyzer.hpp src/Cache.hpp src/Execute.hpp src/Function.hpp src/Preprocessor.hpp src/Status.hpp src/Zetacompiler.hpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
