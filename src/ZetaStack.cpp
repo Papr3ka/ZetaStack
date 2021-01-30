@@ -882,7 +882,7 @@ inline static void arghandler(std::vector<std::string> args){
                       // Intentional Space
                       << "  -c <str>                     Evaluates a string\n"
                       << "  -j <int>                     Sets the maximum thread count\n"
-                      << "  --max-recurse <int>           Sets the maximum recursion depth\n\n" // Not good idea to increase
+                      << "  --max-recurse <int>          Sets the maximum recursion depth\n\n" // Not good idea to increase
                       // Intentional Space
                       << "  --bare                       Start with absolute minimum memory usage\n"
                       << "  --debug                      Start with debug mode on\n"
