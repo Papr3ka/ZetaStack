@@ -8,7 +8,7 @@ LD = g++
 # -O3 -Wall -Wextra -Wpedantic -pthread -frename-registers -march=native -flto
 
 # g++ devel/debug flags
-# -Og -g3 -Wall -Wextra -Wpedantic -pthread
+# -O0 -g3 -Wall -Wextra -Wpedantic -pthread
 
 APPNAME = ZetaStack.exe
 
