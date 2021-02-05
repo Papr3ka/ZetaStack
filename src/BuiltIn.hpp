@@ -44,7 +44,7 @@ extern std::unordered_map<std::string, std::string> specialIden;
 
 constexpr int TOTAL_BUILTIN_FUNCS = 32; // MUST be >= or else SIGSEGV on startup
 
-constexpr int TOTAL_BUILTIN_CORE_FUNCS = 7; // MUST be >= or else SIGSEGV on startup
+constexpr int TOTAL_BUILTIN_CORE_FUNCS = 8; // MUST be >= or else SIGSEGV on startup
 
 
 // Trigonomic
@@ -141,5 +141,9 @@ token bc_abort(std::vector<token> x);
 token bc_numcast(std::vector<token> x);
 
 token bc_strcast(std::vector<token> x);
+
+token bc_sleep(std::vector<token> x);
+
+token bc_safe_sleep(std::vector<token> x);
 
 #endif

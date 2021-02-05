@@ -87,15 +87,9 @@ class func{
 
 std::unordered_map< std::string , std::unordered_map<long int, func> > functiontable;
 
-struct sfunc{
-    double(*call)(std::vector<token>);
-    std::string name;
-    signed long int arg;
-    std::vector<std::string> argsin;
-};
-
-struct corefunc{
-    token(*call)(std::vector<token>);
+template<class T>
+struct funcscore{
+    T(*call)(std::vector<token>);
     std::string name;
     signed long int arg;
     std::vector<std::string> argsin;
@@ -148,14 +142,14 @@ std::vector<func> nfunctions; // Callable normal functions
 unsigned long int filled_core = 0;
 unsigned long int filled_builtin = 0;
 
-corefunc* corefuncs = 0;
-sfunc* builtinfuncs = 0;
+funcscore<token>* corefuncs = 0;
+funcscore<double>* builtinfuncs = 0;
 
 
 void initcore(bool safe){
 
     // Macro defined in Builtin.hpp
-    corefuncs = new corefunc[TOTAL_BUILTIN_CORE_FUNCS];
+    corefuncs = new funcscore<token>[TOTAL_BUILTIN_CORE_FUNCS];
 
     if(!corefuncs){
         throw std::bad_alloc();
@@ -186,6 +180,15 @@ void initcore(bool safe){
     corefuncs[i] = {bc_strcast, "scast(", 1,{"x"}, 1};
     i++;
 
+    if(!safe){
+        // bc_sleep uses spin lock while bc_safe_sleep uses a timed spin lock
+
+        corefuncs[i] = {bc_sleep, "sleep(", 1,{"x"}, 1};
+    }else{
+        corefuncs[i] = {bc_safe_sleep, "sleep(", 1,{"x"}, 1};
+    }
+    i++;
+
     filled_core = i;
     return;
 }
@@ -195,7 +198,7 @@ void initcore(bool safe){
 void initbuiltin(bool safe){
 
     // Macro defined in Builtin.hpp
-    builtinfuncs = new sfunc[TOTAL_BUILTIN_FUNCS];
+    builtinfuncs = new funcscore<double>[TOTAL_BUILTIN_FUNCS];
 
     if(!builtinfuncs){
         throw std::bad_alloc();
@@ -204,115 +207,115 @@ void initbuiltin(bool safe){
     unsigned long int i = 0; // doing it like this because it is easier to add functions
 
 /* Template
-    builtinfuncs[i] = { , "", ,{ }};
+    builtinfuncs[i] = { , "", ,{ }, };
     i++;
 CTRL-C + CTRL-V
 */
 
     // Trigonomic
-    builtinfuncs[i] = {b_sin, "sin(", 1, {"x"}};
+    builtinfuncs[i] = {b_sin, "sin(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_cos, "cos(", 1, {"x"}};
+    builtinfuncs[i] = {b_cos, "cos(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_tan, "tan(", 1, {"x"}};
+    builtinfuncs[i] = {b_tan, "tan(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_asin, "asin(", 1, {"x"}};
+    builtinfuncs[i] = {b_asin, "asin(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_acos, "acos(", 1, {"x"}};
+    builtinfuncs[i] = {b_acos, "acos(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_atan, "atan(", 1, {"x"}};
+    builtinfuncs[i] = {b_atan, "atan(", 1, {"x"}, 1};
     i++;
 
     // Hyperbolic
-    builtinfuncs[i] = {b_sinh, "sinh(", 1, {"x"}};
+    builtinfuncs[i] = {b_sinh, "sinh(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_cosh, "cosh(", 1, {"x"}};
+    builtinfuncs[i] = {b_cosh, "cosh(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_tanh, "tanh(", 1, {"x"}};
+    builtinfuncs[i] = {b_tanh, "tanh(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_asinh, "asinh(", 1, {"x"}};
+    builtinfuncs[i] = {b_asinh, "asinh(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_acosh, "acosh(", 1, {"x"}};
+    builtinfuncs[i] = {b_acosh, "acosh(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_atanh, "atanh(", 1, {"x"}};
+    builtinfuncs[i] = {b_atanh, "atanh(", 1, {"x"}, 1};
     i++;
 
     // Exponential
-    builtinfuncs[i] = {b_exp, "exp(", 1, {"x"}};
+    builtinfuncs[i] = {b_exp, "exp(", 1, {"x"}, 1};
     i++;
 
     // Logarithmic
-    builtinfuncs[i] = {b_ln, "ln(", 1, {"x"}};
+    builtinfuncs[i] = {b_ln, "ln(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_log10, "log(", 1, {"x"}};
+    builtinfuncs[i] = {b_log10, "log(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_log, "log(", 2, {"b", "x"}};
+    builtinfuncs[i] = {b_log, "log(", 2, {"b", "x"}, 2};
     i++;
 
     //
-    builtinfuncs[i] = {b_sqrt, "sqrt(", 1,{"x"}};
+    builtinfuncs[i] = {b_sqrt, "sqrt(", 1,{"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_cbrt, "cbrt(", 1,{"x"}};
+    builtinfuncs[i] = {b_cbrt, "cbrt(", 1,{"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_root, "root(",2 ,{"n", "x"}};
+    builtinfuncs[i] = {b_root, "root(",2 ,{"n", "x"}, 2};
     i++;
     //
-    builtinfuncs[i] = {b_sum, "sum(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_sum, "sum(", -1, {"[n]"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_prod, "prod(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_prod, "prod(", -1, {"[n]"}, 1};
     i++;	
 
-    builtinfuncs[i] = {b_avg, "avg(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_avg, "avg(", -1, {"[n]"}, 1};
     i++;
 
     //
-    builtinfuncs[i] = {b_floor, "floor(", 1, {"x"}};
+    builtinfuncs[i] = {b_floor, "floor(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_ceil, "ceil(", 1, {"x"}};
+    builtinfuncs[i] = {b_ceil, "ceil(", 1, {"x"}, 1};
     i++;	
 
-    builtinfuncs[i] = {b_round, "round(", 1, {"x"}};
+    builtinfuncs[i] = {b_round, "round(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_abs, "abs(", 1, {"x"}};
+    builtinfuncs[i] = {b_abs, "abs(", 1, {"x"}, 1};
     i++;
 
     //
-    builtinfuncs[i] = {b_min, "min(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_min, "min(", -1, {"[n]"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_max, "max(", -1, {"[n]"}};
+    builtinfuncs[i] = {b_max, "max(", -1, {"[n]"}, 1};
     i++;
 
     // Disable because of Computational time
     if(!safe){
-        builtinfuncs[i] = {b_zeta, "zeta(", 1, {"s"}};
+        builtinfuncs[i] = {b_zeta, "zeta(", 1, {"s"}, 1};
         i++;
     }
     
-    builtinfuncs[i] = {b_gamma, "gamma(", 1, {"x"}};
+    builtinfuncs[i] = {b_gamma, "gamma(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_factorial, "factorial(", 1, {"x"}};
+    builtinfuncs[i] = {b_factorial, "factorial(", 1, {"x"}, 1};
     i++;
 
-    builtinfuncs[i] = {b_erf, "erf(", 1, {"x"}};
+    builtinfuncs[i] = {b_erf, "erf(", 1, {"x"}, 1};
     i++;
     
     filled_builtin = i;
@@ -334,21 +337,26 @@ void free_builtin(void){
 
 bool returns(std::string fname, long int argcount){
     if(fname == "echo(" && argcount == 1) return false;
+    if(fname == "sleep(" && argcount == 1) return false;
+    if(fname == "abort(" && argcount == 1) return false;
     return true;
 }
 
 double callspecial(std::vector<token> fargs, std::string name){
     unsigned long int index = 0;
-    long int argcounts = (long int)fargs.size();
     for(unsigned long int idx = 0; idx < filled_builtin; ++idx){
         if(builtinfuncs[idx].name == name &&
-          (builtinfuncs[idx].arg == -1 || builtinfuncs[idx].arg == argcounts)){
+          (builtinfuncs[idx].arg == -1 || builtinfuncs[idx].arg == (long int)fargs.size()) &&
+          builtinfuncs[idx].minarg <= fargs.size()){
             return builtinfuncs[index].call(fargs);
         }else{
             ++index;
         }
     }
-    throw 1; // Error
+
+    std::string error = "No matching function call to \"";
+    error.append(name).append("\"");
+    throw error;
 }
 
 bool f_isspecial(std::string name, long int argcounts){
@@ -395,14 +403,15 @@ bool f_isnamecorefunc(std::string name){
 }
 
 token callcore(std::vector<token> fargs, std::string name){
-    long int argcounts = (long int)fargs.size();
     for(unsigned long int idx = 0; idx < filled_core; ++idx){
         if(corefuncs[idx].name == name &&
-          (corefuncs[idx].arg == -1 || corefuncs[idx].arg == argcounts)){
+          (corefuncs[idx].arg == -1 || corefuncs[idx].arg == (long int)fargs.size())){
             return corefuncs[idx].call(fargs);
         }
     }	
-	throw 1; // Error
+    std::string error = "No matching function call to \"";
+    error.append(name).append("\"");
+    throw error;
 }
 
 
@@ -643,6 +652,9 @@ std::vector<std::string> getandassemble_all_defined_functions(void){
             for(unsigned long int x=0; x < tempvec.size(); x++){
                 
                 tempstring.append(tempvec[x].data);
+
+                // Account for rvalue deduction
+                
                 if(!itf->second.defaults[tempvec[x].data].asn_type.data.empty()){
 
                     tempstring.append(" ").append(comp::unmangle(itf->second.defaults[tempvec[x].data].asn_type));
@@ -653,7 +665,7 @@ std::vector<std::string> getandassemble_all_defined_functions(void){
                     tempstring.append(" ").append(itf->second.defaults[tempvec[x].data].rvalue.data);
                 }
 
-                if(x+1 < tempvec.size()){
+                if(x + 1 < tempvec.size()){
 
                     tempstring.append(", ");
                 }

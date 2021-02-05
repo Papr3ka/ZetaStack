@@ -18,6 +18,7 @@
  */
 
 #include<atomic>
+#include<chrono>
 #include<cmath>
 #include<cstdlib>
 #include<iostream>
@@ -54,13 +55,14 @@ std::unordered_map<std::string, std::string> specialIden = {
 2. Add prototype to BuiltIn.hpp
 3. in Function.cpp in function initbuiltin add
 
-    buitlinfuncs[i] = { a, "b", c, {"d" ...}};
+    buitlinfuncs[i] = { a, "b", c, {"d" ...}, e};
     i++;
 
-a = function pointer (*)()
-b = alias
-c = arguments (-1 if unspecified)
-d = argument identifiers
+    a = function pointer (*)()
+    b = alias
+    c = argument count (-1 if unspecified or variadic)
+    d = argument identifiers
+    e = minimum required arguements
 
 4. In BuiltIn.hpp make sure TOTAL_BUILTIN_FUNCS is set to the number of builtin functions
 
@@ -267,15 +269,15 @@ double b_round(std::vector<token> x){
 }
 
 double b_abs(std::vector<token> x){
-    return abs(fast_stofloat(x.front().data));
+    return std::abs(fast_stofloat(x.front().data));
 }
 
 ////////////////////////////////
 
 double b_min(std::vector<token> x){
     if(x.size() == 1) return(fast_stofloat(x.front().data));
-    double amin = 0;
-    double cur;
+    double amin = fast_stofloat(x.front().data);
+    double cur = 0;
     for(token tmin: x){
         cur = fast_stofloat(tmin.data);
         if(cur < amin) amin = cur;
@@ -285,8 +287,8 @@ double b_min(std::vector<token> x){
 
 double b_max(std::vector<token> x){
     if(x.size() == 1) return(fast_stofloat(x.front().data));
-    double amax = 0;
-    double cur;
+    double amax = fast_stofloat(x.front().data);
+    double cur = 0;
     for(token tmax: x){
         cur = fast_stofloat(tmax.data);
         if(cur > amax) amax = cur;
@@ -438,4 +440,28 @@ token bc_numcast(std::vector<token> x){
 
 token bc_strcast(std::vector<token> x){
     return token(x.front().data, tok::str);
+}
+
+// Sleep milliseconds
+token bc_sleep(std::vector<token> x){
+    const double duration = fast_stofloat(x.front().data);
+    double elapsed = 0;
+    const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    while(inturrupt_exit_flag && duration > elapsed){
+        //std::this_thread::sleep_for(std::chrono::microseconds(1));
+        elapsed = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();
+    }
+    return token();
+}
+
+
+token bc_safe_sleep(std::vector<token> x){
+    const double duration = fast_stofloat(x.front().data);
+    double elapsed = 0;
+    const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    while(inturrupt_exit_flag && duration > elapsed){
+        std::this_thread::sleep_for(std::chrono::microseconds(16));
+        elapsed = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();
+    }
+    return token();
 }

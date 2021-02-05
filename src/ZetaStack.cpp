@@ -117,7 +117,7 @@ static const std::array<std::string, 4> tunit{
 }; // len 4
 
 // Current Version
-const constexpr version curversion = {0, 3, 5, false, -1, -1};
+const constexpr version curversion = {0, 3, 6, false, -1, -1};
 
 std::string program_name;
 std::string pass_eval;
@@ -150,7 +150,15 @@ inline static void printvectoken(std::vector<token> print){
 
 // Deal with version here [type: version -> type: string]
 // Example 0.0.0-a.0
+#if __cplusplus >= 202002L
+
+inline static consteval std::string versioncomp(const version& ver){
+
+#else
+
 inline static std::string versioncomp(const version& ver){
+
+#endif
     if(ver.major == -1){
         return "";
     }
@@ -499,7 +507,7 @@ inline static void command(const std::string& com){
                 std::stringstream importbuffer;
                 importbuffer << checkfile.rdbuf();
                 try{
-                    std::stod(importbuffer.str());
+                    fast_stofloat(importbuffer.str());
                     var::update(vartoname, importbuffer.str());
                 }catch(const std::invalid_argument&){
                     std::cerr << "Invalid file format\n";
@@ -774,7 +782,6 @@ inline static void arghandler(std::vector<std::string> args){
                     if(versioncomp(compilerversion) != ""){
                         std::cout << " " << versioncomp(compilerversion);
                     }
-
 
                     // Could be undef 
                     #if defined(__DATE__) && defined(__TIME__)
@@ -1636,8 +1643,9 @@ inline static void sighandle(int sigtype){
                 if(filled_builtin){
                     free_builtin();
                 }
-
-                std::cerr << "\nSignal (" << sigtype << ")\n";
+                if(debug_mode){
+                    std::cerr << "\nSignal (" << sigtype << ")\n";
+                }
                 exit(130);
             }
 
@@ -1798,7 +1806,9 @@ int toplev_main(int argc, char** argv){
          
     }
 
+    
     mainloopstart:
+
     while(run){
 
         inturrupt_exit_flag = false;
@@ -1895,7 +1905,10 @@ int toplev_main(int argc, char** argv){
             command(input);
         }
     }
+
+    // Jump from nested loop
     mainloopfinish:
+
     // Final Cleanup
     bar::join();
     bar::stop();
