@@ -29,8 +29,6 @@ template<class T>
 struct dipart{
 	T front;
 	T back;
-
-	dipart() = default;
 };
 
 // Function Prototypes

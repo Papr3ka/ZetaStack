@@ -14,7 +14,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License 
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. Ifnot, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef EXECUTE_HPP
@@ -32,7 +32,7 @@
 inline double fast_stofloat(const std::wstring& valtofloat){
 
     // Check of empty
-    if (valtofloat.empty()){
+    if(valtofloat.empty()){
         return 0;
     }
 
@@ -41,7 +41,7 @@ inline double fast_stofloat(const std::wstring& valtofloat){
     // true = pos, false = neg
     bool sign = true;
 
-    if (valtofloat.front() == L'-'){
+    if(valtofloat.front() == L'-'){
 
         ++index;
         sign = false;
@@ -59,18 +59,19 @@ inline double fast_stofloat(const std::wstring& valtofloat){
     double fpart = 0.0;
 
     while(index < valtofloat.size()){
-        if (valtofloat[index] >= L'0' &&
-            valtofloat[index] <= L'9'){
+        if(valtofloat[index] >= L'0' &&
+           valtofloat[index] <= L'9'){
 
             ipart = ipart * 10 + (valtofloat[index] - L'0');
 
-        }else if (valtofloat[index] == L'.'){
+        }else if(valtofloat[index] == L'.'){
 
             has_f = true;
             ++index;
             break;
 
-        }else if (valtofloat[index] == L'e'){
+        }else if(valtofloat[index] == L'e' ||
+                 valtofloat[index] == L'E'){
 
             has_exp = true;
             ++index;
@@ -85,18 +86,19 @@ inline double fast_stofloat(const std::wstring& valtofloat){
         ++index;
     }
 
-    if (has_f){
+    if(has_f){
         double frac_exp = 0.1;
 
         while (index < valtofloat.size()){
 
-            if (valtofloat[index] >= L'0' &&
-                valtofloat[index] <= L'9'){
+            if(valtofloat[index] >= L'0' &&
+               valtofloat[index] <= L'9'){
 
                 fpart += frac_exp * (valtofloat[index] - L'0');
                 frac_exp *= 0.1;
 
-            }else if (valtofloat[index] == L'e'){
+            }else if(valtofloat[index] == L'e' ||
+                     valtofloat[index] == L'E'){
 
                 has_exp = true;
                 ++index;
@@ -113,17 +115,20 @@ inline double fast_stofloat(const std::wstring& valtofloat){
     }
 
     double epart = 1.0;
+
     if(index < valtofloat.size() &&
        has_exp){
 
-        long int exp_sign = 1;
+        bool exp_sign = true;
+
+        long int n;
 
         if(valtofloat[index] == L'-'){
 
-            exp_sign = -1;
+            exp_sign = false;
             ++index;
 
-        }else if (valtofloat[index] == L'+'){
+        }else if(valtofloat[index] == L'+'){
             ++index;
         }
 
@@ -137,16 +142,21 @@ inline double fast_stofloat(const std::wstring& valtofloat){
             ++index;
         }
 
-        long int n = exp_sign * e;
-        double epart = 1.0;
+        if(exp_sign){
+            n = e;
+        }else{
+            n = -e;
+        }
+
         double r = 10.0;
+
         if(n < 0){
             n = -n;
             r = 0.1;
         }
 
         while(n){
-            if (n & 1){
+            if(n & 1){
                 epart *= r;
             }
             r *= r;
@@ -163,7 +173,7 @@ inline double fast_stofloat(const std::wstring& valtofloat){
 inline double fast_stofloat(const std::string& valtofloat){
 
     // Check of empty
-    if (valtofloat.empty()){
+    if(valtofloat.empty()){
         return 0;
     }
 
@@ -172,7 +182,7 @@ inline double fast_stofloat(const std::string& valtofloat){
     // true = pos, false = neg
     bool sign = true;
 
-    if (valtofloat.front() == '-'){
+    if(valtofloat.front() == '-'){
 
         ++index;
         sign = false;
@@ -190,18 +200,19 @@ inline double fast_stofloat(const std::string& valtofloat){
     double fpart = 0.0;
 
     while(index < valtofloat.size()){
-        if (valtofloat[index] >= '0' &&
-            valtofloat[index] <= '9'){
+        if(valtofloat[index] >= '0' &&
+           valtofloat[index] <= '9'){
 
             ipart = ipart * 10 + (valtofloat[index] - '0');
 
-        }else if (valtofloat[index] == '.'){
+        }else if(valtofloat[index] == '.'){
 
             has_f = true;
             ++index;
             break;
 
-        }else if (valtofloat[index] == 'e'){
+        }else if(valtofloat[index] == 'e' ||
+                 valtofloat[index] == 'E'){
 
             has_exp = true;
             ++index;
@@ -216,18 +227,20 @@ inline double fast_stofloat(const std::string& valtofloat){
         ++index;
     }
 
-    if (has_f){
+    if(has_f){
+
         double frac_exp = 0.1;
 
         while (index < valtofloat.size()){
 
-            if (valtofloat[index] >= '0' &&
-                valtofloat[index] <= '9'){
+            if(valtofloat[index] >= '0' &&
+               valtofloat[index] <= '9'){
 
                 fpart += frac_exp * (valtofloat[index] - '0');
                 frac_exp *= 0.1;
 
-            }else if (valtofloat[index] == 'e'){
+            }else if(valtofloat[index] == 'e' ||
+                     valtofloat[index] == 'E'){
 
                 has_exp = true;
                 ++index;
@@ -244,17 +257,20 @@ inline double fast_stofloat(const std::string& valtofloat){
     }
 
     double epart = 1.0;
+
     if(index < valtofloat.size() &&
        has_exp){
 
-        long int exp_sign = 1;
+        // true = pos, false = neg
+        bool exp_sign = true;
+        long int n;
 
         if(valtofloat[index] == '-'){
 
-            exp_sign = -1;
+            exp_sign = false;
             ++index;
 
-        }else if (valtofloat[index] == '+'){
+        }else if(valtofloat[index] == '+'){
             ++index;
         }
 
@@ -264,21 +280,28 @@ inline double fast_stofloat(const std::string& valtofloat){
             valtofloat[index] >= '0' &&
             valtofloat[index] <= '9'){
 
-            e = e * 10 + valtofloat[index] - '0';
+            e *= 10;
+            e += valtofloat[index] - '0';
+
             ++index;
         }
 
-        long int n = exp_sign * e;
-        double epart = 1.0;
+        if(exp_sign){
+            n = e;
+        }else{
+            n = -e;
+        }
+
         double r = 10.0;
+
         if(n < 0){
             n = -n;
             r = 0.1;
         }
 
         while(n){
-            if (n & 1){
-                epart *= r;
+            if(n & 1){
+                epart = epart * r;
             }
             r *= r;
             n >>= 1;

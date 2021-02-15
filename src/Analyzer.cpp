@@ -50,7 +50,7 @@ bool checkrpn(const std::vector<token>& checktokens){
                     break;
                 }else{
                     if(simulatestack - 2 < 0) return false;
-                    simulatestack--;
+                    --simulatestack;
                 }
                 break;
             case tok::func:

@@ -37,6 +37,7 @@ extern bool do_buffer;
 extern bool bare;
 extern bool safe_mode;
 extern bool evaluate_once;
+extern bool rng_type;
 
 // Flags
 extern bool inturrupt_exit_flag;
@@ -53,7 +54,7 @@ struct version{
     int vertype;
     int specialrev;
 
-    version() = default;
+    //version() = default;
 };
 
 extern long long int maxRecurse;
@@ -64,33 +65,35 @@ extern unsigned char angle_unit;
 
 ///////////////////////////////
 
-// Version detect for compilers
+// Private Build removes all information that can identify the build
 #ifndef PRIVATE_BUILD
+
+    // Version detect for compilers
     #if defined(__clang__)
         static const bool detect_comp = true;
         static const constexpr version compilerversion = {__clang_major__,
-                                                   __clang_minor__,
-                                                   __clang_patchlevel__,
-                                                   false,
-                                                   -1,
-                                                   -1};
+                                                          __clang_minor__,
+                                                          __clang_patchlevel__,
+                                                          false,
+                                                          -1,
+                                                          -1};
         static const constexpr char* compiler = "Clang";
     #elif defined(__IBMCPP__)
         static const bool detect_comp = true;
         static const constexpr char* compiler = "XLC";
         static const constexpr version compilerversion = {-1,-1,-1, false, -1, -1};        
-    #elif defined(__INTEL_COMPILER) || defined(__ICL)
+    #elif defined(__INTEL_COMPILER) || defined(__ICL) || defined(__ICC)
         static const bool detect_comp = true;
         static const constexpr char* compiler = "ICC";
         static const constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
-    #elif defined(__GNUC__) || defined(__GNUG__)
+    #elif defined(__GNUC__) && defined(__GNUG__)
         static const bool detect_comp = true;
         static const constexpr version compilerversion = {__GNUC__,
-                                                   __GNUC_MINOR__,
-                                                   __GNUC_PATCHLEVEL__,
-                                                   false,
-                                                   -1,
-                                                   -1};
+                                                          __GNUC_MINOR__,
+                                                          __GNUC_PATCHLEVEL__,
+                                                          false,
+                                                          -1,
+                                                          -1};
         static const constexpr char* compiler = "GCC";
     #elif defined(_MSC_VER)
         static const bool detect_comp = true;
@@ -100,20 +103,20 @@ extern unsigned char angle_unit;
         static const bool detect_comp = true;
         static const constexpr char* compiler = "NVCC";
         static const constexpr version compilerversion = {__CUDACC_VER_MAJOR__,
-                                                   __CUDACC_VER_MINOR__,
-                                                   __CUDACC_VER_BUILD__,
-                                                   false,
-                                                   -1,
-                                                   -1};
+                                                          __CUDACC_VER_MINOR__,
+                                                          __CUDACC_VER_BUILD__,
+                                                          false,
+                                                          -1,
+                                                          -1};
     #elif defined(__PGIC__)
         static const bool detect_comp = true;
         static const constexpr char* compiler = "PGC";
         static const constexpr version compilerversion = {__PGIC__,
-                                                   __PGIC_MINOR__ ,
-                                                   __PGIC_PATCHLEVEL__,
-                                                   false,
-                                                   -1,
-                                                   -1};
+                                                          __PGIC_MINOR__ ,
+                                                          __PGIC_PATCHLEVEL__,
+                                                          false,
+                                                          -1,
+                                                          -1};
     #else
         static const bool detect_comp = false;
         static const constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
@@ -143,23 +146,25 @@ extern unsigned char angle_unit;
         static const constexpr char* operatingsystem = "Cygwin";
     #elif defined(sun) || defined(__sun)
         static const constexpr char* operatingsystem = "Solaris";    
-    #elif defined(__unix) || defined(__unix__)
+    #elif defined(unix) || defined(__unix) || defined(__unix__)
         static const constexpr char* operatingsystem = "Unix";
     #else
         static const constexpr char* operatingsystem = "";
     #endif
 #else
+    // Private build removes all information about when and what built the program
+
     #undef __DATE__
     #undef __TIME__
+
     static const bool detect_comp = false;
     static const constexpr char* compiler = "";
     static const constexpr version compilerversion = {-1,-1,-1, false, -1, -1};
     static const constexpr char* operatingsystem = "";
+
 #endif
 
-extern int envbit;
-
-void setenvironment(void);
+void setenvironment(int envbit);
 
 // Top Level Main Entry point
 
@@ -278,6 +283,5 @@ struct tokenHash{
         return res;
     }
 };
-
 
 #endif

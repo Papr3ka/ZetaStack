@@ -1,5 +1,17 @@
 # Changelog
 
+# [0.3.6](#0.3.6) - 2021-2-15
+
+### Added
+
+- Sleep function
+- prng
+
+### Fixed
+
+- Scientific notation
+- comparison operators
+
 # [0.3.5](#0.3.5) - 2021-1-29
 
 ### Added

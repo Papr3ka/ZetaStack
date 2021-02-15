@@ -26,6 +26,10 @@
 
 uint32_t urandom(uint32_t seed);
 
+void initseed(void);
+
+uint64_t psuedo_random_next(void);
+
 uint32_t getrandnum(uint32_t seed);
 
 bool getrandbit(uint32_t seed);

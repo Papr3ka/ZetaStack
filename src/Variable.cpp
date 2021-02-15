@@ -39,23 +39,27 @@ namespace var{
     std::string mostrecentvar;
 
     std::atomic<unsigned long int> bufferindex(0);
-    std::atomic<unsigned long int> buffermax(1024);
+    std::atomic<unsigned long int> buffermax(2048);
 
     bool runbuffer = true;
 
-    uint32_t prevr = rand() % 769 + 47; // for random nums
+    uint32_t prevr = 0x4d350F3B; // for random nums
 
     static std::vector<uint32_t> randbuffer;
 
     static inline uint32_t getrand(void){
-        uint32_t retval;
-        if(!randbuffer.empty()){
-            retval = randbuffer.front();
-            randbuffer.erase(randbuffer.begin());
-            return retval%1000;
+        if(rng_type){
+            uint32_t retval;
+            if(!randbuffer.empty()){
+                retval = randbuffer.front();
+                randbuffer.erase(randbuffer.begin());
+                return retval%1000;
+            }else{
+                prevr = getrandnum(prevr) ^ 127; // Good luck trying to reverse engineer it
+                return prevr%1000;
+            }
         }else{
-            prevr = getrandnum(prevr) ^ 127; // Good luck trying to reverse engineer it
-            return prevr%1000;
+            return psuedo_random_next()%1000;
         }
     }
 
@@ -215,9 +219,15 @@ namespace var{
         }
         while(runbuffer && run){
             if(randbuffer.size() < buffermax){
-                while(randbuffer.size() < buffermax){
-                    prevr = getrandnum(prevr) ^ 127;
-                    randbuffer.emplace_back(prevr);
+                if(rng_type){
+                    while(randbuffer.size() < buffermax){
+                        prevr = getrandnum(prevr) ^ 127;
+                        randbuffer.emplace_back(prevr);
+                    }
+                }else{
+                    while(randbuffer.size() < buffermax){
+                        randbuffer.emplace_back(psuedo_random_next()%1000);
+                    }
                 }
             }else if(randbuffer.size() >= buffermax){
                 std::this_thread::sleep_for(std::chrono::milliseconds(125));

@@ -33,7 +33,7 @@ struct comp_metadata{
     unsigned long int bracs;
     unsigned long int functions;
 
-    comp_metadata() = default;
+    //comp_metadata() = default;
 };
 
 template<class T>
@@ -41,7 +41,7 @@ struct splittedvec{
     std::vector<T> first;
     std::vector<T> second;
 
-    splittedvec() = default;
+    //splittedvec() = default;
 };
 
 // Function Prototypes

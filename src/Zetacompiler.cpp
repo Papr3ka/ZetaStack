@@ -139,72 +139,47 @@ namespace comp {
         return false;
     }	
 
+
+    std::unordered_map<std::string, unsigned long int> precedenceOp = {
+        {"NEG", 1400},
+        {"POS", 1400},
+
+        {"NOT", 1300},
+        {"POW", 1200},
+
+        {"MUL", 1100},
+        {"DIV", 1100},
+        {"MOD", 1100},
+        {"FLOORDIV", 1100},
+
+        {"ADD", 1000},
+        {"SUB", 1000},
+
+        {"SHL", 900},
+        {"SHR", 900},
+
+        {"GQL", 800},
+        {"LQL", 800},
+        {"GRT", 800},
+        {"LST", 800},
+
+        {"EQL", 700},
+        {"NQL", 700},
+
+        {"BITAND", 600},
+        {"BITXOR", 500},
+        {"BITOR", 400},
+        
+        {"LAND", 300},
+        {"LOR", 200}
+    };
+
     inline unsigned int precedence(std::string op){
         if(op.back() == '('){
 
             return 1500;
-
-        }else if(op == "NEG" || op == "POS"){
-
-            return 1400;
-
-        }else if(op == "NOT"){
-
-            return 1300;
-
-        }else if(op == "POW"){
-
-            return 1200;
-
-        }else if(op == "MUL" ||
-                 op == "DIV" ||
-                 op == "MOD" ||
-                 op == "FLOORDIV"){
-
-            return 1100;
-
-        }else if(op == "ADD" ||
-                 op == "SUB"){
-
-            return 1000;
-
-        }else if(op == "SHL" ||
-                 op == "SHR"){
-
-            return 900;
-
-        }else if(op == "GQL" ||
-                 op == "LQL" ||
-                 op == "GRT" ||
-                 op == "LST"){
-
-            return 800;
-
-        }else if(op == "EQL" ||
-                 op == "NQL"){
-
-            return 700;
-
-        }else if(op == "BITAND"){
-
-            return 600;
-
-        }else if(op == "BITXOR"){
-
-            return 500;
-
-        }else if(op == "BITOR"){
-
-            return 400;
-
-        }else if(op == "LAND"){
-
-            return 300;
-
-        }else if(op == "LOR"){
-
-            return 200;
-
+        }else if(precedenceOp.find(op) != precedenceOp.end()){
+            return precedenceOp[op];
         }else if(op.substr(op.size()-3,op.size()) == "ASN"){
 
             return 100;

@@ -19,13 +19,11 @@
 
 #include "ZetaStack.hpp"
 
-int envbit;
+int envbit; // 
 
 int main(int argc, char** argv){
 
-    envbit = sizeof(void*);
-
-    setenvironment();
+    setenvironment(sizeof(void*));
 
     ///////////////////////////////
 

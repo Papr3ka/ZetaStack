@@ -89,9 +89,9 @@ namespace xmath {
     // Placeholder functions for Arbitrary math
     inline void add(std::vector<token>& evalstack){
         if(evalstack.back().type == tok::num){
-            double y = std::stod(evalstack.back().data);
+            double y = fast_stofloat(evalstack.back().data);
             evalstack.pop_back();
-            double x = std::stod(evalstack.back().data);
+            double x = fast_stofloat(evalstack.back().data);
             evalstack.back() = token(to_string_hprec(x+y), tok::num);
         }else{
             std::string y = evalstack.back().data;
@@ -103,41 +103,41 @@ namespace xmath {
     }
 
     inline void sub(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x - y), tok::num);
         return;
     }
 
     inline void mul(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x * y), tok::num);
         return;
     }
 
     inline void divide(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x / y), tok::num);
         return;
     }
 
     inline void mod(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(fmod(x, y)), tok::num);
         return;
     }
 
     inline void power(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(pow(x, y)), tok::num);
         return;
     }
@@ -167,55 +167,55 @@ namespace xmath {
     }
 
     inline void eql(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x == y), tok::num);
         return;
     }
 
     inline void nql(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x != y), tok::num);
         return;
     }
 
     inline void gql(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x >= y), tok::num);
         return;
     }
 
     inline void lql(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x <= y), tok::num);
         return;
     }
 
     inline void grt(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x > y), tok::num);
         return;
     }
 
     inline void lst(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x < y), tok::num);
         return;
     }
 
     inline void neg(std::vector<token>& evalstack){
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(-x), tok::num);
         return;
     }
@@ -237,23 +237,23 @@ namespace xmath {
     }
 
     inline void land(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x && y), tok::num);
         return;
     }
 
     inline void lor(std::vector<token>& evalstack){
-        double y = std::stod(evalstack.back().data);
+        double y = fast_stofloat(evalstack.back().data);
         evalstack.pop_back();
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(x || y), tok::num);
         return;
     }
 
     inline void lnot(std::vector<token>& evalstack){
-        double x = std::stod(evalstack.back().data);
+        double x = fast_stofloat(evalstack.back().data);
         evalstack.back() = token(to_string_hprec(!x), tok::num);
         return;
     }
@@ -277,7 +277,7 @@ namespace xmath {
             std::string iden = evalstack.back().data;
             evalstack.pop_back();
             if(var::changable(iden)){
-                var::update(iden, to_string_hprec(std::stod(val.data)));
+                var::update(iden, to_string_hprec(fast_stofloat(val.data)));
                 return;
             }else{
                 std::string error = "Variable \"";
@@ -304,7 +304,7 @@ namespace xmath {
             );
         }else{
             var::update(iden, to_string_hprec(
-                std::stod(var::search(iden)) + std::stod(val.data)
+                fast_stofloat(var::search(iden)) + fast_stofloat(val.data)
             ));
             return;  
         }
@@ -318,7 +318,7 @@ namespace xmath {
         evalstack.pop_back();
         if(var::changable(iden)){
             var::update(iden, to_string_hprec(
-                std::stod(var::search(iden)) - std::stod(val)
+                fast_stofloat(var::search(iden)) - fast_stofloat(val)
             ));
             return;
         }else{
@@ -335,7 +335,7 @@ namespace xmath {
         evalstack.pop_back();
         if(var::changable(iden)){
             var::update(iden, to_string_hprec(
-                std::stod(var::search(iden)) * std::stod(val)
+                fast_stofloat(var::search(iden)) * fast_stofloat(val)
             ));
             return;
         }else{
@@ -352,7 +352,7 @@ namespace xmath {
         evalstack.pop_back();
         if(var::changable(iden)){
             var::update(iden, to_string_hprec(
-                std::stod(var::search(iden)) / std::stod(val)
+                fast_stofloat(var::search(iden)) / fast_stofloat(val)
             ));
             return;
         }else{
@@ -369,7 +369,7 @@ namespace xmath {
         evalstack.pop_back();
         if(var::changable(iden)){
             var::update(iden, to_string_hprec(
-                fmod(std::stod(var::search(iden)), std::stod(val))
+                fmod(fast_stofloat(var::search(iden)), fast_stofloat(val))
             ));
             return;
         }else{
@@ -403,7 +403,7 @@ namespace xmath {
         evalstack.pop_back();
         if(var::changable(iden)){
             var::update(iden, to_string_hprec(
-                pow(std::stod(var::search(iden)), std::stod(val))
+                pow(fast_stofloat(var::search(iden)), fast_stofloat(val))
             ));
             return;
         }else{
@@ -720,25 +720,23 @@ namespace xmath {
 
                 token tk;
                 tk.type = tok::num;
-                if(f_isspecial(funcname, farg_max)){
-                    try{
+
+                try{
+                    if(f_isspecial(funcname, farg_max)){
                         tk.data = to_string_hprec(callspecial(argpack, funcname));
-                    }catch(const int& e){
-                        // Error
-                    }
-                }else{
-                    try{
+                    }else{
                         tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
-                    }catch(const std::string& err){
-                        evalstack.clear();
-                        tokens.clear();
-                        argpack.clear();
-                        std::vector<token>().swap(evalstack);
-                        std::vector<token>().swap(tokens);
-                        std::vector<token>().swap(argpack);
-                        throw err;
-                    }               
-                }
+                
+                    }
+                }catch(const std::string& err){
+                    evalstack.clear();
+                    tokens.clear();
+                    argpack.clear();
+                    std::vector<token>().swap(evalstack);
+                    std::vector<token>().swap(tokens);
+                    std::vector<token>().swap(argpack);
+                    throw err;
+                }   
                 
                 evalstack.emplace_back(tk);
                 
@@ -873,28 +871,24 @@ namespace xmath {
                     std::reverse(argpack.begin(),argpack.end());
                     token tk;
                     tk.type = tok::num;
-                    if(f_isspecial(funcname, farg_max)){
-                        try{
+                    try{
+                        if(f_isspecial(funcname, farg_max)){
                             tk.data = to_string_hprec(callspecial(argpack, funcname));
-                        }catch(const int){
-                            // Error
-                        }
-                    }else if(f_iscorefunc(funcname, farg_max)){
-                        varout = false;
-                        tk = callcore(argpack, funcname);   
-                    
-                    }else{
-                        try{
+                        }else if(f_iscorefunc(funcname, farg_max)){
+                            varout = false;
+                            tk = callcore(argpack, funcname);   
+                        
+                        }else{
                             tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
-                        }catch(const std::string& err){
-                            evalstack.clear();
-                            tokens.clear();
-                            argpack.clear();
-                            std::vector<token>().swap(evalstack);
-                            std::vector<token>().swap(tokens);
-                            std::vector<token>().swap(argpack);
-                            throw err;
                         }
+                    }catch(const std::string& err){
+                        evalstack.clear();
+                        tokens.clear();
+                        argpack.clear();
+                        std::vector<token>().swap(evalstack);
+                        std::vector<token>().swap(tokens);
+                        std::vector<token>().swap(argpack);
+                        throw err;
                     }
                     
                     if(tk.type != tok::tvoid) evalstack.emplace_back(tk);
@@ -1002,6 +996,7 @@ namespace xmath {
         while(index < stopsize){
             forceRun:
 
+            if(do_bar) bar::setcount(index);
             if(!inturrupt_exit_flag) throw std::string("");
 
             switch(tokens[index].type){
@@ -1049,27 +1044,25 @@ namespace xmath {
                     std::reverse(argpack.begin(),argpack.end());
                     token tk;
                     tk.type = 0;
-                    if(f_isspecial(funcname, farg_max)){
-                        try{
+                    try{
+                        if(f_isspecial(funcname, farg_max)){
                             tk.data = to_string_hprec(callspecial(argpack, funcname));
-                        }catch(const int){
-                            // Error
-                        }
-                    }else if(f_iscorefunc(funcname, farg_max)){
-                        tk = callcore(argpack, funcname);   
-                    
-                    }else{
-                        try{
+                            
+                        }else if(f_iscorefunc(funcname, farg_max)){
+                            tk = callcore(argpack, funcname);   
+                        
+                        }else{
                             tk.data = calculate(comp::retfillallvars(call(argpack, funcname)), false);
-                        }catch(const std::string& err){
-                            evalstack.clear();
-                            tokens.clear();
-                            argpack.clear();
-                            std::vector<token>().swap(evalstack);
-                            std::vector<token>().swap(tokens);
-                            std::vector<token>().swap(argpack);
-                            throw err;
+
                         }
+                    }catch(const std::string& err){
+                        evalstack.clear();
+                        tokens.clear();
+                        argpack.clear();
+                        std::vector<token>().swap(evalstack);
+                        std::vector<token>().swap(tokens);
+                        std::vector<token>().swap(argpack);
+                        throw err;
                     }
                     
                     if(tk.type != tok::tvoid) evalstack.emplace_back(tk);
@@ -1079,8 +1072,8 @@ namespace xmath {
                     ++index;
                     }break;
 
-                // SEP is ignored
-                case 7:{
+                
+                case tok::sep:{
                     if(evalstack.back().type == tok::var){
                         lvalue_map[evalstack.back().data] = default_modifier();
                     }

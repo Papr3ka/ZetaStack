@@ -45,27 +45,27 @@ std::vector<std::string> split(std::string str, std::string split){
 
 namespace comp {
 
-    std::vector<std::string> ops {
-        "<<=",
-        ">>=",
-        "**=",
-        "+=",
-        "-=",
-        "*=",
-        "/=",
-        "^=",
-        "%=",
-        "|=",
-        "&=",
-        "==",
-        "!=",
-        ">=",
-        "<=",
-        ">",
-        "<",
-        "!",
-        "="
-    };
+    // std::vector<std::string> ops {
+    //     "<<=",
+    //     ">>=",
+    //     "**=",
+    //     "+=",
+    //     "-=",
+    //     "*=",
+    //     "/=",
+    //     "^=",
+    //     "%=",
+    //     "|=",
+    //     "&=",
+    //     "==",
+    //     "!=",
+    //     ">=",
+    //     "<=",
+    //     ">",
+    //     "<",
+    //     "!",
+    //     "="
+    // };
 
 
     // Lexical Analysis
@@ -226,14 +226,21 @@ namespace comp {
                     if(lexInput[countindex] == '.'){
                         ++countindex;
                         goto decimal;
-                    }else if(((isxdigit(lexInput[countindex]) &&
-                               hexmode) ||
-                               lexInput[countindex] == '-' ||
-                               lexInput[countindex] == '+') &&
-                              (lexInput[countindex - 1] == 'e' ||
-                               lexInput[countindex - 1] == 'E')){
-                        ++countindex;
-                        goto decimal;
+                    }else if(lexInput[countindex] == 'e' ||
+                             lexInput[countindex] == 'E'){
+                        
+                        if(countindex + 1 < lexInput.size()){
+                            if(lexInput[countindex + 1] == '+' ||
+                               lexInput[countindex + 1] == '-' ){
+                                   ++countindex;
+                                   ++countindex;
+                                   goto decimal;
+                               }else if(isdigit(lexInput[countindex + 1])){
+                                   ++countindex;
+                                   goto decimal;                                   
+                               }
+                        }
+                        --countindex;
                     }else if(lexInput[countindex] == 'b'){
                         ++countindex;
                         goto decimal;
@@ -829,6 +836,31 @@ namespace comp {
             }
             if(bcount == 0 && str[index] == '='){
                 if(hasbracket){
+                    if(index - 1 < index){
+
+                        // basically a chained if ||
+                        switch(str[index - 1]){
+                            case '&':
+                            case '|':
+                            case '^':
+                            case '%':
+                            case '/':
+                            case '*':
+                            case '+':
+                            case '-':
+                            case '=':
+                            case '!':
+                            case '<':
+                            case '>':
+                                return 0;
+                        
+                        }
+                    }
+                    if(index + 1 < str.size()){
+                        if(str[index + 1] == '='){
+                            return 0;
+                        }
+                    }
                     return 2;
                 }else{
                     return 0;
@@ -838,8 +870,6 @@ namespace comp {
             ++index;
         }
         return 0;
-        
-        
     }
 
     dipart< std::vector<token> > spliteq(std::vector<token> str){
@@ -885,6 +915,9 @@ namespace comp {
                         break;
                     case 'b':
                         outstr.push_back('\b');
+                        break;
+                    case 't':
+                        outstr.push_back('\t');
                         break;
                     case '\\':
                         outstr.push_back('\\');
