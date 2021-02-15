@@ -996,6 +996,7 @@ namespace xmath {
         while(index < stopsize){
             forceRun:
 
+            if(do_bar) bar::setcount(index);
             if(!inturrupt_exit_flag) throw std::string("");
 
             switch(tokens[index].type){
@@ -1071,8 +1072,8 @@ namespace xmath {
                     ++index;
                     }break;
 
-                // SEP is ignored
-                case 7:{
+                
+                case tok::sep:{
                     if(evalstack.back().type == tok::var){
                         lvalue_map[evalstack.back().data] = default_modifier();
                     }

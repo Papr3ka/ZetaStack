@@ -37,6 +37,7 @@ extern bool do_buffer;
 extern bool bare;
 extern bool safe_mode;
 extern bool evaluate_once;
+extern bool rng_type;
 
 // Flags
 extern bool inturrupt_exit_flag;
@@ -64,8 +65,10 @@ extern unsigned char angle_unit;
 
 ///////////////////////////////
 
-// Version detect for compilers
+// Private Build removes all information that can identify the build
 #ifndef PRIVATE_BUILD
+
+    // Version detect for compilers
     #if defined(__clang__)
         static const bool detect_comp = true;
         static const constexpr version compilerversion = {__clang_major__,
@@ -161,9 +164,7 @@ extern unsigned char angle_unit;
 
 #endif
 
-extern int envbit;
-
-void setenvironment(void);
+void setenvironment(int envbit);
 
 // Top Level Main Entry point
 

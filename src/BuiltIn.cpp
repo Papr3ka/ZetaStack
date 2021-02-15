@@ -370,7 +370,7 @@ double b_zeta(std::vector<token> x){
     *ans = 0;
     std::vector<std::thread> workerpool;
     workerpool.reserve(CPU_COUNT);
-    for(unsigned long int inc = 0; inc < CPU_COUNT; inc++){
+    for(unsigned long int inc = 0; inc < CPU_COUNT; ++inc){
         workerpool.emplace_back(std::thread(b_zeta_worker, ans, s, inc + 1, CPU_COUNT, max_zeta_iter));
     }
     for(std::thread& th: workerpool){
@@ -447,9 +447,13 @@ token bc_sleep(std::vector<token> x){
     const double duration = fast_stofloat(x.front().data);
     double elapsed = 0;
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    
+    // Use spin-lock
     while(inturrupt_exit_flag && duration > elapsed){
+
         //std::this_thread::sleep_for(std::chrono::microseconds(1));
         elapsed = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();
+
     }
     return token();
 }
@@ -459,9 +463,15 @@ token bc_safe_sleep(std::vector<token> x){
     const double duration = fast_stofloat(x.front().data);
     double elapsed = 0;
     const std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    // Use spin-lock with wait
     while(inturrupt_exit_flag && duration > elapsed){
-        std::this_thread::sleep_for(std::chrono::microseconds(16));
+
+        std::this_thread::sleep_for(std::chrono::microseconds(16)); // Is not accurate
         elapsed = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();
+
     }
     return token();
 }
+
+

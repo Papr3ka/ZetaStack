@@ -478,7 +478,7 @@ void def(std::string name, std::vector<token> assignTo, std::vector<token> body,
     udef(name, assignTo.size());
 
     func obj(assignTo, body, defaults); // Create function object
-    std::unordered_map<long int, func> &overloadtable = functiontable[name];
+    std::unordered_map<long int, func>& overloadtable = functiontable[name];
 
     overloadtable.rehash(overloadtable.size()+1);
 

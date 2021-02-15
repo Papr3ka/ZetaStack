@@ -46,6 +46,7 @@
 
 #include "Analyzer.hpp"
 #include "Cache.hpp"
+#include "Entropy.hpp"
 #include "Execute.hpp"
 #include "Function.hpp"
 #include "Preprocessor.hpp"
@@ -61,10 +62,11 @@ bool do_exec = true;        // Execute
 bool do_bar = true;         // Loading bar - extern to Builtin
 bool do_cache = true;       // Cache - extern to Cache.hpp
 bool do_sighandle = true;   // Handle signals
-bool do_buffer = true;      // 
+bool do_buffer = true;      // Use rng buffer
 bool bare = false;
 bool safe_mode = false;
 bool evaluate_once = false;
+bool rng_type = false;       // use prng or crng
 
 // Default settings
 /*---Variable------------Value--
@@ -79,6 +81,7 @@ bool evaluate_once = false;
  *|  bare              | false |
  *|  safe_mode         | false |
  *|  evaluate_once     | false |
+ *|  rng_type          | false |
  *///---------------------------
 
 /*---Unit-----Value--
@@ -850,10 +853,10 @@ inline static void arghandler(std::vector<std::string> args){
             cch::setmaxlen(0);
             var::setbuffermax(0);
             maxRecurse = 512;
-
+        }else if(currentarg == "--crng"){
+            rng_type = true;
         }else if(currentarg == "--debug"){
             debug_mode = true;
-
         }else if(currentarg == "--nobuffer"){
             do_buffer = false;
 
@@ -892,6 +895,7 @@ inline static void arghandler(std::vector<std::string> args){
                       << "  --max-recurse <int>          Sets the maximum recursion depth\n\n" // Not good idea to increase
                       // Intentional Space
                       << "  --bare                       Start with absolute minimum memory usage\n"
+                      << "  --crng                       Use Cryptographically secure RNG\n"
                       << "  --debug                      Start with debug mode on\n"
                       << "  --nobuffer                   Disables variable buffer\n"
                       << "  --noexec                     Start with execution disabled\n"
@@ -1417,11 +1421,14 @@ inline static void deffunction(std::string input){
         bar::setstate(true);
     }
 
-    for(unsigned long int idx = 0; idx < splitvec.front.size(); ++idx){
+    // Filter out lvalues when checking function
+    for(unsigned long int idx = 1; idx < splitvec.front.size(); ++idx){
         if(splitvec.front[idx].type == 5 && idx + 1 < splitvec.front.size()){
-            if(splitvec.front[idx + 1].type == tok::asn ||
+            if((splitvec.front[idx + 1].type == tok::asn ||
                splitvec.front[idx + 1].type == tok::sep ||
-               splitvec.front[idx + 1].type == tok::rbrac){
+               splitvec.front[idx + 1].type == tok::rbrac) &&
+               (splitvec.front[idx - 1].type == tok::sep ||
+               splitvec.front[idx - 1].type == tok::lbrac)){
                 variables.emplace_back(splitvec.front[idx]);
             }
         }else{
@@ -1513,6 +1520,10 @@ inline static void deffunction(std::string input){
     analyze_tend = std::chrono::high_resolution_clock::now();
 
     try{
+
+        bar::changemode(1);
+        bar::init((long int)splitvec.front.size());
+        bar::inform("Executing");
 
         decl_tstart = std::chrono::high_resolution_clock::now();
         def(function_name, variables, splitvec.back, xmath::func_lvalue_deduction(splitvec.front));
@@ -1648,9 +1659,15 @@ inline static void sighandle(int sigtype){
                 }
                 exit(130);
             }
-
-        // case SIGFPE:
-        // 	return;
+#ifdef SIGFPE
+        case SIGFPE:
+            if(do_bar){
+                bar::stop();
+                bar::finish(); // print out <CR> and whitespace
+            }
+            std::cerr << "Floating-point Error\n";
+            return;
+#endif
 
 
         //case SIGABRT:
@@ -1694,7 +1711,8 @@ inline static void sighandle(int sigtype){
     }
 }
 
-void setenvironment(){
+// Sets up the maximum recursion count and maxobj count at runtime
+void setenvironment(int envbit){
     if(envbit){
         maxRecurse = (envbit << 7) + (envbit << 6);
         maxobj = (envbit << 5) + (envbit << 4);
@@ -1702,6 +1720,9 @@ void setenvironment(){
         maxRecurse = 256;
         maxobj = 96;
     }
+
+    initseed(); // Setup rng
+
     return;
 }
 

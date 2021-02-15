@@ -22,6 +22,7 @@
 #include<cmath>
 #include<cstdlib>
 #include<iostream>
+#include<mutex>
 #include<ostream>
 #include<string>
 #include<thread>
@@ -51,6 +52,8 @@ static std::string operator * (std::string str, long int mul){
     }
     return output;
 }
+
+static std::mutex statguard;
 
 std::string strunc(float x, short prec){
     if(std::isnan(x)) return "0";
@@ -243,31 +246,39 @@ namespace bar {
 
     // This is the function that the thread runs
     void barmanager(void){
+        std::lock_guard<std::mutex> guard();
         right = right*8.0f;
         left = left*8.0f; 
         while(run_bar){
             backtoloop:
             if(dostat && state){
+
+                // Always check state as it can change at any time
+
+                if(!state) goto backtoloop;
                 next_time = std::chrono::steady_clock::now();
+                if(!state) goto backtoloop;
                 switch(loadtype){
                     case 0:
+                        if(!state) goto backtoloop;
                         updatecycle();
                         if(!state) goto backtoloop;
                         std::this_thread::sleep_for(std::chrono::milliseconds(16));
                         if(!state) goto backtoloop;
                         break;
                     case 1:
+                        if(!state) goto backtoloop;
                         updatepercent();
                         if(!state) goto backtoloop;
                         std::this_thread::sleep_for(std::chrono::milliseconds(25));
                         if(!state) goto backtoloop;
                         break;
                     default:
-                        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                        std::this_thread::sleep_for(std::chrono::milliseconds(640));
                         break;
                 }
             }else{
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
         return;
