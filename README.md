@@ -31,6 +31,7 @@ Options:
   --max-recurse <int>          Sets the maximum recursion depth
 
   --bare                       Start with absolute minimum memory usage
+  --crng                       Use Cryptographically secure RNG
   --debug                      Start with debug mode on
   --nobuffer                   Disables variable buffer
   --noexec                     Start with execution disabled
@@ -83,7 +84,7 @@ You can assign, manipulate and delete variables in ZetaStack. Assigning variable
 
 **ans** - the most recent answer
 
-**rand** - a cryptographically secure random number between 0 - 999 inclusive
+**rand** - a random number between 0 - 999 inclusive
 
 > Commenting
 
