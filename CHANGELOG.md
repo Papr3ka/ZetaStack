@@ -1,10 +1,11 @@
 # Changelog
 
-# [0.3.6](#0.3.6) - 2021-2-5
+# [0.3.6](#0.3.6) - 2021-2-15
 
 ### Added
 
 - Sleep function
+- prng
 
 ### Fixed
 
